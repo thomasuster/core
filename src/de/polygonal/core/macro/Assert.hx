@@ -77,8 +77,8 @@ class Assert
 	{
 		var p = Context.currentPos();
 		
-		var info1 = Context.parse("'Assertation \'' + x + '\' failed in file ' + info.fileName + ', line ' + info.lineNumber + ', ' + info.className + '::' + info.methodName", Context.currentPos());
-		var info2 = Context.parse("'Assertation failed in file ' + info.fileName + ', line ' + info.lineNumber + ', ' + info.className + '::' + info.methodName", Context.currentPos());
+		var info1 = Context.parse('"Assertation \'" + x + "\' failed in file " + info.fileName + "line " + info.lineNumber + ", " + info.className + "::" + info.methodName', Context.currentPos());
+		var info2 = Context.parse('"Assertation failed in file " + info.fileName + "line " + info.lineNumber + ", " + info.className + "::" + info.methodName', Context.currentPos());
 		var body = {expr: EIf
 		(
 			{expr: EBinop(OpNotEq, {expr: EConst(CIdent('x')), pos: p}, {expr: EConst(CIdent('null')), pos: p}), pos: p},
