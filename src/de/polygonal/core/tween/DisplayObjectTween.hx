@@ -29,10 +29,15 @@
  */
 package de.polygonal.core.tween;
 
-import flash.display.DisplayObject;
 import de.polygonal.core.tween.ease.Ease;
+import de.polygonal.ds.Bits;
+import flash.display.DisplayObject;
 
 using de.polygonal.ds.BitFlags;
+
+#if !flash
+'The DisplayObjectTween class is only available for flash'
+#end
 
 class DisplayObjectTween extends Tween, implements TweenTarget
 {
