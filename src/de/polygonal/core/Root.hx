@@ -117,7 +117,7 @@ class Root
 	 * Initializes an application.
 	 * @param initCallback called when initialization is complete. This should be the main entry point of the application.
 	 */
-	public static function init(initCallback:Void->Void, initWindow = true)
+	public static function init(initCallback:Void->Void):Void
 	{
 		function doInit()
 		{
@@ -128,20 +128,10 @@ class Root
 		#if js
 		new js.JQuery(js.Lib.document).ready(function(e)
 		{
-			if (initWindow)
-				de.polygonal.gl.Window.init(doInit);
-			else
-				doInit();
+			doInit();
 		});
 		#else
-		if (initWindow)
-		{
-			#if (flash || cpp)
-			de.polygonal.gl.Window.init(doInit);
-			#end
-		}
-		else
-			doInit();
+		doInit();
 		#end
 	}
 	
