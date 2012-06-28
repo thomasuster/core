@@ -52,7 +52,7 @@ class ParkMiller extends RNG
 	 */
 	override public function setSeed(seed:Int):Void
 	{
-		#if debug
+		#if (debug && !neko)
 		de.polygonal.core.macro.Assert.assert(seed >= 0 && seed <= 0x7ffffffe, 'seed >= 0 && seed <= 0x7ffffffe');
 		#end
 		
