@@ -119,45 +119,45 @@ class Entity implements IObserver, implements IObservable
 	 * If false, <code>onAdvance()</code> is not called on this entity.<br/>
 	 * Default ist true.
 	 */
-	public var doAdvance(_doAdvanceGetter, _doAdvanceSetter):Bool;
-	function _doAdvanceGetter():Bool
+	public var doAdvance(get_doAdvance, set_doAdvance):Bool;
+	function get_doAdvance():Bool
 	{
 		return _hasFlag(BIT_ADVANCE);
 	}
-	function _doAdvanceSetter(x:Bool):Bool
+	function set_doAdvance(value:Bool):Bool
 	{
-		x ? _setFlag(BIT_ADVANCE) : _clrFlag(BIT_ADVANCE);
-		return x;
+		value ? _setFlag(BIT_ADVANCE) : _clrFlag(BIT_ADVANCE);
+		return value;
 	}
 	
 	/**
 	 * If false, <code>onRender()</code> is not called on this entity.<br/>
 	 * Default ist false.
 	 */
-	public var doRender(_doRenderGetter, _doRenderSetter):Bool;
-	function _doRenderGetter():Bool
+	public var doRender(get_doRender, set_doRender):Bool;
+	function get_doRender():Bool
 	{
 		return _hasFlag(BIT_RENDER);
 	}
-	function _doRenderSetter(x:Bool):Bool
+	function set_doRender(value:Bool):Bool
 	{
-		x ? _setFlag(BIT_RENDER) : _clrFlag(BIT_RENDER);
-		return x;
+		value ? _setFlag(BIT_RENDER) : _clrFlag(BIT_RENDER);
+		return value;
 	}
 	
 	/**
 	 * If false, the children of this node are neither updated nor rendered.<br/>
 	 * Default is true.
 	 */
-	public var doChildren(_doChildrenGetter, _doChildrenSetter):Bool;
-	function _doChildrenGetter():Bool
+	public var doChildren(get_doChildren, set_doChildren):Bool;
+	function get_doChildren():Bool
 	{
 		return _hasFlag(BIT_PROCESS_SUBTREE);
 	}
-	function _doChildrenSetter(x:Bool):Bool
+	function set_doChildren(value:Bool):Bool
 	{
-		x ? _setFlag(BIT_PROCESS_SUBTREE) : _clrFlag(BIT_PROCESS_SUBTREE);
-		return x;
+		value ? _setFlag(BIT_PROCESS_SUBTREE) : _clrFlag(BIT_PROCESS_SUBTREE);
+		return value;
 	}
 	
 	/**

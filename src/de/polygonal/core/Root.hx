@@ -93,8 +93,7 @@ class Root
 	/**
 	 * Returns true if this swf is a remote-swf.
 	 */
-	public static var isRemote(_isRemoteGetter, never):Bool;
-	inline static function _isRemoteGetter():Bool
+	public static function isRemote():Bool
 	{
 		return flash.Lib.current.stage.loaderInfo.url.indexOf('file:///') == -1;
 	}

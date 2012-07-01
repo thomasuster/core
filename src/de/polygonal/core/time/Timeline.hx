@@ -236,21 +236,27 @@ class Timeline extends Observable, implements IObserver
 	/**
 	 * The current event progress in the range <arg>&#091;0, 1&#093;</arg>.
 	 */
-	public var progress(_progressGetter, never):Float;
-	inline function _progressGetter():Float { return _currInterval.ratio(); }
+	public var progress(get_progress, never):Float;
+	inline function get_progress():Float
+	{
+		return _currInterval.ratio();
+	}
 	
 	/**
 	 * The id of the current event.
 	 */
-	public var id(_idGetter, never):Int;
-	inline function _idGetter():Int { return _currInterval.id; }
+	public var id(get_id, never):Int;
+	inline function get_id():Int
+	{
+		return _currInterval.id;
+	}
 	
 	/**
 	 * The iteration for the current event (0=first iteration).<br/>
 	 * Returns -1 if the event runs periodically.
 	 */
-	public var iteration(_iterationGetter, never):Int;
-	inline function _iterationGetter():Int
+	public var iteration(get_iteration, never):Int;
+	inline function get_iteration():Int
 	{
 		if (_currInterval.iterations == -1)
 			return -1;

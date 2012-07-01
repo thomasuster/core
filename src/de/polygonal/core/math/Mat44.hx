@@ -145,29 +145,65 @@ class Mat44
 	public var m31:Float; public var m32:Float; public var m33:Float; public var m34:Float;
 	public var m41:Float; public var m42:Float; public var m43:Float; public var m44:Float;
 	
-	public var sx(_sxGetter, _sxSetter):Float;
-	inline function _sxGetter():Float { return m11; }
-	inline function _sxSetter(x:Float):Float { return m11 = x; }
+	public var sx(get_sx, set_sx):Float;
+	inline function get_sx():Float
+	{
+		return m11;
+	}
+	inline function set_sx(value:Float):Float
+	{
+		return m11 = value;
+	}
 	
-	public var sy(_syGetter, _sySetter):Float;
-	inline function _syGetter():Float { return m22; }
-	inline function _sySetter(x:Float):Float { return m22 = x; }
+	public var sy(get_sy, set_sy):Float;
+	inline function get_sy():Float
+	{
+		return m22;
+	}
+	inline function set_sy(value:Float):Float
+	{
+		return m22 = value;
+	}
 	
-	public var sz(_szGetter, _szSetter):Float;
-	inline function _szGetter():Float { return m33; }
-	inline function _szSetter(x:Float):Float { return m33 = x; }
+	public var sz(get_sz, set_sz):Float;
+	inline function get_sz():Float
+	{
+		return m33;
+	}
+	inline function set_sz(value:Float):Float
+	{
+		return m33 = value;
+	}
 	
-	public var tx(_txGetter, _txSetter):Float;
-	inline function _txGetter():Float { return m14; }
-	inline function _txSetter(x:Float):Float { return m14 = x; }
+	public var tx(get_tx, set_tx):Float;
+	inline function get_tx():Float
+	{
+		return m14;
+	}
+	inline function set_tx(value:Float):Float
+	{
+		return m14 = value;
+	}
 	
-	public var ty(_tyGetter, _tySetter):Float;
-	inline function _tyGetter():Float { return m24; }
-	inline function _tySetter(x:Float):Float { return m24 = x; }
+	public var ty(get_ty, set_ty):Float;
+	inline function get_ty():Float
+	{
+		return m24;
+	}
+	inline function set_ty(value:Float):Float
+	{
+		return m24 = value;
+	}
 	
-	public var tz(_tzGetter, _tzSetter):Float;
-	inline function _tzGetter():Float { return m34; }
-	inline function _tzSetter(x:Float):Float { return m34 = x; }
+	public var tz(get_tz, set_tz):Float;
+	inline function get_tz():Float
+	{
+		return m34;
+	}
+	inline function set_tz(value:Float):Float
+	{
+		return m34 = value;
+	}
 	
 	var _sineCosine:Vec2;
 	

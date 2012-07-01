@@ -39,8 +39,8 @@ class Interval
 	var _t1:Float;
 	var _length:Float;
 	
-	public var alpha(_alphaGetter, never):Float;
-	function _alphaGetter():Float
+	public var alpha(get_alpha, never):Float;
+	inline function get_alpha():Float
 	{
 		return Mathematics.fmin(_t0 / _t1, 1);
 	}

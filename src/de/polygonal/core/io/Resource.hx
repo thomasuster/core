@@ -149,12 +149,15 @@ class Resource extends Observable
 	 * The application domain of the loaded content.<br/>
 	 * Only available for swf files.
 	 */
-	public var contentDomain(_contentDomainGetter, never):ApplicationDomain;
-	function _contentDomainGetter():ApplicationDomain
+	public var contentDomain(get_contentDomain, never):ApplicationDomain;
+	function get_contentDomain():ApplicationDomain
 	{
-		de.polygonal.core.macro.Assert.assert(Std.is(_loader, Loader), 'Std.is(_loader, Loader)');
+		#if debug
+		D.assert(Std.is(_loader, Loader), 'Std.is(_loader, Loader)');
+		#end
 		return _loader.contentLoaderInfo.applicationDomain;
 	}
+	
 	
 	/**
 	 * Returns the url request for this resource.
@@ -182,8 +185,8 @@ class Resource extends Observable
 	/**
 	 * The dowload rate measured in kbps.
 	 */
-	public var downloadRateKbps(_downloadRateKbpsGetter, never):Float;
-	function _downloadRateKbpsGetter():Float
+	public var downloadRateKbps(get_downloadRateKbps, never):Float;
+	function get_downloadRateKbps():Float
 	{
 		if (Math.isNaN(_bytesLoaded)) return Math.NaN;
 		return _bytesLoaded * 8 / _timeDeltaMs;

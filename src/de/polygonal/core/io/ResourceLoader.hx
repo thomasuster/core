@@ -97,8 +97,11 @@ class ResourceLoader extends Observable, implements IObserver
 	/**
 	 * The total number of pending resources.
 	 */
-	public var numRemainingResources(_numRemainingResourcesGetter, never):Int;
-	function _numRemainingResourcesGetter():Int { return _pq.size(); }
+	public var numRemainingResources(get_numRemainingResources, never):Int;
+	function get_numRemainingResources():Int
+	{
+		return _pq.size();
+	}
 	
 	public function new()
 	{
