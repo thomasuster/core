@@ -24,14 +24,14 @@ The library includes the following packages:
 ### `math`
 - Math helper functions.
 - Fast 2D/3D vector and matrix math.
-- Pseudorandom number generators (Park-Miller-Carta, MT19937)
+- Pseudorandom number generators ([Park-Miller-Carta](http://lab.polygonal.de/?p=162), MT19937)
 - [Trigonometric approximations](http://lab.polygonal.de/?p=205).
 
 ### `sys`
 - Entity framework for component based architectures.
 
 ### `time`
-- Everything related to time-based updates, timed execution.
+- Time-based updates, timeline, timed execution.
 
 ### `tween`
 - A tweening framework.
