@@ -47,6 +47,7 @@ import flash.net.URLLoaderDataFormat;
 import flash.net.URLRequest;
 import flash.system.ApplicationDomain;
 import flash.system.LoaderContext;
+import de.polygonal.core.macro.Assert;
 
 /**
  * <p>A resource provides a unified interface for loading different types of external data into an application.</p>
