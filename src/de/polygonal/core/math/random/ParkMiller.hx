@@ -29,19 +29,22 @@
  */
 package de.polygonal.core.math.random;
 
+import de.polygonal.core.math.Limits;
+
 /**
  * <p>A Park-Miller-Carta PRNG (pseudo random number generator).</p>
- * <p>See <a href="http://en.wikipedia.org/wiki/Park%E2%80%93Miller_random_number_generator" target="_blank">http://en.wikipedia.org/wiki/Park%E2%80%93Miller_random_number_generator</a>.</p>
- * <p>See <a href="http://lab.polygonal.de/2007/04/21/a-good-pseudo-random-number-generator-prng/" target="_blank">http://lab.polygonal.de/2007/04/21/a-good-pseudo-random-number-generator-prng/</a>.</p>
+ * <p>Uses double-precision floating point to prevent overflow. Recommended since the fastest on most platforms</p>
+ * <p>See <a href="http://en.wikipedia.org/wiki/Park%E2%80%93Miller_random_number_generator" target="_blank">Park-Miller random number generator</a>.</p>
+ * <p>See <a href="http://lab.polygonal.de/?p=162" target="_blank">A good Pseudo-Random Number Generator (PRNG)</a>.</p>
  */
 class ParkMiller extends RNG
 {
-	var _state:Float;
+	var _fseed:Float;
 	
 	/**
 	 * Default seed value is <code>1</code>.
 	 */
-	public function new(?seed = 1)
+	public function new(seed = 1)
 	{
 		super();
 		setSeed(seed);
@@ -53,11 +56,11 @@ class ParkMiller extends RNG
 	override public function setSeed(seed:Int):Void
 	{
 		#if (debug && !neko)
-		de.polygonal.core.macro.Assert.assert(seed >= 0 && seed <= 0x7ffffffe, 'seed >= 0 && seed <= 0x7ffffffe');
+		de.polygonal.core.macro.Assert.assert(seed >= 0 && seed < Limits.INT32_MAX, 'seed >= 0 && seed < Limits.INT32_MAX');
 		#end
 		
 		super.setSeed(seed);
-		_state = seed;
+		_fseed = seed;
 	}
 	
 	/**
@@ -65,8 +68,8 @@ class ParkMiller extends RNG
 	 */
 	override public function random():Float
 	{
-		_state = (_state * 16807.) % 2147483647.;
-		return _state;
+		_fseed = (_fseed * 16807.) % 2147483647.;
+		return _fseed;
 	}
 	
 	override public function randomFloat():Float
