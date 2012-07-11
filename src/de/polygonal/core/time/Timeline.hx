@@ -179,7 +179,7 @@ class Timeline extends Observable, implements IObserver
 		if (repeatCount != 0 && repeatInterval == .0)
 			repeatInterval = delay; //use delay as interval
 		
-		var delayTicks = Mathematics.round(delay / _timebase.getTickRate());
+		var delayTicks = M.round(delay / _timebase.getTickRate());
 		var ageTicks = _currTick + delayTicks;
 		
 		var interval           = _getInterval();

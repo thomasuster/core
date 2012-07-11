@@ -30,7 +30,7 @@
 package de.polygonal.core.math;
 
 /**
- * Limits for integer and float types.
+ * <p>Limits for integer and float types.</p>
  */
 class Limits
 {

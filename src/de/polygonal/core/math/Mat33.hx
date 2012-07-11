@@ -29,6 +29,7 @@
  */
 package de.polygonal.core.math;
 
+import de.polygonal.core.math.Mathematics;
 import de.polygonal.core.macro.Assert;
 
 /**
@@ -332,7 +333,7 @@ class Mat33
 	
 	/**
 	 * Inverts and returns this matrix.
-	 * @throws de.polygonal.core.macro.AssertionError singular matrix (debug only).
+	 * @throws de.polygonal.AssertError singular matrix (debug only).
 	 */
 	public function inverse():Mat33
 	{
@@ -343,7 +344,7 @@ class Mat33
 		var cf3 = t13 * t32 - t12 * t33;
 		var cf6 = t12 * t23 - t13 * t22;
 		var det = t11 * cf0 + t21 * cf3 + t31 * cf6;
-		D.assert(!Mathematics.cmpZero(det, Mathematics.ZERO_TOLERANCE), 'singular matrix');
+		D.assert(!M.cmpZero(det, M.ZERO_TOLERANCE), 'singular matrix');
 		var invDet = 1 / det;
 		m11 = invDet * cf0;
 		m12 = invDet * cf3;
@@ -358,9 +359,10 @@ class Mat33
 	}
 	
 	/**
-	 * Computes the matrix inverse and stores the result in <code>output</code>.
+	 * Computes the matrix inverse and stores the result in <code>output</code>.<br/>
+	 * This matrix is left unchanged.
 	 * @return a reference to <code>output</code>.
-	 * @throws de.polygonal.core.macro.AssertionError singular matrix (debug only).
+	 * @throws de.polygonal.AssertError singular matrix (debug only).
 	 */
 	public function inverseConst(output:Mat33):Mat33
 	{
@@ -368,7 +370,7 @@ class Mat33
 		var cf3 = m13 * m32 - m12 * m33;
 		var cf6 = m12 * m23 - m13 * m22;
 		var det = m11 * cf0 + m21 * cf3 + m31 * cf6;
-		D.assert(!Mathematics.cmpZero(det, Mathematics.ZERO_TOLERANCE), 'singular matrix');
+		D.assert(!M.cmpZero(det, M.ZERO_TOLERANCE), 'singular matrix');
 		var invDet = 1 / det;
 		output.m11 = invDet * cf0;
 		output.m12 = invDet * cf3;
@@ -385,10 +387,10 @@ class Mat33
 	/** Returns the max-column-sum matrix norm. */
 	inline public function norm():Float
 	{
-		var maxColSum = Mathematics.fabs(m11) + Mathematics.fabs(m21) + Mathematics.fabs(m31);
-		var colSum    = Mathematics.fabs(m12) + Mathematics.fabs(m22) + Mathematics.fabs(m32);
+		var maxColSum = M.fabs(m11) + M.fabs(m21) + M.fabs(m31);
+		var colSum    = M.fabs(m12) + M.fabs(m22) + M.fabs(m32);
 		if (colSum > maxColSum) maxColSum = colSum;
-		colSum        = Mathematics.fabs(m13) + Mathematics.fabs(m23) + Mathematics.fabs(m33);
+		colSum        = M.fabs(m13) + M.fabs(m23) + M.fabs(m33);
 		if (colSum > maxColSum) maxColSum = colSum;
 		return maxColSum;
 	}
@@ -396,7 +398,7 @@ class Mat33
 	/** Divides all matrix elements by the scalar <code>x</code>. */
 	inline public function div(x:Float)
 	{
-		if (Mathematics.cmpZero(x, Mathematics.ZERO_TOLERANCE))
+		if (M.cmpZero(x, M.ZERO_TOLERANCE))
 		{
 			m11 = Limits.DOUBLE_MAX; m12 = Limits.DOUBLE_MAX; m13 = Limits.DOUBLE_MAX;
 			m21 = Limits.DOUBLE_MAX; m22 = Limits.DOUBLE_MAX; m23 = Limits.DOUBLE_MAX;

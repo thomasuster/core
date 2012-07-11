@@ -46,6 +46,6 @@ class SinEaseOut implements Interpolation<Float>
 	 */
 	public function interpolate(t:Float):Float
 	{
-		return Math.sin(t * Mathematics.PI_OVER_2);
+		return Math.sin(t * M.PI_OVER_2);
 	}
 }

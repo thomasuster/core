@@ -472,6 +472,23 @@ class Mathematics
 	}
 	
 	/**
+	 * Computes the 'quake-style' fast square root of <code>x</code>.
+	 */
+	inline public static function sqrt(x:Float):Float
+	{
+		#if (flash10 && alchemy)
+		var xt = x;
+		var half = .5 * xt;
+		var i = floatToInt(xt);
+		i = 0x5f3759df - (i >> 1);
+		var xt = intToFloat(i);
+		return 1 / (xt * (1.5 - half * xt * xt));
+		#else
+		return Math.sqrt(x);
+		#end
+	}
+	
+	/**
 	 * Computes the 'quake-style' fast inverse square root of <code>x</code>.
 	 */
 	inline public static function invSqrt(x:Float):Float

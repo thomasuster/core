@@ -211,7 +211,7 @@ class ResourceLoader extends Observable, implements IObserver
 	/**
 	 * Reprioritizes an existing resource.
 	 * @param x the url of the resource or a <em>Resource</em> object.
-	 * @throws de.polygonal.core.macro.AssertionError resource not found (debug only).
+	 * @throws de.polygonal.AssertError resource not found (debug only).
 	 */
 	public function reprioritize(x:Dynamic, newPriority:Int):Void
 	{

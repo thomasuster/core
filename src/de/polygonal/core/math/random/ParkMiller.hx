@@ -51,7 +51,7 @@ class ParkMiller extends RNG
 	}
 	
 	/**
-	 * @throws de.polygonal.core.macro.AssertionError invalid seed value (has to be in the range <arg>&#091;0, 2^31 - 1&#093;</arg> (debug only).
+	 * @throws de.polygonal.AssertError invalid seed value (has to be in the range <arg>&#091;0, 2^31 - 1&#093;</arg> (debug only).
 	 */
 	override public function setSeed(seed:Int):Void
 	{

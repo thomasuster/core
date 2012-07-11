@@ -30,6 +30,7 @@
 package de.polygonal.core.math;
 
 import de.polygonal.ds.mem.DoubleMemory;
+import de.polygonal.core.math.Mathematics;
 
 /**
  * <p>The median of a set of numbers.</p>
@@ -101,7 +102,7 @@ class Median
 				_val = 0;
 			else
 			{
-				if (Mathematics.isEven(k))
+				if (M.isEven(k))
 				{
 					if (k == 2)
 						_val = (_set.get(0) + _set.get(1)) * .5;

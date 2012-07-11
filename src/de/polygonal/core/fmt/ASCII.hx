@@ -30,11 +30,13 @@
 package de.polygonal.core.fmt;
 
 /**
- * US ASCII Character Set, ANSI X3.4-1986 (ISO 646 International Reference Version)<br/>
- * Codes 0 through 31 and 127 are unprintable control characters.
- * Code 32 is a nonprinting spacing characer.
- * Codes 33 through 126 are printable graphic characters.
- * Unprintable control characters except newline are omitted.
+ * <p>US ASCII Character Set, ANSI X3.4-1986 (ISO 646 International Reference Version)<p>
+ * <ul>
+ * <li>Codes 0 through 31 and 127 are unprintable control characters.</li>
+ * <li>Code 32 is a non-printing spacing character.</li>
+ * <li>Codes 33 through 126 are printable graphic characters.</li>
+ * <li>Unprintable control characters except newline are omitted.</li>
+ * </ul>
  */
 class ASCII
 {

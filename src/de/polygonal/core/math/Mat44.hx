@@ -35,7 +35,7 @@ package de.polygonal.core.math;
  */
 class Mat44
 {
-	static var _sSineCosine:Vec2 = null;
+	static var _sharedSineCosine:Vec2 = null;
 	
 	/**
 	 * @return <code>c</code> = <code>a</code>*<code>b</code>.
@@ -211,8 +211,8 @@ class Mat44
 	public function new()
 	{
 		setIdentity();
-		if (_sSineCosine == null) _sSineCosine = new Vec2();
-		_sineCosine = _sSineCosine;
+		if (_sharedSineCosine == null) _sharedSineCosine = new Vec2();
+		_sineCosine = _sharedSineCosine;
 	}
 
 	/** Assigns the values of <code>other</code> to this. */

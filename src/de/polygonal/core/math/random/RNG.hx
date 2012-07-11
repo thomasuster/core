@@ -85,7 +85,7 @@ class RNG
 	{
 		var l = min - .4999;
 		var h = max + .4999;
-		return Mathematics.round(l + (h - l) * randomFloat());
+		return M.round(l + (h - l) * randomFloat());
 	}
 	
 	/**

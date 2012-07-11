@@ -119,7 +119,7 @@ class NumberFormat
 			return 'NaN';
 		else
 		{
-			var t = Mathematics.exp(10, decimalPlaces);
+			var t = M.exp(10, decimalPlaces);
 			var s = Std.string(Std.int(x * t) / t);
 			var i = s.indexOf('.');
 			if (i != -1)

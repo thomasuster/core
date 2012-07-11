@@ -87,7 +87,7 @@ class Vec2
 	/** Converts this vector to unit length and returns the original vector length.<br/>Uses a fast inverse square root. */
 	inline public function fastUnit():Float
 	{
-		var t = Mathematics.invSqrt(x * x + y * y);
+		var t = M.invSqrt(x * x + y * y);
 		x *= t;
 		y *= t;
 		return t;
@@ -108,7 +108,7 @@ class Vec2
 	/** Computes the vector length.<br/>Uses a fast inverse square root. */
 	inline public function fastLength():Float
 	{
-		return 1 / Mathematics.invSqrt(x * x + y * y);
+		return 1 / M.invSqrt(x * x + y * y);
 	}
 	
 	/** Clamps this vector to <code>max</code> length. */

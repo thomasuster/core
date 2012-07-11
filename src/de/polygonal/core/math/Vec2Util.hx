@@ -29,6 +29,8 @@
  */
 package de.polygonal.core.math;
 
+import de.polygonal.core.math.Mathematics;
+
 class Vec2Util 
 {
 	/**
@@ -163,15 +165,15 @@ class Vec2Util
 	/** Returns <code>q</code> = min(<code>a</code>,<code>b</code>). */
 	inline public static function min(a:Vec2, b:Vec2, q:Vec2):Void
 	{
-		q.x = Mathematics.fmin(a.x, b.x);
-		q.y = Mathematics.fmin(a.y, b.y);
+		q.x = M.fmin(a.x, b.x);
+		q.y = M.fmin(a.y, b.y);
 	}
 	
 	/** Returns <code>q</code> = max(<code>a</code>,<code>b</code>). */
 	inline public static function max(a:Vec2, b:Vec2, q:Vec2):Void
 	{
-		q.x = Mathematics.fmax(a.x, b.x);
-		q.y = Mathematics.fmax(a.y, b.y);
+		q.x = M.fmax(a.x, b.x);
+		q.y = M.fmax(a.y, b.y);
 	}
 	
 	/**
@@ -187,7 +189,7 @@ class Vec2Util
 	 */
 	inline public static function invLength(x:Float, y:Float):Float
 	{
-		return 1 / Mathematics.invSqrt(x * x + y * y);
+		return 1 / M.invSqrt(x * x + y * y);
 	}
 	
 	/**

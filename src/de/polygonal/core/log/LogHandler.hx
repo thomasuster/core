@@ -179,7 +179,7 @@ class LogHandler implements IObserver
 	 *         handler.setLevel(Level.WARN); //log allows all levels, but the handler filters out everything except Level.WARN.
 	 *     }
 	 * }</pre>
-	 * @throws de.polygonal.core.macro.AssertionError invalid log level (debug only).
+	 * @throws de.polygonal.AssertError invalid log level (debug only).
 	 */
 	public function setLevel(x:Int):Void
 	{

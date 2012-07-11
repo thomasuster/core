@@ -63,7 +63,7 @@ class ConsoleHandler extends LogHandler
 	
 	override function output(message:String):Void
 	{
-		var levelName = LogLevel.getName(Mathematics.min(_message.outputLevel, LogLevel.ERROR)).toLowerCase();
+		var levelName = LogLevel.getName(M.min(_message.outputLevel, LogLevel.ERROR)).toLowerCase();
 		
 		#if js
 		untyped console[levelName](message);

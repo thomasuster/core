@@ -35,7 +35,7 @@ class Mapping implements Interpolation<Float>
 {
 	inline public static function map(x:Float, min0:Float, max0:Float, min1:Float, max1:Float):Float
 	{
-		return Mathematics.lerp(min1, max1, (x - min0) / (max0 - min0));
+		return M.lerp(min1, max1, (x - min0) / (max0 - min0));
 	}
 	
 	public var min0:Float;
@@ -54,6 +54,6 @@ class Mapping implements Interpolation<Float>
 	
 	public function interpolate(t:Float):Float
 	{
-		return Mathematics.lerp(min1, max1, (t - min0) / (max0 - min0));
+		return M.lerp(min1, max1, (t - min0) / (max0 - min0));
 	}
 }

@@ -46,7 +46,7 @@ class BackEaseInOut implements Interpolation<Float>
 	 */
 	public function new(overshoot = .1)
 	{
-		_overshoot = Mathematics.lerp(0, 17.0158, overshoot) * 1.525;
+		_overshoot = M.lerp(0, 17.0158, overshoot) * 1.525;
 	}
 	
 	/**

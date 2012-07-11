@@ -42,7 +42,7 @@ class Interval
 	public var alpha(get_alpha, never):Float;
 	inline function get_alpha():Float
 	{
-		return Mathematics.fmin(_t0 / _t1, 1);
+		return M.fmin(_t0 / _t1, 1);
 	}
 	
 	public var hold:Bool;

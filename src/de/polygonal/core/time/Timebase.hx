@@ -51,7 +51,7 @@ class Timebase extends Observable
 	 */
 	inline public static function secondsToTicks(x:Float):Int
 	{
-		return Mathematics.round(x / get().getTickRate());
+		return M.round(x / get().getTickRate());
 	}
 	
 	/**

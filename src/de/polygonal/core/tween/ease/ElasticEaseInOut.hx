@@ -66,7 +66,7 @@ class ElasticEaseInOut implements Interpolation<Float>
 		else
 		{
 			a = _amplitude;
-			s = _period / Mathematics.PI2 * Math.asin(1 / a);
+			s = _period / M.PI2 * Math.asin(1 / a);
 		}
 		
 		if (t < .5)
@@ -77,7 +77,7 @@ class ElasticEaseInOut implements Interpolation<Float>
 		else
 		{
 			t = t * 2 - 1;
-			return a * Math.pow(2, -10 * t) * Math.sin((t - s) * Mathematics.PI2 / _period) * .5 + 1;
+			return a * Math.pow(2, -10 * t) * Math.sin((t - s) * M.PI2 / _period) * .5 + 1;
 		}
 	}
 }

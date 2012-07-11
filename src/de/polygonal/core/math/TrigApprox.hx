@@ -46,7 +46,7 @@ class TrigApprox
 	/**
 	 * Computes a low-precision sine approximation from an angle <code>x</code> measured in radians.<br/>
 	 * The input angle has to be in the range &#091;-PI, PI&#093;.
-	 * @throws de.polygonal.core.macro.AssertionError <code>x</code> out of range (debug only).
+	 * @throws de.polygonal.AssertError <code>x</code> out of range (debug only).
 	 */
 	inline public static function lqSin(x:Float):Float
 	{
@@ -61,7 +61,7 @@ class TrigApprox
 	/**
 	 * Computes a low-precision cosine approximation from an angle <code>x</code> measured in radians.<br/>
 	 * The input angle has to be in the range &#091;-PI, PI&#093;.
-	 * @throws de.polygonal.core.macro.AssertionError <code>x</code> out of range (debug only).
+	 * @throws de.polygonal.AssertError <code>x</code> out of range (debug only).
 	 */
 	inline public static function lqCos(x:Float):Float
 	{
@@ -80,7 +80,7 @@ class TrigApprox
 	/**
 	 * Computes a high-precision sine approximation from an angle <code>x</code> measured in radians.<br/>
 	 * The input angle has to be in the range &#091;-PI, PI&#093;.
-	 * @throws de.polygonal.core.macro.AssertionError <code>x</code> out of range (debug only).
+	 * @throws de.polygonal.AssertError <code>x</code> out of range (debug only).
 	 */
 	inline public static function hqSin(x:Float):Float
 	{
@@ -109,7 +109,7 @@ class TrigApprox
 	/**
 	 * Computes a high-precision cosine approximation from an angle <code>x</code> in radians.<br/>
 	 * The input angle has to be in the range &#091;-PI, PI&#093;.
-	 * @throws de.polygonal.core.macro.AssertionError <code>x</code> out of range (debug only).
+	 * @throws de.polygonal.AssertError <code>x</code> out of range (debug only).
 	 */
 	inline public static function hqCos(x:Float):Float
 	{
@@ -144,7 +144,7 @@ class TrigApprox
 	inline public static function arctan2(y:Float, x:Float):Float
 	{
 		#if debug
-		de.polygonal.core.macro.Assert.assert(!(M.cmpZero(x, 1e-6) && M.cmpZero(y, 1e-6)), 'Mathematics.compareZero(x, 1e-6) && Mathematics.compareZero(y, 1e-6);');
+		de.polygonal.core.macro.Assert.assert(!(M.cmpZero(x, 1e-6) && M.cmpZero(y, 1e-6)), 'M.compareZero(x, 1e-6) && M.compareZero(y, 1e-6);');
 		#end
 		
 		var t = M.fabs(y);

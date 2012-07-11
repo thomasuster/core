@@ -219,7 +219,7 @@ class Log
 	 *         log.setLevel(LogLevel.OFF);                   //print nothing
 	 *     }
 	 * }</pre>
-	 * @throws de.polygonal.core.macro.AssertionError invalid log level (debug only).
+	 * @throws de.polygonal.AssertError invalid log level (debug only).
 	 */
 	public function setLevel(x:Int):Void
 	{

@@ -76,7 +76,7 @@ class Tween implements IObservable, implements IObserver
 	public static function createEaseFunc(from:Float, to:Float, ease:Ease):Float->Float
 	{
 		var ease = EaseFactory.create(ease);
-		return function (alpha:Float):Float return Mathematics.lerp(from, to, ease.interpolate(alpha));
+		return function (alpha:Float):Float return M.lerp(from, to, ease.interpolate(alpha));
 	}
 	
 	public static function create(?key:String, object:Dynamic, fields:Dynamic, ease:Ease, to:Float, duration:Float):Tween
@@ -311,7 +311,7 @@ class Tween implements IObservable, implements IObserver
 					
 					case TimelineEvent.INTERVAL_PROGRESS:
 						var alpha:Float = _timeline.progress;
-						_a = _b; _b = Mathematics.lerp(_min, _max, _ease.interpolate(alpha));
+						_a = _b; _b = M.lerp(_min, _max, _ease.interpolate(alpha));
 						if (!_interpolate) _target.set(_b);
 						notify(TweenEvent.ADVANCE, _b);
 					
@@ -357,7 +357,7 @@ class Tween implements IObservable, implements IObserver
 			}
 			
 			var alpha:Float = userData;
-			_target.set(Mathematics.lerp(_a, _b, alpha));
+			_target.set(M.lerp(_a, _b, alpha));
 		}
 	}
 }
