@@ -32,6 +32,7 @@ package de.polygonal.core.math;
 import de.polygonal.core.fmt.Sprintf;
 import de.polygonal.core.math.Vec2;
 import de.polygonal.ds.Cloneable;
+import de.polygonal.core.math.Mathematics;
 
 class Mat22 implements Cloneable<Mat22>
 {
@@ -126,9 +127,58 @@ class Mat22 implements Cloneable<Mat22>
 		m21 = 0; m22 = 1;
 	}
 	
+	/**
+	 * Computes the matrix inverse and stores the result in <code>output</code>.<br/>
+	 * This matrix is left unchanged.
+	 * @return a reference to <code>output</code>.
+	 */
+	public function inverseConst(output:Mat22):Mat22
+	{
+		var det = m11 * m22 - m12 * m21;
+		
+		if (M.fabs(det) > M.ZERO_TOLERANCE)
+		{
+			var invDet = 1 / det;
+			output.m11 =  m22 * invDet;
+			output.m12 = -m12 * invDet;
+			output.m21 = -m21 * invDet;
+			output.m22 =  m11 * invDet;
+		}
+		else
+		{
+			output.m11 = 0; output.m12 = 0;
+			output.m21 = 0; output.m22 = 0;
+		}
+
+		return output;
+	}
+	
+	/**
+	 * Applies Gram-Schmidt orthogonalization to this matrix.<br/>
+	 * Restores the matrix to a rotation to fight the accumulation of round-off errors due to frequent concatenation with other matrices.
+	 * <warn>The matrix must be a rotation matrix</warn>.
+	 */
+	public function orthonormalize():Void
+	{
+		var t = Math.sqrt(m11 * m11 + m21 * m21);
+		m11 /= t;
+		m21 /= t;
+		t = m11 * m12 + m21 * m22;
+		m12 -= t * m11;
+		m22 -= t * m21;
+		t = Math.sqrt(m12 * m12 + m22 * m22);
+		m12 /= t;
+		m22 /= t;
+	}
+	
+	/**
+	 * Extracts the angle of rotation from this matrix.<br/>
+	 * The angle is computed as atan2(sin(alpha), cos(alpha)) = atan2(<em>m11</em>, <em>m21</em>).<br/>
+	 * <warn>The matrix must be a rotation matrix</warn>.
+	 */
 	inline public function getAngle():Float
 	{
-		return Math.atan2(m21, m11);
+		return Math.atan2(m11, m21);
 	}
 	
 	/** Returns the string form of the value that the object represents. */
