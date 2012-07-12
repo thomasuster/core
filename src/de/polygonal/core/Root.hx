@@ -32,6 +32,7 @@ package de.polygonal.core;
 import de.polygonal.core.fmt.Sprintf;
 import de.polygonal.core.log.Log;
 import de.polygonal.core.log.LogHandler;
+import de.polygonal.core.macro.Assert;
 import haxe.PosInfos;
 
 /**
@@ -40,58 +41,62 @@ import haxe.PosInfos;
 class Root
 {
 	/**
-	 * Example:<br/><br/>
+	 * The root logger; initialized when calling <em>Root.init()</em>.
+	 */
+	public static var log(default, null):Log = null;
+	
+	/**
+	 * Short for <em>Root.log.info()</em>.<br/>
+	 * Example:<br/>
 	 * <pre class="prettyprint">
 	 * using de.polygonal.core.Root;
 	 * "Hello World!".info();
 	 * </pre>
 	 */
-	public static function info(x:String):Void
-		Root.log().info(x)
+	public static function info(x:String)
+	{
+		#if debug
+		D.assert(log != null, 'call Root.init() first');
+		#end
+		log.info(x);
+	}
 	
 	/**
-	 * Example:<br/><br/>
+	 * Short for <em>Root.log.warn()</em>.<br/>
+	 * Example:<br/>
 	 * <pre class="prettyprint">
 	 * using de.polygonal.core.Root;
 	 * "Hello World!".warn();
 	 * </pre>
 	 */
-	public static function warn(x:String):Void
-		Root.log().warn(x)
+	public static function warn(x:String)
+	{
+		#if debug
+		D.assert(log != null, 'call Root.init() first');
+		#end
+		log.warn(x);
+	}
 	
 	/**
-	 * Example:<br/><br/>
+	 * Short for <em>Root.log.error()</em>.<br/>
+	 * Example:<br/>
 	 * <pre class="prettyprint">
 	 * using de.polygonal.core.Root;
 	 * "Hello World!".error();
 	 * </pre>
 	 */
-	public static function error(x:String):Void
-		Root.log().error(x)
-	
-	static var _log:Log = null;
-
-	/**
-	 * A list of log handlers objects that are attached to <em>log</em> upon initialization.
-	 */
-	public static var initLogHandler:Array<LogHandler> = null;
-	
-	/**
-	 * If true, doesn't override native trace output. Default is false.
-	 */
-	public static var initKeepNativeTrace = false;
-	
-	/**
-	 * Returns the root log.
-	 */
-	public static function log():Log
+	public static function error(x:String)
 	{
-		return _log == null ? _log = Log.getLog(Root) : _log;
+		#if debug
+		D.assert(log != null, 'call Root.init() first');
+		#end
+		log.error(x);
 	}
 	
 	#if flash
 	/**
-	 * Returns true if this swf is a remote-swf.
+	 * Returns true if this swf is a remote-swf.<br/>
+	 * <warn>Flash only</warn>
 	 */
 	public static function isRemote():Bool
 	{
@@ -99,7 +104,8 @@ class Root
 	}
 	
 	/**
-	 * Returns the value of the FlashVar with name <code>key</code> or null if the FlashVar does not exist.
+	 * Returns the value of the FlashVar with name <code>key</code> or null if the FlashVar does not exist.<br/>
+	 * <warn>Flash only</warn>
 	 */
 	public static function getFlashVar(key:String):String
 	{
@@ -113,50 +119,34 @@ class Root
 	#end
 	
 	/**
-	 * Initializes an application.
-	 * @param initCallback called when initialization is complete. This should be the main entry point of the application.
+	 * Initializes the root logger object.
+	 * @param handlers additional log handler objects that get attached to <em>Root.log</em> upon initialization.
+	 * @param keepNativeTrace if true, do not override native trace output. Default is false.
 	 */
-	public static function init(initCallback:Void->Void):Void
+	public static function initLog(handlers:Array<LogHandler> = null, keepNativeTrace = false)
 	{
-		function doInit()
-		{
-			_onInit();
-			initCallback(); 
-		}
-		
-		#if js
-		new js.JQuery(js.Lib.document).ready(function(e)
-		{
-			doInit();
-		});
-		#else
-		doInit();
-		#end
-	}
-	
-	static function _onInit()
-	{
-		var nativeTrace = function(v:Dynamic, ?infos:PosInfos):Void {};
-		if (initKeepNativeTrace) nativeTrace = haxe.Log.trace;
+		#if !no_traces
+		var nativeTrace = function(v:Dynamic, ?infos:PosInfos) {};
+		if (keepNativeTrace) nativeTrace = haxe.Log.trace;
 		
 		Log.globalHandler = [];
-		#if !no_traces
-			#if flash
-			Log.globalHandler.push(new de.polygonal.core.log.handler.TraceHandler());
-			#elseif cpp
-			Log.globalHandler.push(new de.polygonal.core.log.handler.FileHandler('hxcpp_log.txt'));
-			#elseif js
-			Log.globalHandler.push(new de.polygonal.core.log.handler.ConsoleHandler());
-			#end
+		#if flash
+		Log.globalHandler.push(new de.polygonal.core.log.handler.TraceHandler());
+		#elseif cpp
+		Log.globalHandler.push(new de.polygonal.core.log.handler.FileHandler('hxcpp_log.txt'));
+		#elseif js
+		Log.globalHandler.push(new de.polygonal.core.log.handler.ConsoleHandler());
 		#end
 		
-		if (initLogHandler != null)
+		if (handlers != null)
 		{
-			for (handler in initLogHandler)
+			for (handler in handlers)
 				Log.globalHandler.push(handler);
 		}
 		
-		haxe.Log.trace = function(x:Dynamic, ?posInfos:PosInfos):Void
+		log = Log.getLog(Root);
+		
+		haxe.Log.trace = function(x:Dynamic, ?posInfos:PosInfos)
 		{
 			var s = Std.string(x);
 			if (posInfos.customParams != null)
@@ -167,10 +157,10 @@ class Root
 					s += ',' + posInfos.customParams.join(',');
 			}
 			
-			Root.log().debug(s, posInfos);
+			Root.log.debug(s, posInfos);
 			nativeTrace(s, posInfos);
 		}
-		
 		trace('log initialized.');
+		#end
 	}
 }

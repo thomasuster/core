@@ -89,7 +89,7 @@ class MainLoop extends Entity
 				
 				#if (!no_traces)
 				//identify update step
-				for (handler in de.polygonal.core.Root.log().getLogHandler())
+				for (handler in de.polygonal.core.Root.log.getLogHandler())
 					handler.setPrefix(de.polygonal.core.fmt.Sprintf.format('t%03d', [_timebase.getProcessedTicks() % 1000]));
 				#end
 				
@@ -113,7 +113,7 @@ class MainLoop extends Entity
 			case TimebaseEvent.RENDER:
 				#if (!no_traces)
 				//identify rendering step
-				for (handler in de.polygonal.core.Root.log().getLogHandler())
+				for (handler in de.polygonal.core.Root.log.getLogHandler())
 					handler.setPrefix(de.polygonal.core.fmt.Sprintf.format('r%03d', [_timebase.getProcessedFrames() % 1000]));
 				#end
 				
