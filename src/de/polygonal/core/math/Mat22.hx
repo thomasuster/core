@@ -34,6 +34,14 @@ import de.polygonal.core.math.Vec2;
 import de.polygonal.ds.Cloneable;
 import de.polygonal.core.math.Mathematics;
 
+/**
+ * |cos(O) -sin(O)| |1 0| |0 -1|
+ * |sin(O)  cos(O)| |0 1| |1  0|
+ * 
+ * I + (sin(O)S + (1 - cos(O))S^2
+ * 
+ * For positive angle, RV rotates the 2x1 vector V CCW about the origin
+ */
 class Mat22 implements Cloneable<Mat22>
 {
 	inline public static function concat(A:Mat22, B:Mat22, out:Mat22):Mat22
@@ -173,12 +181,12 @@ class Mat22 implements Cloneable<Mat22>
 	
 	/**
 	 * Extracts the angle of rotation from this matrix.<br/>
-	 * The angle is computed as atan2(sin(alpha), cos(alpha)) = atan2(<em>m11</em>, <em>m21</em>).<br/>
+	 * The angle is computed as atan2(sin(alpha), cos(alpha)) = atan2(<em>m21</em>, <em>m11</em>).<br/>
 	 * <warn>The matrix must be a rotation matrix</warn>.
 	 */
 	inline public function getAngle():Float
 	{
-		return Math.atan2(m11, m21);
+		return Math.atan2(m21, m11);
 	}
 	
 	/** Returns the string form of the value that the object represents. */

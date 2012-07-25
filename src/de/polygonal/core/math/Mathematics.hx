@@ -62,7 +62,7 @@ class Mathematics
 	#end
 	
 	/**
-	 * Value below <code>ZERO_TOLERANCE</code> is treated as zero.
+	 * Value below <em>ZERO_TOLERANCE</em> is treated as zero.
 	 */
 	inline public static var ZERO_TOLERANCE = 1e-08;
 	
@@ -178,7 +178,7 @@ class Mathematics
 	
 	/**
 	 * Returns the sign of <code>x</code>.<br/>
-	 * <code>sgn</code>(0) = 0.
+	 * <em>sgn</em>(0) = 0.
 	 */
 	inline public static function sgn(x:Int):Int
 	{
@@ -235,7 +235,7 @@ class Mathematics
 	
 	/**
 	 * Extracts the sign of <code>x</code>.<br/>
-	 * <code>fsgn</code>(0) = 0.
+	 * <em>fsgn</em>(0) = 0.
 	 */
 	inline public static function fsgn(x:Float):Int
 	{

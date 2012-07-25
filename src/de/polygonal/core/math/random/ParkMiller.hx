@@ -42,7 +42,7 @@ class ParkMiller extends RNG
 	var _fseed:Float;
 	
 	/**
-	 * Default seed value is <code>1</code>.
+	 * Default seed value is 1.
 	 */
 	public function new(seed = 1)
 	{

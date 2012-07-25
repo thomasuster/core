@@ -116,7 +116,7 @@ class Entity implements IObserver, implements IObservable
 	public var priority:Int;
 	
 	/**
-	 * If false, <code>onAdvance()</code> is not called on this entity.<br/>
+	 * If false, <em>onAdvance()</em> is not called on this entity.<br/>
 	 * Default ist true.
 	 */
 	public var doAdvance(get_doAdvance, set_doAdvance):Bool;
@@ -131,7 +131,7 @@ class Entity implements IObserver, implements IObservable
 	}
 	
 	/**
-	 * If false, <code>onRender()</code> is not called on this entity.<br/>
+	 * If false, <em>onRender()</em> is not called on this entity.<br/>
 	 * Default ist false.
 	 */
 	public var doRender(get_doRender, set_doRender):Bool;
@@ -181,8 +181,8 @@ class Entity implements IObserver, implements IObservable
 	
 	/**
 	 * Recursively destroys the subtree rooted at this entity (including this entity) from the bottom up.<br/>
-	 * The method invokes <code>onFree()</code> on each entity, giving each entity the opportunity to perform some cleanup (e.g. free resources or unregister from listeners).<br/>
-	 * Only effective if <code>commit()</code> is called afterwards.
+	 * The method invokes <em>onFree()</em> on each entity, giving each entity the opportunity to perform some cleanup (e.g. free resources or unregister from listeners).<br/>
+	 * Only effective if <em>commit()</em> is called afterwards.
 	 */
 	public function free():Void
 	{
@@ -352,7 +352,7 @@ class Entity implements IObserver, implements IObservable
 	}
 
 	/**
-	 * Updates all entities in the subtree rooted at this node (excluding this node) by calling <code>onAdvance()</code> on each node.
+	 * Updates all entities in the subtree rooted at this node (excluding this node) by calling <em>onAdvance()</em> on each node.
 	 * @param dt the time step passed to each node.
 	 */
 	public function advance(dt:Float, ?parent:Entity):Void
@@ -361,7 +361,7 @@ class Entity implements IObserver, implements IObservable
 	}
 	
 	/**
-	 * Renders all entities in the subtree rooted at this node (excluding this node) by calling <code>onRender()</code> on each node.
+	 * Renders all entities in the subtree rooted at this node (excluding this node) by calling <em>onRender()</em> on each node.
 	 * @param  alpha a blending factor in the range <arg>&#091;0, 1&#093;</arg> between the previous and current state.
 	 */
 	public function render(alpha:Float, ?parent:Entity):Void
@@ -370,7 +370,7 @@ class Entity implements IObserver, implements IObservable
 	}
 	
 	/**
-	 * Adds a <code>child</code> entity to this entity.
+	 * Adds a <em>child</em> entity to this entity.
 	 */
 	public function add(child:Entity, priority = Limits.UINT16_MAX):Void
 	{
@@ -401,7 +401,7 @@ class Entity implements IObserver, implements IObservable
 	}
 	
 	/**
-	 * Removes a <code>child</code> entity from this entity or this entity if <code>child</code> is omitted.
+	 * Removes a <em>child</em> entity from this entity or this entity if <em>child</em> is omitted.
 	 * @param deep if true, recursively removes all nodes in the subtree rooted at this node.
 	 */
 	public function remove(?child:Entity, deep = false):Void
@@ -607,7 +607,7 @@ class Entity implements IObserver, implements IObservable
 	
 	/**
 	 * Sends a message <code>x</code> to all ancestors of this node.<br/>
-	 * Bubbling can be aborted by calling <code>stopPropagation()</code>.
+	 * Bubbling can be aborted by calling <em>stopPropagation()</em>.
 	 */
 	public function liftMessage(x:String, userData:Dynamic = null):Void
 	{
@@ -625,7 +625,7 @@ class Entity implements IObserver, implements IObservable
 	
 	/**
 	 * Sends a message <code>x</code> to all descendants of this node.<br/>
-	 * Bubbling can be aborted by calling <code>stopPropagation()</code>.
+	 * Bubbling can be aborted by calling <em>stopPropagation()</em>.
 	 */
 	public function dropMessage(x:String, userData:Dynamic = null):Void
 	{
@@ -648,7 +648,7 @@ class Entity implements IObserver, implements IObservable
 	
 	/**
 	 * Sends a message <code>x</code> to all siblings of this node.<br/>
-	 * Bubbling can be aborted by calling <code>stopPropagation()</code>.
+	 * Bubbling can be aborted by calling <em>stopPropagation()</em>.
 	 */
 	public function slipMessage(x:String, userData:Dynamic = null):Void
 	{
@@ -721,7 +721,7 @@ class Entity implements IObserver, implements IObservable
 	public function update(type:Int, source:IObservable, userData:Dynamic):Void {}
 	
 	/**
-	 * Invoked by <code>free()</code> on all children,
+	 * Invoked by <em>free()</em> on all children,
 	 * giving each one the opportunity to perform some cleanup (override for implementation).
 	 */
 	function onFree():Void {}
@@ -737,7 +737,7 @@ class Entity implements IObserver, implements IObservable
 	function onAddAncestor(ancestor:Entity):Void {}
 	
 	/**
-	 * Invoked after a <code>descendant</code> was added (override for implementation).
+	 * Invoked after a <code>child</code> was added (override for implementation).
 	 */
 	function onAddDescendant(child:Entity):Void {}
 	

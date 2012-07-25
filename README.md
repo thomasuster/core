@@ -1,7 +1,7 @@
 #A "toolbox" library used by other polygonal libraries (core)
 
 The library includes the following packages:
-	
+
 ### `event`
 - A library for handling events, with focus on boilerplate reduction and performance.
 - See [A fast notification system for event-driven design](http://lab.polygonal.de/?p=2548).

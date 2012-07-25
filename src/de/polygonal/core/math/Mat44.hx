@@ -361,7 +361,7 @@ class Mat44
 	
 	/**
 	 * Defines a parallel projection.<br/>
-	 * Simplied version of <code>setOrtho6()</code> using 4 parameters instead of 6.
+	 * Simplied version of <em>setOrtho6()</em> using 4 parameters instead of 6.
 	 * @param w width of field of view
 	 * @param h height of field of view
 	 * @param n near clipping plane
@@ -584,7 +584,7 @@ class Mat44
 		return this;
 	}
 	
-	/** Pre-concatenates <code>matrix</code>: this = this*<code>rhs</code>. */
+	/** Pre-concatenates <code>rhs</code>: this = this*<code>rhs</code>. */
 	inline public function precat(rhs:Mat44):Mat44
 	{
 		var c11 = rhs.m11; var c12 = rhs.m12; var c13 = rhs.m13; var c14 = rhs.m14;
@@ -629,9 +629,9 @@ class Mat44
 	
 	/**
 	 * Post-concatenates a scaling matrix and returns this matrix.
-	 * @param x x-axis scale (<code>m11</code>).
-	 * @param y y-axis scale (<code>m22</code>).
-	 * @param z z-axis scale (<code>m33</code>).
+	 * @param x x-axis scale (<em>m11</em>).
+	 * @param y y-axis scale (<em>m22</em>).
+	 * @param z z-axis scale (<em>m33</em>).
 	 */
 	inline public function catScale(x:Float, y:Float, z:Float):Mat44
 	{
@@ -656,9 +656,9 @@ class Mat44
 	
 	/**
 	 * Pre-concatenates a scaling matrix and returns this matrix.
-	 * @param x x-axis scale (<code>m11</code>).
-	 * @param y y-axis scale (<code>m22</code>).
-	 * @param z z-axis scale (<code>m33</code>).
+	 * @param x x-axis scale (<em>m11</em>).
+	 * @param y y-axis scale (<em>m22</em>).
+	 * @param z z-axis scale (<em>m33</em>).
 	 */
 	inline public function precatScale(x:Float, y:Float, z:Float):Mat44
 	{
@@ -701,9 +701,9 @@ class Mat44
 	
 	/**
 	 * Pre-concatenates a translation matrix and returns this matrix.
-	 * @param x x-axis translation (<code>m14</code>).
-	 * @param y y-axis translation (<code>m24</code>).
-	 * @param z z-axis translation (<code>m34</code>).
+	 * @param x x-axis translation (<em>m14</em>).
+	 * @param y y-axis translation (<em>m24</em>).
+	 * @param z z-axis translation (<em>m34</em>).
 	 */
 	inline public function precatTranslation(x:Float, y:Float, z:Float):Mat44
 	{
@@ -732,7 +732,7 @@ class Mat44
 	}
 	
 	/**
-	 * Same as <code>timesVector()</code>, but without modifying <code>rhs</code>.
+	 * Same as <em>timesVector()</em>, but without modifying <code>rhs</code>.
 	 * @param output stores the result.
 	 */
 	inline public function timesVectorConst(rhs:Vec3, output:Vec3):Vec3
@@ -886,7 +886,7 @@ class Mat44
 	
 	/**
 	 * Copies all 16 matrix elements to the given matrix <code>x</code>.<br/>
-	 * If <code>x</code> is omitted, a new <code>Matrix3D</code> object is created on the fly.
+	 * If <code>x</code> is omitted, a new Matrix3D object is created on the fly.
 	 */
 	public function toMatrix3D(?x:flash.geom.Matrix3D):flash.geom.Matrix3D
 	{

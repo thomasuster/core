@@ -123,7 +123,7 @@ class Root
 	 * @param handlers additional log handler objects that get attached to <em>Root.log</em> upon initialization.
 	 * @param keepNativeTrace if true, do not override native trace output. Default is false.
 	 */
-	public static function initLog(handlers:Array<LogHandler> = null, keepNativeTrace = false)
+	public static function init(handlers:Array<LogHandler> = null, keepNativeTrace = false)
 	{
 		#if !no_traces
 		var nativeTrace = function(v:Dynamic, ?infos:PosInfos) {};

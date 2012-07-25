@@ -67,8 +67,8 @@ class Timeline extends Observable, implements IObserver
 	}
 	
 	/**
-	 * If <code>x</code> is true, <code>advance()</code> is called at the rate defined by <code>Timebase.get().getTickRate()</code>,
-	 * otherwise the user is responsible for calling <code>advance()</code>.
+	 * If <code>x</code> is true, <em>advance()</em> is called at the rate defined by <em>Timebase.get().getTickRate()</em>,
+	 * otherwise the user is responsible for calling <em>advance()</em>.
 	 */
 	public static function bindToTimebase(x:Bool):Void
 	{
@@ -267,7 +267,7 @@ class Timeline extends Observable, implements IObserver
 	/**
 	 * Binds a function <code>f</code> to an interval; <code>f</code> is invoked while the interval is running.
 	 * @param f the first parameter stores the interpolation parameter in the interval <arg>&#091;0, 1&#093;</arg>.
-	 * @param id the interval id returned by <code>Timeline.get().schedule()</code>.
+	 * @param id the interval id returned by <em>Timeline.get().schedule()</em>.
 	 */
 	public function bind(f:Float->Bool, id:Int):Void
 	{

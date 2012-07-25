@@ -64,7 +64,7 @@ class Vec2Util
 	}
 	
 	/**
-	 * Vector reflection. Returns <code>q = (<code>vx</code>,<code>vy</code>)-(2*dot((<code>vx</code>,<code>vy</code>),(<code>nx</code>,<code>ny</code>)))*(<code>nx</code>,<code>ny</code>)</code>.
+	 * Vector reflection. Returns <code>q</code> = (<code>vx</code>,<code>vy</code>)-(2*dot((<code>vx</code>,<code>vy</code>),(<code>nx</code>,<code>ny</code>)))*(<code>nx</code>,<code>ny</code>).
 	 */
 	inline public static function reflect4(vx:Float, vy:Float, nx:Float, ny:Float, q:Vec2):Vec2
 	{

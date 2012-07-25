@@ -169,7 +169,7 @@ class TrigApprox
 	 * This method uses a polynomial approximation.<br/>
 	 * Borrowed from the book ESSENTIAL MATHEMATICS FOR GAMES & INTERACTIVE APPLICATIONS
 	 * Copyright (C) 2008 by Elsevier, Inc. All rights reserved.
-	 * @param out a vector storing the result, where <code>out</code>.x equals sine and <code>out.y</code> equals cosine.
+	 * @param out a vector storing the result, where <code>out</code>.x equals sine and <code>out</code>.y equals cosine.
 	 */
 	inline static var INV_PIHALF = 0.6366197723675814;
 	inline static var CONST_A = 1.5703125; //201 / 128

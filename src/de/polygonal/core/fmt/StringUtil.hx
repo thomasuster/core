@@ -56,7 +56,7 @@ class StringUtil
 	}
 	
 	/**
-	 * Appends (or prepends if <code>reverse</code> is true) an ellipsis (...) to <code>x</code> if <code>x</code>.length > <code>maxCharCount</code>.
+	 * Appends (or prepends if <code>inverse</code> is true) an ellipsis (...) to <code>x</code> if <code>x</code>.length > <code>maxCharCount</code>.
 	 */
 	public static function ellipsis(x:String, maxCharCount:Int, inverse:Bool):String
 	{

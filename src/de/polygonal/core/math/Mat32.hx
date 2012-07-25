@@ -70,7 +70,7 @@ class Mat32 implements de.polygonal.ds.Cloneable<Mat32>
 	/**
 	 * Computes the matrix product <code>C</code>=<code>AB</code> such as v' = v<code>C</code> = v<code>AB</code>.<br/>
 	 * The order of multiplications from left to right is the same as the order of transformations.
-	 * @return The concatenated matrix (<code>out</code>).
+	 * @return The concatenated matrix (<code>C</code>).
 	 */
 	inline public static function concat(A:Mat32, B:Mat32, C:Mat32):Mat32
 	{

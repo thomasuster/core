@@ -67,7 +67,7 @@ class Mersenne extends RNG
 	var _currentEntry:Int;
 	
 	/**
-	 * Default seed value is <code>5489</code>.
+	 * Default seed value is 5489.
 	 */
 	public function new(seed = 5489)
 	{
