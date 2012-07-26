@@ -3,6 +3,7 @@
 ## Documentation
 -    API [http://polygonal.github.com/doc/core/](http://polygonal.github.com/doc/core/)
 
+## Packages
 The library includes the following packages:
 
 ### `event`
