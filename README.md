@@ -1,5 +1,9 @@
 #A "toolbox" library used by other polygonal libraries (core)
 
+## Documentation
+-    API [http://polygonal.github.com/doc/core/](http://polygonal.github.com/doc/core/)
+
+## Packages
 The library includes the following packages:
 
 ### `event`
