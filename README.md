@@ -50,6 +50,11 @@ If you want to test the latest beta build, you should pull the dev branch and ad
 
 ## Changelog
 
+### 1.01
+
+* fixed Mathematics.floor(), ceil(), fwrap() for neko, don't use Std.int() for cpp
+* Entity.findXXXById => Entity.findXXXByName
+
 ### 1.00
 
 * Initial version.
