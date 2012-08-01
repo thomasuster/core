@@ -263,10 +263,10 @@ class Mathematics
 	 */
 	inline public static function fwrap(value:Float, lower:Float, upper:Float):Float
 	{
-		#if js
-		return value - (Std.int((value - lower) / (upper - lower)) * (upper - lower));
-		#else
+		#if cpp
 		return value - (cast((value - lower) / (upper - lower)) * (upper - lower));
+		#else
+		return value - (Std.int((value - lower) / (upper - lower)) * (upper - lower));
 		#end
 	}
 
@@ -436,20 +436,20 @@ class Mathematics
 	inline public static function ceil(x:Float):Int
 	{
 		var f:Int =
-		#if js
-		Std.int(x);
-		#else
+		#if cpp
 		cast x;
+		#else
+		Std.int(x);
 		#end
 		if (x == f) return f;
 		else
 		{
 			x += 1;
 			var f:Int =
-			#if js
-			Std.int(x);
-			#else
+			#if cpp
 			cast x;
+			#else
+			Std.int(x);
 			#end
 			if (x < 0 && f != x) f--;
 			return f;
@@ -462,10 +462,10 @@ class Mathematics
 	inline public static function floor(x:Float):Int
 	{
 		var f:Int =
-		#if js
-		Std.int(x);
-		#else
+		#if cpp
 		cast x;
+		#else
+		Std.int(x);
 		#end
 		if (x < 0 && f != x) f--;
 		return f;
