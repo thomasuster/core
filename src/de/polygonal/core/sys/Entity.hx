@@ -487,7 +487,7 @@ class Entity implements IObserver, implements IObservable
 	 * Returns the first occurrence of an entity whose name matches <code>x</code> or null if no entity was found.
 	 * @param deep if true, searches the entire subtree rooted at this node.
 	 */
-	public function findChildById(x:Dynamic, deep = false):Entity
+	public function findChildByName(x:Dynamic, deep = false):Entity
 	{
 		if (deep)
 		{
@@ -544,7 +544,7 @@ class Entity implements IObserver, implements IObservable
 	/**
 	 * Returns the first occurrence of an entity whose name matches <code>x</code> or null if no entity was found.
 	 */
-	public function findSiblingById(x:Dynamic):Entity
+	public function findSiblingByName(x:Dynamic):Entity
 	{
 		var n = treeNode.getFirstSibling();
 		while (n != null)
@@ -576,7 +576,7 @@ class Entity implements IObserver, implements IObservable
 	/**
 	 * Returns the first occurrence of an entity whose name matches <code>x</code> or null if no entity was found.
 	 */
-	public function findParentById(x:Dynamic):Entity
+	public function findParentByName(x:Dynamic):Entity
 	{
 		var n = treeNode.parent;
 		while (n != null)
