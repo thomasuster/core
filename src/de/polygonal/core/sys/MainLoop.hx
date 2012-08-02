@@ -70,13 +70,11 @@ class MainLoop extends Entity
 	
 	public function pause():Void
 	{
-		_timebase.halt();
 		_paused = true;
 	}
 	
 	public function resume():Void
 	{
-		_timebase.resume();
 		_paused = false;
 	}
 	
@@ -85,6 +83,8 @@ class MainLoop extends Entity
 		switch (type)
 		{
 			case TimebaseEvent.TICK:
+				if (_paused) return;
+				
 				_timeline.advance();
 				
 				#if (!no_traces)
@@ -111,6 +111,8 @@ class MainLoop extends Entity
 				#end
 				
 			case TimebaseEvent.RENDER:
+				if (_paused) return;
+				
 				#if (!no_traces)
 				//identify rendering step
 				for (handler in de.polygonal.core.Root.log.getLogHandler())
@@ -134,7 +136,11 @@ class MainLoop extends Entity
 				if (de.polygonal.ui.UI.get().currCharCode == de.polygonal.core.fmt.ASCII.TILDE)
 				{
 					if (_paused)
+					{
+						_timebase.halt();
 						_timebase.manualStep();
+						_timebase.resume();
+					}
 				}
 				if (de.polygonal.ui.UI.get().currCharCode == de.polygonal.core.fmt.ASCII.GRAVE)
 				{
