@@ -514,28 +514,69 @@ class Entity implements IObserver, implements IObservable
 	/**
 	 * Returns the first occurrence of an entity whose class matches <code>x</code> or null if no entity was found.
 	 * @param deep if true, searches the entire subtree rooted at this node.
+	 * @param subclass if true, also compares subclasses of every entity to <code>x</code>.
 	 */
-	public function findChildByClass<T>(x:Class<T>, deep = false):T
+	public function findChildByClass<T>(x:Class<T>, deep = false, subclass = false):T
 	{
 		var c:Class<Dynamic>;
 		if (deep)
 		{
-			for (i in treeNode)
+			if (subclass)
 			{
-				if (i == this) continue;
-				c = i._getClass();
-				if (c == x) return cast i;
+				for (i in treeNode)
+				{
+					if (i == this) continue;
+					c = i._getClass();
+					if (c == x) return cast i;
+					
+					var s = Type.getSuperClass(c);
+					while (s != null)
+					{
+						if (s == x) return cast i;
+						s = Type.getSuperClass(s);
+					}
+				}
+			}
+			else
+			{
+				for (i in treeNode)
+				{
+					if (i == this) continue;
+					c = i._getClass();
+					if (c == x) return cast i;
+				}
 			}
 		}
 		else
 		{
-			var n = treeNode.children;
-			while (n != null)
+			if (subclass)
 			{
-				var e = n.val;
-				c = e._getClass();
-				if (c == x) return cast e;
-				n = n.next;
+				var n = treeNode.children;
+				while (n != null)
+				{
+					var e = n.val;
+					c = e._getClass();
+					if (c == x) return cast e;
+					
+					var s = Type.getSuperClass(c);
+					while (s != null)
+					{
+						if (s == x) return cast e;
+						s = Type.getSuperClass(s);
+					}
+					n = n.next;
+				}
+			}
+			else
+			{
+				var n = treeNode.children;
+				while (n != null)
+				{
+					var e = n.val;
+					c = e._getClass();
+					if (c == x) return cast e;
+					n = n.next;
+				}
 			}
 		}
 		return null;
@@ -558,17 +599,39 @@ class Entity implements IObserver, implements IObservable
 	
 	/**
 	 * Returns the first occurrence of an entity whose class matches <code>x</code> or null if no entity was found.
+	 * @param subclass if true, also compares subclasses of every entity to <code>x</code>.
 	 */
-	public function findSiblingByClass<T>(x:Class<T>):T
+	public function findSiblingByClass<T>(x:Class<T>, subclass = false):T
 	{
-		var c:Class<Dynamic>;
-		var n = treeNode.getFirstSibling();
-		while (n != null)
+		if (subclass)
 		{
-			var e = n.val;
-			c = e._getClass();
-			if (c == x) return cast e;
-			n = n.next;
+			var c:Class<Dynamic>;
+			var n = treeNode.getFirstSibling();
+			while (n != null)
+			{
+				var e = n.val;
+				c = e._getClass();
+				if (c == x) return cast e;
+				var s = Type.getSuperClass(c);
+				while (s != null)
+				{
+					if (s == x) return cast e;
+					s = Type.getSuperClass(s);
+				}
+				n = n.next;
+			}
+		}
+		else
+		{
+			var c:Class<Dynamic>;
+			var n = treeNode.getFirstSibling();
+			while (n != null)
+			{
+				var e = n.val;
+				c = e._getClass();
+				if (c == x) return cast e;
+				n = n.next;
+			}
 		}
 		return null;
 	}
@@ -590,17 +653,39 @@ class Entity implements IObserver, implements IObservable
 	
 	/**
 	 * Returns the first occurrence of an entity whose class matches <code>x</code> or null if no entity was found.
+	 * @param subclass if true, also compares subclasses of every entity to <code>x</code>.
 	 */
-	public function findParentByClass<T>(x:Class<T>):T
+	public function findParentByClass<T>(x:Class<T>, subclass = false):T
 	{
-		var c:Class<Dynamic>;
-		var n = treeNode.parent;
-		while (n != null)
+		if (subclass)
 		{
-			var e = n.val;
-			c = e._getClass();
-			if (c == x) return cast e;
-			n = n.parent;
+			var c:Class<Dynamic>;
+			var n = treeNode.parent;
+			while (n != null)
+			{
+				var e = n.val;
+				c = e._getClass();
+				if (c == x) return cast e;
+				var s = Type.getSuperClass(c);
+				while (s != null)
+				{
+					if (s == x) return cast e;
+					s = Type.getSuperClass(s);
+				}
+				n = n.parent;
+			}
+		}
+		else
+		{
+			var c:Class<Dynamic>;
+			var n = treeNode.parent;
+			while (n != null)
+			{
+				var e = n.val;
+				c = e._getClass();
+				if (c == x) return cast e;
+				n = n.parent;
+			}
 		}
 		return null;
 	}
@@ -1257,8 +1342,6 @@ class Entity implements IObserver, implements IObservable
 		}
 		return false;
 	}
-	
-	
 	
 	inline function _doSubtree():Bool
 	{
