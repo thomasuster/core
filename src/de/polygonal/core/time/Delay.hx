@@ -31,35 +31,41 @@ package de.polygonal.core.time;
 
 import de.polygonal.core.event.Observable;
 
+import de.polygonal.core.event.IObservable;
+import de.polygonal.core.event.IObserver;
+import de.polygonal.core.event.Observable;
+
 /**
  * Carries out a deferred function call.
  */
-class Delay
+class Delay implements IObserver
 {
+	var _id:Int;
+	var _f:Void->Void;
+	
 	/**
-	 * Calls the function <code>f</code> after <code>delay</code> seconds.
+	 * Calls <code>f</code> after <code>delaySeconds</code>.
 	 */
-	public static function delay(f:Void->Void, delay:Float):Void
+	public function new(f:Void->Void, delaySeconds:Float)
 	{
-		if (delay <= 0)
-		{
-			f();
-			return;
-		}
-		
-		var timeline = Timeline.get();
-		var blipId = timeline.schedule(0, delay);
-		
-		Observable.bind(
-			function()
-			{
-				if (timeline.id == blipId)
-				{
-					f();
-					return false;
-				}
-				return true;
-			},
-			Timeline.get(), TimelineEvent.BLIP);
+		_f = f;
+		_id = Timeline.get().schedule(0, delaySeconds);
+		Timeline.get().attach(this, TimelineEvent.BLIP);
+	}
+	
+	public function cancel():Void
+	{
+		Timeline.get().detach(this);
+		Timeline.get().cancel(_id);
+		_id = -1;
+		_f = null;
+	}
+	
+	public function update(type:Int, source:IObservable, userData:Dynamic):Void 
+	{
+		source.detach(this);
+		_f();
+		_f = null;
+		_id = -1;
 	}
 }
