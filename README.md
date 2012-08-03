@@ -50,10 +50,14 @@ If you want to test the latest beta build, you should pull the dev branch and ad
 
 ## Changelog
 
-### 1.01
+### 1.01 (dev)
 
-* fixed Mathematics.floor(), ceil(), fwrap() for neko, don't use Std.int() for cpp
-* Entity.findXXXById => Entity.findXXXByName
+* fixed: Mathematics.floor(), ceil(), fwrap() for neko, don't use Std.int() for cpp
+* modified: Entity.findXXXById => Entity.findXXXByName
+* modified: optional subclass check in Entity.findXXXByClass
+* modified: keep dispatching Timebase updates when calling MainLoop.pause()
+* modified: make de.polygonal.core.time.Delay cancelable
+* added: math.RootSolver class
 
 ### 1.00
 
