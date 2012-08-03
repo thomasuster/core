@@ -702,7 +702,7 @@ class Entity implements IObserver, implements IObservable
 			var e = n.val;
 			if (e._hasFlag(BIT_PENDING | BIT_COMMIT_SUICIDE)) break;
 			e._clrFlag(BIT_STOP_PROPAGATION);
-			e.onMessage(x, userData);
+			e.onMessage(x, this, userData);
 			if (e._hasFlag(BIT_STOP_PROPAGATION)) break;
 			n = n.parent;
 		}
@@ -711,9 +711,11 @@ class Entity implements IObserver, implements IObservable
 	/**
 	 * Sends a message <code>x</code> to all descendants of this node.<br/>
 	 * Bubbling can be aborted by calling <em>stopPropagation()</em>.
+	 * @param sender used internally.
 	 */
-	public function dropMessage(x:String, userData:Dynamic = null):Void
+	public function dropMessage(x:String, userData:Dynamic = null, ?sender:Entity = null):Void
 	{
+		if (sender == null) sender = this;
 		var n = treeNode.children;
 		while (n != null)
 		{
@@ -724,9 +726,9 @@ class Entity implements IObserver, implements IObservable
 				continue;
 			}
 			e._clrFlag(BIT_STOP_PROPAGATION);
-			e.onMessage(x, userData);
+			e.onMessage(x, sender, userData);
 			if (e._hasFlag(BIT_STOP_PROPAGATION)) break;
-			e.dropMessage(x, userData);
+			e.dropMessage(x, userData, sender);
 			n = n.next;
 		}
 	}
@@ -747,7 +749,7 @@ class Entity implements IObserver, implements IObservable
 				continue;
 			}
 			e._clrFlag(BIT_STOP_PROPAGATION);
-			e.onMessage(x, userData);
+			e.onMessage(x, this, userData);
 			if (e._hasFlag(BIT_STOP_PROPAGATION)) return;
 			n = n.prev;
 		}
@@ -762,7 +764,7 @@ class Entity implements IObserver, implements IObservable
 				continue;
 			}
 			e._clrFlag(BIT_STOP_PROPAGATION);
-			e.onMessage(x, userData);
+			e.onMessage(x, this, userData);
 			if (e._hasFlag(BIT_STOP_PROPAGATION)) return;
 			n = n.next;
 		}
@@ -862,10 +864,9 @@ class Entity implements IObserver, implements IObservable
 	function onRender(alpha:Float, parent:Entity):Void {}
 	
 	/**
-	 * Receives a <code>message</code> (override for implementation).
+	 * Receives a <code>message</code> from <code>sender</code> (override for implementation).
 	 */
-	function onMessage(message:String, userData:Dynamic):Void {}
-	
+	function onMessage(message:String, sender:Entity, userData:Dynamic):Void {}
 	
 	
 	function _prepareAdditions():Void
