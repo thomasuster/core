@@ -770,6 +770,28 @@ class Entity implements IObserver, implements IObservable
 		}
 	}
 	
+	/**
+	 * Convenience method for Std.is(this, <code>x</code>);
+	 */
+	inline public function is<T>(x:Class<T>):Bool
+	{
+		return Std.is(this, x);
+	}
+	
+	/**
+	 * Handle multiple calls to <em>is()</em> in one shot by checking all classes in <code>x</code>.
+	 * @return true if the type of this entity matches any type in <code>x</code>.
+	 */
+	public function isAny<Dynamic>(x:Array<Class<Dynamic>>):Bool
+	{
+		for (i in x)
+		{
+			if (Std.is(this, i))
+				return true;
+		}
+		return false;
+	}
+	
 	public function toString():String
 	{
 		if (format != null) return format(this);
