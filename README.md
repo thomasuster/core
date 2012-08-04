@@ -58,6 +58,9 @@ If you want to test the latest beta build, you should pull the dev branch and ad
 * modified: keep dispatching Timebase updates when calling MainLoop.pause()
 * modified: make de.polygonal.core.time.Delay cancelable
 * added: math.RootSolver class
+* modified: pass message sender to Entity.onMessage()
+* fixed: keep existing fields in macro.Version
+* added: Entity.is() and Entity.isAny()
 
 ### 1.00
 
