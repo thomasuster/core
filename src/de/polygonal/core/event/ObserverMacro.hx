@@ -38,15 +38,21 @@ using de.polygonal.ds.Bits;
 class ObserverMacro
 {
 	/**
-	 * The number of bits used for encoding the event.
-	 */
-	inline public static var NUM_BITS = 32;
-	
-	/**
 	 * The number bits reserved for storing group ids.<br/>
 	 * E.g. using 5 bits, a total of 32 group ids (0..31, 2^5-1) and 27 event ids (32 - 5) can be encoded in a 32-bit integer.
 	 */
 	inline public static var NUM_GROUP_BITS = 5;
+	
+	#if !macro
+	/**
+	 * The number of bits used for encoding the update type (group & event).
+	 */
+	inline public static var NUM_BITS =
+	#if neko
+	30;
+	#else
+	32;
+	#end
 	
 	/**
 	 * The number of bits reserved for encoding event ids.
@@ -91,12 +97,17 @@ class ObserverMacro
 			}
 		}
 	}
+	#end
 	
 	#if macro
-	static var _groupCounter = 0;
+	static var NUM_EVENT_BITS:Int;
 	
+	static var _groupCounter = 0;
 	@:macro public static function create(e:Expr):Array<Field>
 	{
+		var numBits = Context.defined('neko') ? 30 : 32;
+		NUM_EVENT_BITS = numBits - NUM_GROUP_BITS;
+		
 		if (_groupCounter > (1 << NUM_GROUP_BITS) - 1)
 			Context.error('too many groups', Context.currentPos());
 		

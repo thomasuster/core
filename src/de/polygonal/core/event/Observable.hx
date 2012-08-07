@@ -241,6 +241,7 @@ class Observable extends HashableItem, implements IObservable
 			n.prev     = null;
 			n.next     = null;
 			n.observer = null;
+			n.mask     = null;
 			n          = t;
 		}
 		
@@ -367,7 +368,8 @@ class Observable extends HashableItem, implements IObservable
 	 * @param o the observer to register with.
 	 * @param mask a bit field of bit flags defining which event types to register with.<br/>
 	 * This can be used to select a subset of events from an event group.<br/>
-	 * By default, <code>o</code> receives all updates from an event group.
+	 * By default, <code>o</code> receives all updates from an event group.<br/>
+	 * <warn>Must only contain event types from a single group, e.g. this mask is invalid: MyEventA.EVENT_X | MyEventB.EVENT_Y.</warn>
 	 */
 	public function attach(o:IObserver, mask = 0):Void
 	{
@@ -380,18 +382,20 @@ class Observable extends HashableItem, implements IObservable
 		var n = _findNode(o);
 		if (n != null) //observer exists?
 		{
+			var groupId = mask >>> ObserverMacro.NUM_EVENT_BITS;
+			
 			//update bits only
-			if (n.mask == Bits.ALL)
+			if (n.mask[groupId] == Bits.ALL)
 			{
 				if (mask != 0)
-					n.mask = mask & ObserverMacro.EVENT_MASK; //apply given mask
+					n.mask[groupId] = mask & ObserverMacro.EVENT_MASK; //set given mask
 			}
 			else
 			{
 				if (mask != 0)
-					n.mask |= (mask & ObserverMacro.EVENT_MASK); //merge existing mask with new mask
+					n.mask[groupId] |= (mask & ObserverMacro.EVENT_MASK); //merge existing mask with new mask
 				else
-					n.mask = Bits.ALL; //allow all
+					n.mask[groupId] = Bits.ALL; //allow all
 			}
 			return;
 		}
@@ -415,7 +419,17 @@ class Observable extends HashableItem, implements IObservable
 		
 		//set up node object
 		n.observer = o;
-		n.mask = (mask == 0) ? Bits.ALL : (mask & ObserverMacro.EVENT_MASK);
+		
+		if (mask == 0 || mask == Bits.ALL)
+		{
+			n.all = true;
+		}
+		else
+		{
+			var groupId = mask >>> ObserverMacro.NUM_EVENT_BITS;
+			n.mask[groupId] |= (mask == 0) ? Bits.ALL : (mask & ObserverMacro.EVENT_MASK);
+			n.groupBits |= 1 << groupId;
+		}
 		
 		_nodeLookup.set(o.__guid, n);
 		
@@ -470,7 +484,8 @@ class Observable extends HashableItem, implements IObservable
 	 * @param o the observer to unregister from.
 	 * @param mask a bit field of bit flags defining which event types to unregister from.<br/>
 	 * This can be used to select a subset of events from an event group.<br/>
-	 * By default, <code>o</code> is unregistered from the entire event group.
+	 * By default, <code>o</code> is unregistered from the entire event group.<br/>
+	 * <warn>Must only contain event types from a single group.</warn>
 	 */
 	public function detach(o:IObserver, mask:Int = 0):Void
 	{
@@ -483,14 +498,14 @@ class Observable extends HashableItem, implements IObservable
 		if (mask != 0)
 		{
 			//update bits
-			#if !neko
-			n.mask &= ~(mask & ObserverMacro.EVENT_MASK);
-			#else
-			n.mask &= haxe.Int32.toInt(haxe.Int32.complement(haxe.Int32.ofInt(mask & ObserverMacro.EVENT_MASK)));
-			#end
-			n.mask &= ObserverMacro.EVENT_MASK;
-			if (n.mask > 0)
-				return;
+			var groupId = mask >>> ObserverMacro.NUM_EVENT_BITS;
+			n.mask[groupId] &= ~(mask & ObserverMacro.EVENT_MASK);
+			
+			//remove group if empty
+			if (n.mask[groupId] == 0) n.groupBits &= ~(1 << groupId);
+			
+			//don't detach until all groups detached
+			if (n.groupBits > 0) return;
 		}
 		
 		//unlink from observer list
@@ -535,7 +550,8 @@ class Observable extends HashableItem, implements IObservable
 	
 	/**
 	 * Notifies all attached observers to indicate that the state of this object has changed.
-	 * @param type the event type.
+	 * @param type the event type.<br/>
+	 * <warn>Must only contain event types from a single group.</warn>
 	 * @param userData additional event data. Default value is null.
 	 */
 	public function notify(type:Int, userData:Dynamic = null):Void
@@ -544,6 +560,7 @@ class Observable extends HashableItem, implements IObservable
 			return; //early out
 		
 		var eventBits = type & ObserverMacro.EVENT_MASK;
+		var groupId = type >>> ObserverMacro.NUM_EVENT_BITS;
 		
 		//when an observer calls notify() while an update is in progress, the current update stops
 		//while the new update is carried out to all observers, e.g.:
@@ -559,7 +576,7 @@ class Observable extends HashableItem, implements IObservable
 			_type = type;
 			_userData = userData;
 			
-			_update(_observer, type, eventBits, userData);
+			_update(_observer, type, eventBits, groupId, userData);
 		}
 		else
 		{
@@ -567,7 +584,7 @@ class Observable extends HashableItem, implements IObservable
 			_type = type;
 			_userData = userData;
 			
-			_update(_observer, type, eventBits, userData);
+			_update(_observer, type, eventBits, groupId, userData);
 			
 			if (_stack == null) //free() was called?
 			{
@@ -585,7 +602,7 @@ class Observable extends HashableItem, implements IObservable
 					type     = _stack.pop();
 					
 					//resume update
-					_update(_stack.pop(), type, eventBits, userData);
+					_update(_stack.pop(), type, eventBits, groupId, userData);
 				}
 			}
 			
@@ -608,11 +625,7 @@ class Observable extends HashableItem, implements IObservable
 	 */
 	public function unmute(x:Int):Void
 	{
-		#if !neko
 		_blacklist = _blacklist & ~x;
-		#else
-		_blacklist = _blacklist & haxe.Int32.toInt(haxe.Int32.complement(haxe.Int32.ofInt(x)));
-		#end
 	}
 	
 	/**
@@ -653,15 +666,14 @@ class Observable extends HashableItem, implements IObservable
 		return new ObservableIterator<IObserver>(_observer);
 	}
 	
-	inline function _update(node:ObserverNode, type:Int, eventBits:Int, userData:Dynamic)
+	inline function _update(node:ObserverNode, type:Int, eventBits:Int, groupId:Int, userData:Dynamic)
 	{
 		//update all observers
 		while (node != null)
 		{
 			//preserve reference to next node so a detach() doesn't break an update
 			_hook = node.next;
-			
-			if ((node.mask & eventBits) > 0) //observer is suited for this update?
+			if (node.all || node.mask[groupId] & eventBits > 0) //observer is suited for this update?
 				node.observer.update(type, _source, userData); //update
 			node = _hook;
 		}
@@ -673,21 +685,37 @@ class ObserverNode
 	public var observer:IObserver;
 	public var prev:ObserverNode;
 	public var next:ObserverNode;
-	public var mask:Int;
+	public var groupBits:Int;
+	
+	public var all:Bool;
+	
+	#if flash10
+	public var mask:flash.Vector<Int>;
+	#else
+	public var mask:Array<Int>;
+	#end
 	
 	public function new()
 	{
 		observer = null;
 		prev = null;
 		next = null;
-		mask = 0;
+		groupBits = 0;
+		all = false;
+		var k = 1 << ObserverMacro.NUM_GROUP_BITS;
+		#if flash10
+		mask = new flash.Vector<Int>(k, true);
+		#else
+		mask = de.polygonal.ds.ArrayUtil.alloc(k);
+		for (i in 0...k) mask[i] = 0;
+		#end
 	}
 }
 
 private class ObservableIterator<T>
 {
 	var _walker:ObserverNode;
-
+	
 	public function new(head:ObserverNode)
 	{
 		_walker = head;
