@@ -888,7 +888,7 @@ class Mat44
 	 * Copies all 16 matrix elements to the given matrix <code>x</code>.<br/>
 	 * If <code>x</code> is omitted, a new Matrix3D object is created on the fly.
 	 */
-	public function toMatrix3D(?x:flash.geom.Matrix3D):flash.geom.Matrix3D
+	public function toMatrix3D(x:flash.geom.Matrix3D = null):flash.geom.Matrix3D
 	{
 		if (x == null) x = new flash.geom.Matrix3D();
 		if (_scratchVector == null)

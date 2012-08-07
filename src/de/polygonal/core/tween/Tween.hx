@@ -79,7 +79,7 @@ class Tween implements IObservable, implements IObserver
 		return function (alpha:Float):Float return M.lerp(from, to, ease.interpolate(alpha));
 	}
 	
-	public static function create(?key:String, object:Dynamic, fields:Dynamic, ease:Ease, to:Float, duration:Float):Tween
+	public static function create(key:String = null, object:Dynamic, fields:Dynamic, ease:Ease, to:Float, duration:Float):Tween
 	{
 		#if (flash || nme)
 		if (Std.is(object, flash.display.DisplayObject))
@@ -148,7 +148,7 @@ class Tween implements IObservable, implements IObserver
 	var _observable:Observable;
 	var _timeline:Timeline;
 	
-	public function new(?key:String, target:TweenTarget, ease:Ease, to:Float, duration:Float, ?interpolateState = true)
+	public function new(key:String = null, target:TweenTarget, ease:Ease, to:Float, duration:Float, interpolateState = true)
 	{
 		if (ease == null) ease = Ease.None;
 		
@@ -194,7 +194,7 @@ class Tween implements IObservable, implements IObserver
 		return _ease;
 	}
 	
-	public function run(?onComplete:Void->Void):Tween
+	public function run(onComplete:Void->Void = null):Tween
 	{
 		if (_key != null)
 		{

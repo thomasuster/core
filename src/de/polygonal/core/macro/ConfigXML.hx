@@ -44,7 +44,7 @@ class ConfigXML
 	#if !macro
 	static var _rttiCache:Hash<TypeTree>;
 	
-	public static function getStaticFields(x:Class<Dynamic>, ?filter:EReg):Array<Param>
+	public static function getStaticFields(x:Class<Dynamic>, filter:EReg = null):Array<Param>
 	{
 		var fields = new Array();
 		
@@ -65,7 +65,7 @@ class ConfigXML
 		return fields;
 	}
 	
-	public static function getFieldsByName(x:haxe.rtti.Infos, ?filter:EReg):Array<Param>
+	public static function getFieldsByName(x:haxe.rtti.Infos, filter:EReg = null):Array<Param>
 	{
 		if (_rttiCache == null) _rttiCache = new Hash();
 		

@@ -48,7 +48,7 @@ class TextFieldHandler extends LogHandler
 {
 	var _tf:TextField;
 	
-	public function new(?tf:TextField)
+	public function new(tf:TextField = null)
 	{
 		super();
 		

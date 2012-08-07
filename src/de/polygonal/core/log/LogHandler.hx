@@ -228,7 +228,7 @@ class LogHandler implements IObserver
 	 *     }
 	 * }</pre>
 	 */
-	public function setFormat(flags:Int, ?sep = ':'):Void
+	public function setFormat(flags:Int, sep = ':'):Void
 	{
 		if (flags == 0) nulf();
 		else setf(flags);

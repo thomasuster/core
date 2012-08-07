@@ -112,7 +112,7 @@ class Resource extends Observable
 		_resources = new Array<Resource>();
 	}
 	
-	public static function loadSimple(url:String, ?key:String, onComplete:Void->Void):Void
+	public static function loadSimple(url:String, key:String = null, onComplete:Void->Void):Void
 	{
 		var res = new Resource(new URLRequest(url), key);
 		res.attach(Observable.delegate(function(type, source, userData)
@@ -203,7 +203,7 @@ class Resource extends Observable
 	 * @param userData custom user data. if omitted, userData is set to <code>request</code>.<em>url</em>.
 	 * @param type the resource type. if omitted, the type is guessed from the file extension.
 	 */
-	public function new(request:URLRequest, ?userData:Dynamic, ?type:ResourceType):Void
+	public function new(request:URLRequest, userData:Dynamic = null, type:ResourceType = null):Void
 	{
 		super();
 		
@@ -262,7 +262,7 @@ class Resource extends Observable
 	/**
 	 * Starts the download operation.
 	 */
-	public function load(?observer:IObserver):Void
+	public function load(observer:IObserver = null):Void
 	{
 		if (observer != null) attach(observer);
 		

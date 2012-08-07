@@ -53,7 +53,7 @@ class DisplayObjectTween extends Tween, implements TweenTarget
 	var _bits:Int;
 	var _o:DisplayObject;
 	
-	public function new(?key:String, o:DisplayObject, flags:Int, ease:Ease, to:Float, duration:Float, ?interpolateState = true)
+	public function new(key:String = null, o:DisplayObject, flags:Int, ease:Ease, to:Float, duration:Float, interpolateState = true)
 	{
 		_o = o;
 		_bits = flags;

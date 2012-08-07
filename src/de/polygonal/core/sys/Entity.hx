@@ -355,7 +355,7 @@ class Entity implements IObserver, implements IObservable
 	 * Updates all entities in the subtree rooted at this node (excluding this node) by calling <em>onAdvance()</em> on each node.
 	 * @param dt the time step passed to each node.
 	 */
-	public function advance(dt:Float, ?parent:Entity):Void
+	public function advance(dt:Float, parent:Entity = null):Void
 	{
 		_propagateAdvance(dt, parent == null ? this : parent);
 	}
@@ -364,7 +364,7 @@ class Entity implements IObserver, implements IObservable
 	 * Renders all entities in the subtree rooted at this node (excluding this node) by calling <em>onRender()</em> on each node.
 	 * @param  alpha a blending factor in the range <arg>&#091;0, 1&#093;</arg> between the previous and current state.
 	 */
-	public function render(alpha:Float, ?parent:Entity):Void
+	public function render(alpha:Float, parent:Entity = null):Void
 	{
 		_propagateRender(alpha, parent == null ? this : parent);
 	}
@@ -404,7 +404,7 @@ class Entity implements IObserver, implements IObservable
 	 * Removes a <em>child</em> entity from this entity or this entity if <em>child</em> is omitted.
 	 * @param deep if true, recursively removes all nodes in the subtree rooted at this node.
 	 */
-	public function remove(?child:Entity, deep = false):Void
+	public function remove(child:Entity = null, deep = false):Void
 	{
 		if (child == null)
 		{
@@ -696,6 +696,8 @@ class Entity implements IObserver, implements IObservable
 	 */
 	public function liftMessage(x:String, userData:Dynamic = null):Void
 	{
+		if (treeNode == null) return; //freed?
+		
 		var n = treeNode.parent;
 		while (n != null)
 		{
@@ -713,8 +715,10 @@ class Entity implements IObserver, implements IObservable
 	 * Bubbling can be aborted by calling <em>stopPropagation()</em>.
 	 * @param sender used internally.
 	 */
-	public function dropMessage(x:String, userData:Dynamic = null, ?sender:Entity = null):Void
+	public function dropMessage(x:String, userData:Dynamic = null, sender:Entity = null):Void
 	{
+		if (treeNode == null) return; //freed?
+		
 		if (sender == null) sender = this;
 		var n = treeNode.children;
 		while (n != null)
@@ -739,6 +743,8 @@ class Entity implements IObserver, implements IObservable
 	 */
 	public function slipMessage(x:String, userData:Dynamic = null):Void
 	{
+		if (treeNode == null) return; //freed?
+		
 		var n = treeNode.prev;
 		while (n != null)
 		{

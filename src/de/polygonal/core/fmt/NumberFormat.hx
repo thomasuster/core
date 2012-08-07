@@ -154,7 +154,7 @@ class NumberFormat
 	 * E.g. the number 1024 is converted to the string '1.024'.
 	 * @param thousandsSeparator a character to use as a thousands separator. The default value is ".".
 	 */
-	public static function groupDigits(x:Int, ?thousandsSeparator = '.'):String
+	public static function groupDigits(x:Int, thousandsSeparator = '.'):String
 	{
 		var n:Float = x;
 		var c = 0;
@@ -198,7 +198,7 @@ class NumberFormat
 	 * @param decimalSeparator a character to use as a decimal separator. The default value is ",".
 	 * @param thousandsSeparator a character to use as a thousands separator. The default value is ".".
 	 */
-	public static function centToEuro(x:Int, ?decimalSeparator = ',', ?thousandsSeparator = '.'):String	
+	public static function centToEuro(x:Int, decimalSeparator = ',', thousandsSeparator = '.'):String	
 	{
 		var euro = Std.int(x / 100);
 		if (euro == 0)
