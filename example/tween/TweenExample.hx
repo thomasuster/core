@@ -27,52 +27,63 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package de.polygonal.core.tween;
+package;
 
+import de.polygonal.core.event.IObservable;
+import de.polygonal.core.event.IObserver;
+import de.polygonal.core.Root;
+import de.polygonal.core.time.Timeline;
 import de.polygonal.core.tween.ease.Ease;
-import de.polygonal.ds.ArrayUtil;
+import de.polygonal.core.tween.Tween;
+import de.polygonal.core.tween.TweenEvent;
+import de.polygonal.core.tween.TweenTarget;
 
-using de.polygonal.ds.BitFlags;
-
-/**
- * <p>Supports tweening of any field of any object.</p>
- */
-class GenericTween extends Tween, implements TweenTarget
+class TweenExample implements IObserver
 {
-	var _object:Dynamic;
-	var _fields:Array<String>;
-	
-	public function new(key:String = null, object:Dynamic, field:Dynamic, ease:Ease, to:Float, duration:Float, interpolateState = true)
+	static function main()
 	{
-		_object = object;
-		if (Std.is(field, String))
-			_fields = cast [field];
-		else
-		if (Std.is(field, Array))
-		{
-			_fields = ArrayUtil.alloc(field.length);
-			_fields = ArrayUtil.copy(field, _fields);
-		}
-		else
-			throw 'invalid/unsupported field';
+		Root.init();
 		
-		super(key, this, ease, to, duration, interpolateState);
+		//required by Tween class
+		Timeline.bindToTimebase(true);
+		
+		new TweenExample();
 	}
 	
-	override public function free():Void 
+	public function new()
 	{
-		super.free();
-		_object = null;
-		_fields = null;
+		var target = new TweenedObject();
+		
+		var tween = new Tween(target, Ease.PowOut(2), 100, 2.5);
+		
+		//attach to TweenEvent-updates
+		tween.attach(this); 
+		
+		//run tween
+		tween.run();
+	}
+	
+	public function update(type:Int, source:IObservable, userData:Dynamic):Void 
+	{
+		var progress:Float = cast(source, Tween).getProgress(); //[0,1]
+		trace('update: %-10s, value: %.3f progress: %.3f', TweenEvent.getName(type)[0], userData, progress);
+	}
+}
+
+
+class TweenedObject implements TweenTarget
+{
+	var _value = 0.;
+	
+	public function new() {}
+	
+	public function get():Float
+	{
+		return _value;
 	}
 	
 	public function set(x:Float):Void
 	{
-		for (field in _fields) Reflect.setField(_object, field, x);
-	}
-	
-	public function get():Float
-	{
-		return Reflect.field(_object, _fields[0]);
+		_value = x;
 	}
 }
