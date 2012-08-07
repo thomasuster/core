@@ -307,7 +307,7 @@ class Tween implements IObservable, implements IObserver
 						if (_interpolate) Timebase.get().attach(this, TimebaseEvent.RENDER);
 						_a = _b = _min;
 						if (!_interpolate) _target.set(_b);
-						notify(TweenEvent.START);
+						notify(TweenEvent.START, _min);
 					
 					case TimelineEvent.INTERVAL_PROGRESS:
 						var alpha:Float = _timeline.progress;
@@ -330,7 +330,7 @@ class Tween implements IObservable, implements IObserver
 						else
 						{
 							_activeTweens.remove(this);
-							notify(TweenEvent.FINISH);
+							notify(TweenEvent.FINISH, _max);
 							if (_onComplete != null)
 								_onComplete();
 						}
@@ -341,7 +341,7 @@ class Tween implements IObservable, implements IObserver
 						_activeTweens.remove(this);
 						source.detach(this);
 						_id = -1;
-						notify(TweenEvent.FINISH);
+						notify(TweenEvent.FINISH, _b);
 						if (_onComplete != null) _onComplete();
 						if (_key == null) free();
 				}
