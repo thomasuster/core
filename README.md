@@ -61,6 +61,7 @@ If you want to test the latest beta build, you should pull the dev branch and ad
 * modified: pass message sender to Entity.onMessage()
 * fixed: keep existing fields in macro.Version
 * added: Entity.is() and Entity.isAny()
+* fixed: minor tweening fixes, add tween example
 
 ### 1.00
 
