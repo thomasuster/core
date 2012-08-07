@@ -38,7 +38,7 @@ import de.polygonal.core.tween.Tween;
 import de.polygonal.core.tween.TweenEvent;
 import de.polygonal.core.tween.TweenTarget;
 
-class TweenExample implements IObserver
+class BasicTweenExample implements IObserver
 {
 	static function main()
 	{
@@ -47,7 +47,7 @@ class TweenExample implements IObserver
 		//required by Tween class
 		Timeline.bindToTimebase(true);
 		
-		new TweenExample();
+		new BasicTweenExample();
 	}
 	
 	public function new()

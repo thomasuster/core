@@ -61,7 +61,8 @@ If you want to test the latest beta build, you should pull the dev branch and ad
 * modified: pass message sender to Entity.onMessage()
 * fixed: keep existing fields in macro.Version
 * added: Entity.is() and Entity.isAny()
-* fixed: minor tweening fixes, add tween example
+* fixed: minor tweening fixes, added tweening examples
+* modified: Observable: consider group id in event filtering, use 30 bits for neko
 
 ### 1.00
 
