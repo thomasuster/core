@@ -54,8 +54,6 @@ class DisplayObjectTweenExample implements IObserver
 		//required by Tween class
 		Timeline.bindToTimebase(true);
 		
-		Timeline.POOL_SIZE = 10000;
-		
 		new DisplayObjectTweenExample();
 	}
 	
@@ -73,11 +71,13 @@ class DisplayObjectTweenExample implements IObserver
 			shape.y = randY();
 			
 			//or use Tween.create(...)
-			var tweenX = new DisplayObjectTween(shape.name + 'x', shape, Flags.X, Ease.PowOut(2), randX(), randTime()).run();
-			var tweenY = new DisplayObjectTween(shape.name + 'y', shape, Flags.Y, Ease.PowOut(2), randY(), randTime()).run();
-			var tweenScale = new DisplayObjectTween(shape.name + 's', shape, Flags.SCALEX | Flags.SCALEY, Ease.PowOut(2), randScale(), randTime()).run();
+			var tweenX = new DisplayObjectTween(shape.name + 'x', shape, Flags.X, Ease.PowOut(2), randX(), randTime(), false).run();
 			tweenX.attach(this, TweenEvent.FINISH);
+			
+			var tweenY = new DisplayObjectTween(shape.name + 'y', shape, Flags.Y, Ease.PowOut(2), randY(), randTime(), false).run();
 			tweenY.attach(this, TweenEvent.FINISH);
+			
+			var tweenScale = new DisplayObjectTween(shape.name + 's', shape, Flags.SCALEX | Flags.SCALEY, Ease.PowOut(2), randScale(), randTime(), false).run();
 			tweenScale.attach(this, TweenEvent.FINISH);
 		}
 	}
@@ -89,13 +89,19 @@ class DisplayObjectTweenExample implements IObserver
 		var key = tween.getKey();
 		
 		if (key.indexOf('x') != -1)
+		{
 			tween.to(randX()).duration(randTime()).run();
+		}
 		else
 		if (key.indexOf('y') != -1)
+		{
 			tween.to(randY()).duration(randTime()).run();
+		}
 		else	
 		if (key.indexOf('s') != -1)
+		{
 			tween.to(randScale()).duration(randTime()).run();
+		}
 	}
 	
 	function randX()
@@ -115,6 +121,6 @@ class DisplayObjectTweenExample implements IObserver
 	
 	function randScale()
 	{
-		return Random.frandRange(1, 3);
+		return Random.frandRange(1, 2);
 	}
 }

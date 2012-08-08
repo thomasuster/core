@@ -40,6 +40,7 @@ import de.polygonal.core.time.Timebase;
 import de.polygonal.core.time.TimebaseEvent;
 import de.polygonal.core.time.Timeline;
 import de.polygonal.core.time.TimelineEvent;
+import de.polygonal.core.time.TimelineListener;
 import de.polygonal.core.tween.ease.Ease;
 import de.polygonal.core.tween.ease.EaseFactory;
 import de.polygonal.ds.DA;
@@ -47,7 +48,7 @@ import de.polygonal.ds.DA;
 /**
  * <p>Interpolates between two states by using an easing equation.</p>
  */
-class Tween implements IObservable, implements IObserver
+class Tween implements IObservable, implements IObserver, implements TimelineListener
 {
 	static var _activeTweens:DA<Tween>;
 	static var _map:Hash<Tween>;
@@ -247,8 +248,7 @@ class Tween implements IObservable, implements IObserver
 		if (onComplete != null)
 			_onComplete = onComplete;
 		
-		_timeline.attach(this);
-		_id = _timeline.schedule(_duration, _delay);
+		_id = _timeline.schedule(this, _duration, _delay);
 		return this;
 	}
 	
@@ -389,5 +389,57 @@ class Tween implements IObservable, implements IObserver
 			var alpha:Float = userData;
 			_target.set(M.lerp(_a, _b, alpha));
 		}
+	}
+	
+	public function onBlip():Void {}
+	
+	public function onStart():Void 
+	{
+		if (_activeTweens == null) _activeTweens = new DA();
+		_activeTweens.pushBack(this);
+		if (_interpolate) Timebase.get().attach(this, TimebaseEvent.RENDER);
+		_a = _b = _min;
+		if (!_interpolate) _target.set(_b);
+		notify(TweenEvent.START, _min);
+	}
+	
+	public function onProgress(alpha:Float):Void 
+	{
+		_a = _b; _b = M.lerp(_min, _max, _ease.interpolate(alpha));
+		if (!_interpolate) _target.set(_b);
+		notify(TweenEvent.ADVANCE, _b);
+	}
+	
+	public function onEnd():Void 
+	{
+		//source.detach(this);
+		_id = -1;
+		_a = _b = _max;
+		_target.set(_b);
+		
+		if (_yoyo && _repeat-- > 0)
+		{
+			var tmp = _min; _min = _max; _max = tmp;
+			run(_onComplete);
+			return;
+		}
+		else
+		{
+			_activeTweens.remove(this);
+			notify(TweenEvent.FINISH, _max);
+			if (_onComplete != null)
+				_onComplete();
+		}
+		if (_key == null) free();
+	}
+	
+	public function onCancel():Void 
+	{
+		_activeTweens.remove(this);
+		//source.detach(this);
+		_id = -1;
+		notify(TweenEvent.FINISH, _b);
+		if (_onComplete != null) _onComplete();
+		if (_key == null) free();
 	}
 }

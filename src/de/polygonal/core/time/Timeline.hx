@@ -35,6 +35,7 @@ import de.polygonal.core.event.Observable;
 import de.polygonal.core.fmt.Sprintf;
 import de.polygonal.core.math.Mathematics;
 import de.polygonal.core.macro.Assert;
+import de.polygonal.core.time.Timeline;
 import de.polygonal.ds.ArrayedQueue;
 import de.polygonal.ds.Cloneable;
 import de.polygonal.ds.Collection;
@@ -50,7 +51,7 @@ import de.polygonal.ds.pooling.ObjectPool;
  */
 class Timeline extends Observable, implements IObserver
 {
-	public static var POOL_SIZE = 512;
+	public static var POOL_SIZE = 4096;
 	
 	static var _initialized = false;
 	static var _instance:Timeline = null;
@@ -101,25 +102,24 @@ class Timeline extends Observable, implements IObserver
 	{
 		reserve(100);
 		
-		_timebase         = Timebase.get();
-		_idCounter        = 0;
-		_runningIntervals = new DLL<TimeInterval>(POOL_SIZE);
-		_pendingAdditions = new ArrayedQueue<TimeInterval>(POOL_SIZE);
-		_intervalHeap     = new Heap<TimeInterval>();
-		_intervalPool     = new ObjectPool<TimeInterval>(POOL_SIZE);
-		_currTick         = _timebase.getProcessedTicks();
-		_currInterval     = new TimeInterval();
-		_currSubTick      = 0;
-		#if debug
-		_tickRate         = 0;
-		#end
-		
-		_intervalPool.allocate(false, TimeInterval);
-		
+		_timebase = Timebase.get();
+		_idCounter = 0;
+		_currTick = _timebase.getProcessedTicks();
+		_currSubTick = 0;
+		_currInterval = null;
+		_runningIntervals = new DLL<TimeInterval>();
+		_pendingAdditions = new ArrayedQueue<TimeInterval>(POOL_SIZE * 10);
+		_intervalHeap = new Heap<TimeInterval>();
+		_intervalPool = new ObjectPool<TimeInterval>(POOL_SIZE);
+		_intervalPool.allocate(true, null, function() { return new TimeInterval(this); }   );
 		_all = new Array();
 		_all.push(_runningIntervals);
 		_all.push(_pendingAdditions);
 		_all.push(_intervalHeap);
+		
+		#if debug
+		_tickRate = 0;
+		#end
 	}
 	
 	/**
@@ -128,9 +128,7 @@ class Timeline extends Observable, implements IObserver
 	 */	
 	override public function free()
 	{
-		for (collection in _all)
-			for (interval in collection)
-				_notify(TimelineEvent.CANCEL, interval);
+		for (i in _all) for (j in i) j.onCancel();
 		
 		_timebase.detach(this);
 		_runningIntervals.free();
@@ -158,14 +156,14 @@ class Timeline extends Observable, implements IObserver
 	 * If repeatCount equals minus one the event runs periodically until cancelled.
 	 * @return an id that identifies the event. The id can be used to cancel a pending activity by calling <em>Timeline.get().cancel()</em>.
 	 */
-	public function schedule(duration:Float, delay = .0, repeatCount = 0, repeatInterval = .0):Int
+	public function schedule(listener:TimelineListener = null, duration:Float, delay = .0, repeatCount = 0, repeatInterval = .0):Int
 	{
+		#if debug
 		D.assert(duration >= .0, 'duration >= .0');
 		D.assert(delay >= .0, 'delay >= .0');
 		D.assert(repeatCount >= 0 || repeatCount == -1, 'repeatCount >= 0 || repeatCount == -1');
 		D.assert(repeatInterval >= 0, 'repeatInterval >= 0');
 		
-		#if debug
 		if (_tickRate == 0)
 			_tickRate = _timebase.getTickRate();
 		else
@@ -191,6 +189,8 @@ class Timeline extends Observable, implements IObserver
 		interval.intervalTicks = Timebase.secondsToTicks(repeatInterval);
 		interval.iterations    = repeatCount;
 		interval.iteration     = 0;
+		interval.listener      = listener;
+		
 		_pendingAdditions.enqueue(interval);
 		return interval.id;
 	}
@@ -239,7 +239,11 @@ class Timeline extends Observable, implements IObserver
 	public var progress(get_progress, never):Float;
 	inline function get_progress():Float
 	{
-		return _currInterval.ratio();
+		#if debug
+		D.assert(_currInterval != null, 'no active interval');
+		#end
+		
+		return _currInterval.getRatio();
 	}
 	
 	/**
@@ -248,6 +252,10 @@ class Timeline extends Observable, implements IObserver
 	public var id(get_id, never):Int;
 	inline function get_id():Int
 	{
+		#if debug
+		D.assert(_currInterval != null, 'no active interval');
+		#end
+		
 		return _currInterval.id;
 	}
 	
@@ -258,6 +266,10 @@ class Timeline extends Observable, implements IObserver
 	public var iteration(get_iteration, never):Int;
 	inline function get_iteration():Int
 	{
+		#if debug
+		D.assert(_currInterval != null, 'no active interval');
+		#end
+		
 		if (_currInterval.iterations == -1)
 			return -1;
 		else
@@ -323,10 +335,15 @@ class Timeline extends Observable, implements IObserver
 		{
 			interval = _pendingAdditions.dequeue();
 			if (interval.isCancelled())
-				_notify(TimelineEvent.CANCEL, interval);
+			{
+				_currInterval = interval;
+				interval.onCancel();
+			}
 			else
 			{
+				#if debug
 				D.assert(!_intervalHeap.contains(interval), '!_intervalHeap.contains(interval)');
+				#end
 				_intervalHeap.add(interval);
 			}
 		}
@@ -339,28 +356,34 @@ class Timeline extends Observable, implements IObserver
 			if (interval.isCancelled())
 			{
 				node = node.unlink();
-				_notify(TimelineEvent.CANCEL, interval);
+				_currInterval = interval;
+				interval.onCancel();
 				continue;
 			}
 			
 			interval.ageTicks++;
-			_notify(TimelineEvent.INTERVAL_PROGRESS, interval);
+			_currInterval = interval;
+			interval.onProgress(0);
 			
 			//die?
 			if (interval.ageTicks == interval.deathTicks)
 			{
 				node = node.unlink();
-				_notify(TimelineEvent.INTERVAL_END, interval);
-				
 				//loop or repeat?
 				if (interval.iterations != 0)
 				{
+					_currInterval = interval;
+					interval.onEnd();
 					interval.rise();
 					interval.subTicks = _currSubTick++;
 					_pendingAdditions.enqueue(interval);
 				}
 				else
+				{
 					_putInterval(interval);
+					_currInterval = interval;
+					interval.onEnd();
+				}
 			}
 			else
 				node = node.next;
@@ -378,7 +401,8 @@ class Timeline extends Observable, implements IObserver
 			{
 				_intervalHeap.pop();
 				_putInterval(interval);
-				_notify(TimelineEvent.CANCEL, interval);
+				_currInterval = interval;
+				interval.onCancel();
 				continue;
 			}
 			
@@ -390,7 +414,8 @@ class Timeline extends Observable, implements IObserver
 				//blip?
 				if (interval.ageTicks == interval.deathTicks)
 				{
-					_notify(TimelineEvent.BLIP, interval);
+					_currInterval = interval;
+					interval.onBlip();
 					
 					//loop or repeat?
 					if (interval.doRepeat())
@@ -405,8 +430,9 @@ class Timeline extends Observable, implements IObserver
 				else
 				{
 					_runningIntervals.append(interval);
-					_notify(TimelineEvent.INTERVAL_START, interval);
-					_notify(TimelineEvent.INTERVAL_PROGRESS, interval);
+					_currInterval = interval;
+					interval.onStart();
+					interval.onProgress(0);
 				}
 				continue;
 			}
@@ -418,10 +444,10 @@ class Timeline extends Observable, implements IObserver
 	{
 		if (_intervalPool.isEmpty())
 		{
-			#if warnings
-			de.polygonal.core.log.Log.getLog(Timeline).warn('TimeInterval pool exhausted');
+			#if debug
+			Root.log.warn('TimeInterval pool exhausted');
 			#end
-			return new TimeInterval();
+			return new TimeInterval(this);
 		}
 		else
 		{
@@ -432,22 +458,16 @@ class Timeline extends Observable, implements IObserver
 		}
 	}
 	
-	inline function _putInterval(x)
+	inline function _putInterval(x:TimeInterval)
 	{
-		_intervalPool.put(x.poolId);
-	}
-	
-	inline function _notify(type, interval)
-	{
-		_currInterval = interval;
-		notify(type, interval.id);
+		if (x.poolId != -1) _intervalPool.put(x.poolId);
 	}
 }
 
-private class TimeInterval implements Heapable<TimeInterval>, implements Cloneable<TimeInterval>
+private class TimeInterval implements Heapable<TimeInterval>, implements Cloneable<TimeInterval>//, implements TimelineListener
 {
 	public var id:Int;
-	public var poolId:Int;
+	public var poolId = -1;
 	public var birthTicks:Int;
 	public var ageTicks:Int;
 	public var deathTicks:Int;
@@ -455,26 +475,29 @@ private class TimeInterval implements Heapable<TimeInterval>, implements Cloneab
 	public var subTicks:Int;
 	public var iterations:Int;
 	public var iteration:Int;
+	public var timeline:Timeline;
+	public var listener:TimelineListener = null;
 	
 	public var position:Int;
 	
-	public function new()
+	public function new(timeline:Timeline)
 	{
+		this.timeline = timeline;
 	}
 	
-	inline public function ratio()
+	inline public function getRatio()
 	{
-		return (ageTicks - birthTicks) / life();
+		return (ageTicks - birthTicks) / getLife();
 	}
 	
-	inline public function life()
+	inline public function getLife()
 	{
 		return (deathTicks - birthTicks);
 	}
 	
 	inline public function rise()
 	{
-		var delayTicks = life() + intervalTicks;
+		var delayTicks = getLife() + intervalTicks;
 		birthTicks += delayTicks;
 		deathTicks += delayTicks;
 		ageTicks = birthTicks;
@@ -509,7 +532,7 @@ private class TimeInterval implements Heapable<TimeInterval>, implements Cloneab
 	
 	public function clone():TimeInterval
 	{
-		var interval           = new TimeInterval();
+		var interval           = new TimeInterval(timeline);
 		interval.id            = id;
 		interval.birthTicks    = birthTicks;
 		interval.ageTicks      = ageTicks;
@@ -529,9 +552,49 @@ private class TimeInterval implements Heapable<TimeInterval>, implements Cloneab
 		if (iterations > 0)
 			s = Sprintf.format('repeat=%d', [iterations]);
 			
-		if (life() == 0)
+		if (getLife() == 0)
 			return Sprintf.format('Blip id=%d[%d] start=%d %s', [id, subTicks, birthTicks, s]);
 		else
-			return Sprintf.format('Event id=%d[%d] from=%d to=%d progress %.2f %s', [id, subTicks, birthTicks, deathTicks, ratio(), s]);
+			return Sprintf.format('Event id=%d[%d] from=%d to=%d progress %.2f %s', [id, subTicks, birthTicks, deathTicks, getRatio(), s]);
+	}
+	
+	inline public function onBlip():Void 
+	{
+		if (listener != null)
+			listener.onBlip();
+		else
+			timeline.notify(TimelineEvent.BLIP, id);
+	}
+	
+	inline public function onStart():Void 
+	{
+		if (listener != null)
+			listener.onStart();
+		else
+			timeline.notify(TimelineEvent.INTERVAL_START, id);
+	}
+	
+	inline public function onProgress(alpha:Float):Void 
+	{
+		if (listener != null)
+			listener.onProgress(getRatio());
+		else
+			timeline.notify(TimelineEvent.INTERVAL_PROGRESS, id);
+	}
+	
+	inline public function onEnd():Void 
+	{
+		if (listener != null)
+			listener.onEnd();
+		else
+			timeline.notify(TimelineEvent.INTERVAL_END, id);
+	}
+	
+	inline public function onCancel():Void 
+	{
+		if (listener != null)
+			listener.onCancel();
+		else
+			timeline.notify(TimelineEvent.CANCEL, id);
 	}
 }
