@@ -34,7 +34,7 @@ import de.polygonal.core.macro.Assert;
 
 /**
  * <p>A 3x3 matrix.</p>
- * <p> Matrix operations are applied on the left. E.g. given a matrix M and vector V, matrix*vector is M*V, where V is treated as a column vector.</p>
+ * <p>Matrix operations are applied on the left. E.g. given a matrix M and vector V, matrix*vector is M*V, where V is treated as a column vector.</p>
  */
 class Mat33
 {
