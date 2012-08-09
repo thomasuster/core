@@ -201,6 +201,15 @@ class Entity implements IObserver, implements IObservable
 		}
 	}
 	
+	/**
+	 * An iterator over all children (non-recursive).<br/>
+	 * Convenience method for <em>treeNode.childIterator()</em>.
+	 */
+	inline public function iterator():Iterator<Entity>
+	{
+		return treeNode.childIterator();
+	}
+	
 	///TODO
 	/**
 	 * Whenever an entity is added or removed, the ancestors, descendants and siblings of this entity are notified about the change.<br/>

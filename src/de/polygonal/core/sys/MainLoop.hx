@@ -137,9 +137,11 @@ class MainLoop extends Entity
 				{
 					if (_paused)
 					{
+						_paused = false;
 						_timebase.halt();
 						_timebase.manualStep();
 						_timebase.resume();
+						_paused = true;
 					}
 				}
 				if (de.polygonal.ui.UI.get().currCharCode == de.polygonal.core.fmt.ASCII.GRAVE)
