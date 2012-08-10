@@ -199,7 +199,7 @@ class Tween implements IObservable, implements IObserver, implements TimelineLis
 		_timeline.detach(this);
 		_timeline.cancel(_id);
 		if (_interpolate) Timebase.get().detach(this);
-		if (_key != null) _map.remove(_key);
+		if (_key != null && _map != null) _map.remove(_key);
 		if (_observable != null) _observable.free();
 		_id         = -1;
 		_key        = null;
