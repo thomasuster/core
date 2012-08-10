@@ -93,7 +93,7 @@ class Tween implements IObservable, implements IObserver, implements TimelineLis
 	/**
 	 * Helper function for tweening any <code>fields</code> of an <code>object</code>.
 	 */
-	public static function create(key:String = null, object:Dynamic, fields:Dynamic, ease:Ease, to:Float, duration:Float, interpolateState = true):Tween
+	public static function create(key:String = null, object:Dynamic, fields:Dynamic, ease:Ease, to:Float, duration:Float, interpolateState = false):Tween
 	{
 		#if (flash || nme)
 		if (Std.is(object, flash.display.DisplayObject))
@@ -171,7 +171,7 @@ class Tween implements IObservable, implements IObserver, implements TimelineLis
 	 * @param duration the duration in seconds.
 	 * @param interpolateState if true, applies the tweened value in a separate rendering step.
 	 */
-	public function new(key:String = null, target:TweenTarget, ease:Ease, to:Float, duration:Float, interpolateState = true)
+	public function new(key:String = null, target:TweenTarget, ease:Ease, to:Float, duration:Float, interpolateState = false)
 	{
 		if (ease == null) ease = Ease.None;
 		
