@@ -65,8 +65,7 @@ If you want to test the latest beta build, you should pull the dev branch and ad
 * modified: Observable: consider group id in event filtering, use 30 bits for neko
 * added: TimelineListener as an alternative to TimelineEvent
 * modified: optimized tweening performance
-
-update tween examples
+* added: Entity.iterator() to iterate over all children (non-recursive)
 
 ### 1.00
 
