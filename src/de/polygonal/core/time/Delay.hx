@@ -29,16 +29,10 @@
  */
 package de.polygonal.core.time;
 
-import de.polygonal.core.event.Observable;
-
-import de.polygonal.core.event.IObservable;
-import de.polygonal.core.event.IObserver;
-import de.polygonal.core.event.Observable;
-
 /**
  * Carries out a deferred function call.
  */
-class Delay implements IObserver
+class Delay implements TimelineListener
 {
 	var _id:Int;
 	var _f:Void->Void;
@@ -49,23 +43,26 @@ class Delay implements IObserver
 	public function new(f:Void->Void, delaySeconds:Float)
 	{
 		_f = f;
-		_id = Timeline.get().schedule(0, delaySeconds);
-		Timeline.get().attach(this, TimelineEvent.BLIP);
+		_id = Timeline.get().schedule(this, 0, delaySeconds);
 	}
 	
 	public function cancel():Void
 	{
-		Timeline.get().detach(this);
 		Timeline.get().cancel(_id);
-		_id = -1;
 		_f = null;
 	}
 	
-	public function update(type:Int, source:IObservable, userData:Dynamic):Void 
+	function onBlip():Void 
 	{
-		source.detach(this);
 		_f();
 		_f = null;
-		_id = -1;
 	}
+	
+	function onStart():Void {}
+	
+	function onProgress(alpha:Float):Void {}
+	
+	function onEnd():Void {}
+	
+	function onCancel():Void {}
 }

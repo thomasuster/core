@@ -31,13 +31,13 @@ package de.polygonal.core.time;
 
 interface TimelineListener
 {
-	function onBlip():Void;
+	private function onBlip():Void;
 	
-	function onStart():Void;
+	private function onStart():Void;
 	
-	function onProgress(alpha:Float):Void;
+	private function onProgress(alpha:Float):Void;
 	
-	function onEnd():Void;
+	private function onEnd():Void;
 	
-	function onCancel():Void;
+	private function onCancel():Void;
 }

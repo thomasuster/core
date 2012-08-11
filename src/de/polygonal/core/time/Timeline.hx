@@ -464,7 +464,7 @@ class Timeline extends Observable, implements IObserver
 	}
 }
 
-private class TimeInterval implements Heapable<TimeInterval>, implements Cloneable<TimeInterval>//, implements TimelineListener
+private class TimeInterval implements Heapable<TimeInterval>, implements Cloneable<TimeInterval>, implements TimelineListener
 {
 	public var id:Int;
 	public var poolId = -1;

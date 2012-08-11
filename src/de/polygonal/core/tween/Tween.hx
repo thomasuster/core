@@ -391,9 +391,9 @@ class Tween implements IObservable, implements IObserver, implements TimelineLis
 		}
 	}
 	
-	public function onBlip():Void {}
+	function onBlip():Void {}
 	
-	public function onStart():Void 
+	function onStart():Void 
 	{
 		if (_activeTweens == null) _activeTweens = new DA();
 		_activeTweens.pushBack(this);
@@ -403,16 +403,15 @@ class Tween implements IObservable, implements IObserver, implements TimelineLis
 		notify(TweenEvent.START, _min);
 	}
 	
-	public function onProgress(alpha:Float):Void 
+	function onProgress(alpha:Float):Void 
 	{
 		_a = _b; _b = M.lerp(_min, _max, _ease.interpolate(alpha));
 		if (!_interpolate) _target.set(_b);
 		notify(TweenEvent.ADVANCE, _b);
 	}
 	
-	public function onEnd():Void 
+	function onEnd():Void 
 	{
-		//source.detach(this);
 		_id = -1;
 		_a = _b = _max;
 		_target.set(_b);
@@ -433,10 +432,9 @@ class Tween implements IObservable, implements IObserver, implements TimelineLis
 		if (_key == null) free();
 	}
 	
-	public function onCancel():Void 
+	function onCancel():Void 
 	{
 		_activeTweens.remove(this);
-		//source.detach(this);
 		_id = -1;
 		notify(TweenEvent.FINISH, _b);
 		if (_onComplete != null) _onComplete();
