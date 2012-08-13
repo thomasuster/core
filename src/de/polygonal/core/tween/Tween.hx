@@ -39,7 +39,6 @@ import de.polygonal.core.math.Mathematics;
 import de.polygonal.core.time.Timebase;
 import de.polygonal.core.time.TimebaseEvent;
 import de.polygonal.core.time.Timeline;
-import de.polygonal.core.time.TimelineEvent;
 import de.polygonal.core.time.TimelineListener;
 import de.polygonal.core.tween.ease.Ease;
 import de.polygonal.core.tween.ease.EaseFactory;
@@ -305,6 +304,7 @@ class Tween implements IObservable, implements IObserver, implements TimelineLis
 	{
 		_timeline.cancel(_id);
 		_id = 1;
+		if (_interpolate) Timebase.get().detach(this);
 		return this;
 	}
 	
@@ -326,74 +326,14 @@ class Tween implements IObservable, implements IObserver, implements TimelineLis
 	
 	public function update(type:Int, source:IObservable, userData:Dynamic):Void 
 	{
-		if (TimelineEvent.has(type))
-		{
-			if (_timeline.id == _id)
-			{
-				switch (type)
-				{
-					case TimelineEvent.INTERVAL_START:
-						if (_activeTweens == null) _activeTweens = new DA();
-						_activeTweens.pushBack(this);
-						if (_interpolate) Timebase.get().attach(this, TimebaseEvent.RENDER);
-						_a = _b = _min;
-						if (!_interpolate) _target.set(_b);
-						notify(TweenEvent.START, _min);
-					
-					case TimelineEvent.INTERVAL_PROGRESS:
-						var alpha:Float = _timeline.progress;
-						_a = _b; _b = M.lerp(_min, _max, _ease.interpolate(alpha));
-						if (!_interpolate) _target.set(_b);
-						notify(TweenEvent.ADVANCE, _b);
-					
-					case TimelineEvent.INTERVAL_END:
-						source.detach(this);
-						_id = -1;
-						_a = _b = _max;
-						_target.set(_b);
-						
-						if (_yoyo && _repeat-- > 0)
-						{
-							var tmp = _min; _min = _max; _max = tmp;
-							run(_onComplete);
-							return;
-						}
-						else
-						{
-							_activeTweens.remove(this);
-							notify(TweenEvent.FINISH, _max);
-							if (_onComplete != null)
-								_onComplete();
-						}
-						if (_key == null) free();
-					
-					case TimelineEvent.CANCEL:
-						_activeTweens.remove(this);
-						source.detach(this);
-						_id = -1;
-						notify(TweenEvent.FINISH, _b);
-						if (_onComplete != null) _onComplete();
-						if (_key == null) free();
-				}
-			}
-		}
-		else
-		if (type == TimebaseEvent.RENDER)
-		{
-			if (_id == -1)
-			{
-				source.detach(this);
-				return;
-			}
-			
-			var alpha:Float = userData;
-			_target.set(M.lerp(_a, _b, alpha));
-		}
+		if (_id == -1) return;
+		var alpha:Float = userData;
+		_target.set(M.lerp(_a, _b, alpha));
 	}
 	
 	function onBlip():Void {}
 	
-	function onStart():Void 
+	function onStart():Void
 	{
 		if (_activeTweens == null) _activeTweens = new DA();
 		_activeTweens.pushBack(this);
@@ -405,6 +345,7 @@ class Tween implements IObservable, implements IObserver, implements TimelineLis
 	
 	function onProgress(alpha:Float):Void 
 	{
+		if (_id == -1) return;
 		_a = _b; _b = M.lerp(_min, _max, _ease.interpolate(alpha));
 		if (!_interpolate) _target.set(_b);
 		notify(TweenEvent.ADVANCE, _b);
@@ -412,6 +353,7 @@ class Tween implements IObservable, implements IObserver, implements TimelineLis
 	
 	function onEnd():Void 
 	{
+		if (_id == -1) return;
 		_id = -1;
 		_a = _b = _max;
 		_target.set(_b);
@@ -435,7 +377,6 @@ class Tween implements IObservable, implements IObserver, implements TimelineLis
 	function onCancel():Void 
 	{
 		_activeTweens.remove(this);
-		_id = -1;
 		notify(TweenEvent.FINISH, _b);
 		if (_onComplete != null) _onComplete();
 		if (_key == null) free();
