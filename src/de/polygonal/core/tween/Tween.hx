@@ -194,6 +194,7 @@ class Tween implements IObservable, implements IObserver, implements TimelineLis
 	
 	public function free():Void
 	{
+		if (_timeline == null) return;
 		if (_activeTweens != null) _activeTweens.remove(this);
 		_timeline.detach(this);
 		_timeline.cancel(_id);
