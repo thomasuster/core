@@ -34,9 +34,10 @@ import de.polygonal.core.event.IObserver;
 import de.polygonal.core.event.Observable;
 import de.polygonal.core.fmt.Sprintf;
 import de.polygonal.core.fmt.StringUtil;
-import de.polygonal.core.math.Limits;
 import de.polygonal.core.macro.Assert;
+import de.polygonal.core.math.Limits;
 import de.polygonal.ds.Bits;
+import de.polygonal.ds.Itr;
 import de.polygonal.ds.TreeNode;
 
 class Entity implements IObserver, implements IObservable
@@ -98,15 +99,10 @@ class Entity implements IObserver, implements IObservable
 	public static var format:Entity->String = null;
 	
 	/**
-	 * The name of this entity.<br/>
+	 * The id of this entity.<br/>
 	 * The default value is the unqualified class name of this entity.
 	 */
-	public var name:Dynamic;
-	
-	/**
-	 * The type of this entity.
-	 */
-	public var type:Int;
+	public var id:Dynamic;
 	
 	/**
 	 * The processing order of this entity.<br/>
@@ -167,16 +163,24 @@ class Entity implements IObserver, implements IObservable
 	
 	var _flags:Int;
 	var _observable:Observable;
-	var _class:Class<Entity>;
+	var _classes:Array<Class<Entity>>;
 	
-	public function new(name:Dynamic = null)
+	var _itr:
+	#if doc
+	Itr<Entity>;
+	#else
+	TreeIterator<Entity>;
+	#end
+	
+	public function new(id:Dynamic = null)
 	{
-		this.name = name == null ? StringUtil.getUnqualifiedClassName(this) : name;
+		this.id = id == null ? StringUtil.getUnqualifiedClassName(this) : id;
 		treeNode = new TreeNode<Entity>(this);
 		priority = Limits.UINT16_MAX;
 		_flags = BIT_ADVANCE | BIT_PROCESS_SUBTREE | UPDATE_ALL;
 		_observable = null;
-		_class = null;
+		_classes = null;
+		_itr = null;
 	}
 	
 	/**
@@ -189,7 +193,7 @@ class Entity implements IObserver, implements IObservable
 		if (_hasFlag(BIT_COMMIT_SUICIDE))
 		{
 			#if log
-			de.polygonal.core.log.Log.getLog(Entity).warn(Sprintf.format('entity \'%s\' already freed', [Std.string(name)]));
+			de.polygonal.core.log.Log.getLog(Entity).warn(Sprintf.format('entity \'%s\' already freed', [Std.string(id)]));
 			#end
 			return;
 		}
@@ -210,20 +214,16 @@ class Entity implements IObserver, implements IObservable
 		return treeNode.childIterator();
 	}
 	
-	///TODO
-	/**
-	 * Whenever an entity is added or removed, the ancestors, descendants and siblings of this entity are notified about the change.<br/>
-	 */
-	public function hideUpdate(flags:Int):Void//, deep = false, rise = false):Void
+	public function hideUpdate(flags:Int, deep = false, rise = false):Void
 	{
 		_clrFlag(flags);
 		
-		/*if (deep)
+		if (deep)
 		{
 			var n = treeNode.children;
 			while (n != null)
 			{
-				n.val.setFlag(x, deep);
+				n.val.hideUpdate(flags);
 				n = n.next;
 			}
 		}
@@ -232,24 +232,10 @@ class Entity implements IObserver, implements IObservable
 			var n = treeNode.parent;
 			while (n != null)
 			{
-				n.val.setFlag(x);
+				n.val.hideUpdate(flags);
 				n = n.parent;
 			}
-		}*/
-		
-		/*public function clrFlag(x:Int, deep = false):Void
-		{
-			_clrFlag(x);
-			if (deep)
-			{
-				var n = treeNode.children;
-				while (n != null)
-				{
-					n.val.clrFlag(x, deep);
-					n = n.next;
-				}
-			}
-		}*/
+		}
 	}
 	
 	public function stopPropagation():Void
@@ -322,7 +308,7 @@ class Entity implements IObserver, implements IObservable
 		if (e._hasFlag(BIT_INITIATOR))
 		{
 			#if (log && debug)
-			de.polygonal.core.log.Log.getLog(Entity).warn('postpone commit at entity ' + name);
+			de.polygonal.core.log.Log.getLog(Entity).warn('postpone commit at entity ' + id);
 			#end
 			e._setFlag(BIT_RECOMMIT);
 			return;
@@ -364,7 +350,7 @@ class Entity implements IObserver, implements IObservable
 	 * Updates all entities in the subtree rooted at this node (excluding this node) by calling <em>onAdvance()</em> on each node.
 	 * @param dt the time step passed to each node.
 	 */
-	public function advance(dt:Float, parent:Entity = null):Void
+	public function advance(dt:Float, ?parent:Entity):Void
 	{
 		_propagateAdvance(dt, parent == null ? this : parent);
 	}
@@ -373,7 +359,7 @@ class Entity implements IObserver, implements IObservable
 	 * Renders all entities in the subtree rooted at this node (excluding this node) by calling <em>onRender()</em> on each node.
 	 * @param  alpha a blending factor in the range <arg>&#091;0, 1&#093;</arg> between the previous and current state.
 	 */
-	public function render(alpha:Float, parent:Entity = null):Void
+	public function render(alpha:Float, ?parent:Entity):Void
 	{
 		_propagateRender(alpha, parent == null ? this : parent);
 	}
@@ -386,7 +372,7 @@ class Entity implements IObserver, implements IObservable
 		if (child._hasFlag(BIT_PENDING_ADD))
 		{
 			#if log
-			de.polygonal.core.log.Log.getLog(Entity).warn(Sprintf.format('entity \'%s\' already added to %s', [child.name, name]));
+			de.polygonal.core.log.Log.getLog(Entity).warn(Sprintf.format('entity \'%s\' already added to %s', [child.id, id]));
 			#end
 			return;
 		}
@@ -395,7 +381,7 @@ class Entity implements IObserver, implements IObservable
 		D.assert(!treeNode.contains(child), 'given entity is a child of this entity');
 		#if log
 		if (treeNode.getRoot().val._hasFlag(BIT_INITIATOR))
-			de.polygonal.core.log.Log.getLog(Entity).warn(Sprintf.format('entity \'%s\' added during tree update', [child.name]));
+			de.polygonal.core.log.Log.getLog(Entity).warn(Sprintf.format('entity \'%s\' added during tree update', [child.id]));
 		#end
 		#end
 		
@@ -413,7 +399,7 @@ class Entity implements IObserver, implements IObservable
 	 * Removes a <em>child</em> entity from this entity or this entity if <em>child</em> is omitted.
 	 * @param deep if true, recursively removes all nodes in the subtree rooted at this node.
 	 */
-	public function remove(child:Entity = null, deep = false):Void
+	public function remove(?child:Entity, deep = false):Void
 	{
 		if (child == null)
 		{
@@ -432,17 +418,17 @@ class Entity implements IObserver, implements IObservable
 		if (child._hasFlag(BIT_PENDING_REMOVE | BIT_COMMIT_REMOVAL))
 		{
 			#if log
-			de.polygonal.core.log.Log.getLog(Entity).warn(Sprintf.format('entity \'%s\' already removed from \'%s\'', [Std.string(child.name), Std.string(name)]));
+			de.polygonal.core.log.Log.getLog(Entity).warn(Sprintf.format('entity \'%s\' already removed from \'%s\'', [Std.string(child.id), Std.string(id)]));
 			#end
 			return;
 		}
 		
 		#if debug
 		D.assert(child != this, 'given entity (%s) equals this entity.');
-		D.assert(treeNode.contains(child), Sprintf.format('given entity (%s) is not a child of this entity (%s).', [Std.string(child.name), Std.string(name)]));
+		D.assert(treeNode.contains(child), Sprintf.format('given entity (%s) is not a child of this entity (%s).', [Std.string(child.id), Std.string(id)]));
 		#if log
 		if (treeNode.getRoot().val._hasFlag(BIT_INITIATOR))
-			de.polygonal.core.log.Log.getLog(Entity).warn(Sprintf.format('entity \'%s\' removed during tree update', [child.name]));
+			de.polygonal.core.log.Log.getLog(Entity).warn(Sprintf.format('entity \'%s\' removed during tree update', [child.id]));
 		#end
 		#end
 		
@@ -493,19 +479,24 @@ class Entity implements IObserver, implements IObservable
 	}
 	
 	/**
-	 * Returns the first occurrence of an entity whose name matches <code>x</code> or null if no entity was found.
-	 * @param deep if true, searches the entire subtree rooted at this node.
+	 * Returns the first child (or any descendant if <code>deep</code> is true) whose <em>id</em> matches <code>x</code> or
+	 * null if no entity was found.
 	 */
-	public function findChildByName(x:Dynamic, deep = false):Entity
+	public function childById(x:Dynamic, deep = false):Entity
 	{
 		if (deep)
 		{
-			for (i in treeNode)
+			if (_itr == null)
+				_itr = cast treeNode.iterator();
+			_itr.reset();
+			var i = _itr;
+			var e = i.next();
+			while (i.hasNext())
 			{
-				if (i == this) continue;
-				if (i.name == x) return i;
+				e = i.next();
+				if (e.id == x)
+					return cast e;
 			}
-			return null;
 		}
 		else
 		{
@@ -513,7 +504,8 @@ class Entity implements IObserver, implements IObservable
 			while (n != null)
 			{
 				var e = n.val;
-				if (e.name == x) return e;
+				if (e.id == x)
+					return cast e;
 				n = n.next;
 			}
 		}
@@ -521,180 +513,101 @@ class Entity implements IObserver, implements IObservable
 	}
 	
 	/**
-	 * Returns the first occurrence of an entity whose class matches <code>x</code> or null if no entity was found.
-	 * @param deep if true, searches the entire subtree rooted at this node.
-	 * @param subclass if true, also compares subclasses of every entity to <code>x</code>.
+	 * Returns the first child (or any descendant if <code>deep</code> is true) whose class or subclass matches <code>x</code> or
+	 * null if no entity was found.
 	 */
-	public function findChildByClass<T>(x:Class<T>, deep = false, subclass = false):T
+	public function child<T>(x:Class<T>, deep = false):T
 	{
-		var c:Class<Dynamic>;
 		if (deep)
 		{
-			if (subclass)
+			if (_itr == null)
+				_itr = cast treeNode.iterator();
+			_itr.reset();
+			var i = _itr;
+			var e = i.next();
+			while (i.hasNext())
 			{
-				for (i in treeNode)
-				{
-					if (i == this) continue;
-					c = i._getClass();
-					if (c == x) return cast i;
-					
-					var s = Type.getSuperClass(c);
-					while (s != null)
-					{
-						if (s == x) return cast i;
-						s = Type.getSuperClass(s);
-					}
-				}
-			}
-			else
-			{
-				for (i in treeNode)
-				{
-					if (i == this) continue;
-					c = i._getClass();
-					if (c == x) return cast i;
-				}
+				e = i.next();
+				for (c in e._getClasses())
+					if (x == cast c)
+						return cast e;
 			}
 		}
 		else
 		{
-			if (subclass)
+			var n = treeNode.children;
+			while (n != null)
 			{
-				var n = treeNode.children;
-				while (n != null)
-				{
-					var e = n.val;
-					c = e._getClass();
-					if (c == x) return cast e;
-					
-					var s = Type.getSuperClass(c);
-					while (s != null)
-					{
-						if (s == x) return cast e;
-						s = Type.getSuperClass(s);
-					}
-					n = n.next;
-				}
-			}
-			else
-			{
-				var n = treeNode.children;
-				while (n != null)
-				{
-					var e = n.val;
-					c = e._getClass();
-					if (c == x) return cast e;
-					n = n.next;
-				}
+				var e = n.val;
+				for (c in e._getClasses())
+					if (c == cast x)
+						return cast e;
+				n = n.next;
 			}
 		}
 		return null;
 	}
 	
 	/**
-	 * Returns the first occurrence of an entity whose name matches <code>x</code> or null if no entity was found.
+	 * Returns the first sibling whose <em>id</em> matches <code>x</code> or null if no entity was found.
 	 */
-	public function findSiblingByName(x:Dynamic):Entity
+	public function siblingById(x:Dynamic):Entity
 	{
 		var n = treeNode.getFirstSibling();
 		while (n != null)
 		{
 			var e = n.val;
-			if (e.name == x) return e;
+			if (e.id == x) return e;
 			n = n.next;
 		}
 		return null;
 	}
 	
 	/**
-	 * Returns the first occurrence of an entity whose class matches <code>x</code> or null if no entity was found.
-	 * @param subclass if true, also compares subclasses of every entity to <code>x</code>.
+	 * Returns the first sibling whose class or subclass matches <code>x</code> or null if no entity was found.
 	 */
-	public function findSiblingByClass<T>(x:Class<T>, subclass = false):T
+	public function sibling<T>(x:Class<T>):T
 	{
-		if (subclass)
+		var n = treeNode.getFirstSibling();
+		while (n != null)
 		{
-			var c:Class<Dynamic>;
-			var n = treeNode.getFirstSibling();
-			while (n != null)
-			{
-				var e = n.val;
-				c = e._getClass();
-				if (c == x) return cast e;
-				var s = Type.getSuperClass(c);
-				while (s != null)
-				{
-					if (s == x) return cast e;
-					s = Type.getSuperClass(s);
-				}
-				n = n.next;
-			}
-		}
-		else
-		{
-			var c:Class<Dynamic>;
-			var n = treeNode.getFirstSibling();
-			while (n != null)
-			{
-				var e = n.val;
-				c = e._getClass();
-				if (c == x) return cast e;
-				n = n.next;
-			}
+			var e = n.val;
+			for (c in e._getClasses())
+				if (x == cast c)
+					return cast e;
+			n = n.next;
 		}
 		return null;
 	}
 	
 	/**
-	 * Returns the first occurrence of an entity whose name matches <code>x</code> or null if no entity was found.
+	 * Returns the first ancestor whose <em>id</em> matches <code>x</code> or null if no entity was found.
 	 */
-	public function findParentByName(x:Dynamic):Entity
+	public function parentById(x:Dynamic):Entity
 	{
 		var n = treeNode.parent;
 		while (n != null)
 		{
 			var e = n.val;
-			if (e.name == x) return e;
+			if (e.id == x) return e;
 			n = n.parent;
 		}
 		return null;
 	}
 	
 	/**
-	 * Returns the first occurrence of an entity whose class matches <code>x</code> or null if no entity was found.
-	 * @param subclass if true, also compares subclasses of every entity to <code>x</code>.
+	 * Returns the first ancestor whose class or subclass matches <code>x</code> or null if no entity was found.
 	 */
-	public function findParentByClass<T>(x:Class<T>, subclass = false):T
+	public function parent<T>(x:Class<T>):T
 	{
-		if (subclass)
+		var n = treeNode.parent;
+		while (n != null)
 		{
-			var c:Class<Dynamic>;
-			var n = treeNode.parent;
-			while (n != null)
-			{
-				var e = n.val;
-				c = e._getClass();
-				if (c == x) return cast e;
-				var s = Type.getSuperClass(c);
-				while (s != null)
-				{
-					if (s == x) return cast e;
-					s = Type.getSuperClass(s);
-				}
-				n = n.parent;
-			}
-		}
-		else
-		{
-			var c:Class<Dynamic>;
-			var n = treeNode.parent;
-			while (n != null)
-			{
-				var e = n.val;
-				c = e._getClass();
-				if (c == x) return cast e;
-				n = n.parent;
-			}
+			var e = n.val;
+			for (c in e._getClasses())
+				if (x == cast c)
+					return cast e;
+			n = n.parent;
 		}
 		return null;
 	}
@@ -705,8 +618,6 @@ class Entity implements IObserver, implements IObservable
 	 */
 	public function liftMessage(x:String, userData:Dynamic = null):Void
 	{
-		if (treeNode == null) return; //freed?
-		
 		var n = treeNode.parent;
 		while (n != null)
 		{
@@ -724,10 +635,8 @@ class Entity implements IObserver, implements IObservable
 	 * Bubbling can be aborted by calling <em>stopPropagation()</em>.
 	 * @param sender used internally.
 	 */
-	public function dropMessage(x:String, userData:Dynamic = null, sender:Entity = null):Void
+	public function dropMessage(x:String, userData:Dynamic = null, ?sender:Entity = null):Void
 	{
-		if (treeNode == null) return; //freed?
-		
 		if (sender == null) sender = this;
 		var n = treeNode.children;
 		while (n != null)
@@ -752,8 +661,6 @@ class Entity implements IObserver, implements IObservable
 	 */
 	public function slipMessage(x:String, userData:Dynamic = null):Void
 	{
-		if (treeNode == null) return; //freed?
-		
 		var n = treeNode.prev;
 		while (n != null)
 		{
@@ -797,7 +704,7 @@ class Entity implements IObserver, implements IObservable
 	 * Handle multiple calls to <em>is()</em> in one shot by checking all classes in <code>x</code>.
 	 * @return true if the type of this entity matches any type in <code>x</code>.
 	 */
-	public function isAny<Dynamic>(x:Array<Class<Dynamic>>):Bool
+	public function isAny(x:Array<Class<Dynamic>>):Bool
 	{
 		for (i in x)
 		{
@@ -812,12 +719,12 @@ class Entity implements IObserver, implements IObservable
 		if (format != null) return format(this);
 		
 		if (treeNode == null)
-			return Sprintf.format('[name=%s (freed)]', [Std.string(name)]);
+			return Sprintf.format('[id=%s (freed)]', [Std.string(id)]);
 		
 		if (priority != Limits.UINT16_MAX)
-			return Sprintf.format('[name=%s #c=%d, p=%02d%s]', [Std.string(name), treeNode.numChildren(), priority, _hasFlag(BIT_PENDING) ? ' p' : '']);
+			return Sprintf.format('[id=%s #c=%d, p=%02d%s]', [Std.string(id), treeNode.numChildren(), priority, _hasFlag(BIT_PENDING) ? ' p' : '']);
 		else
-			return Sprintf.format('[name=%s #c=%d%s]', [Std.string(name), treeNode.numChildren(), _hasFlag(BIT_PENDING) ? ' p' : '']);
+			return Sprintf.format('[id=%s #c=%d%s]', [Std.string(id), treeNode.numChildren(), _hasFlag(BIT_PENDING) ? ' p' : '']);
 	}
 	
 	public function getObservable():Observable
@@ -845,63 +752,63 @@ class Entity implements IObserver, implements IObservable
 	public function update(type:Int, source:IObservable, userData:Dynamic):Void {}
 	
 	/**
-	 * Invoked by <em>free()</em> on all children,
-	 * giving each one the opportunity to perform some cleanup (override for implementation).
+	 * Hook; invoked by <em>free()</em> on all children,
+	 * giving each one the opportunity to perform some cleanup.
 	 */
 	function onFree():Void {}
 	
 	/**
-	 * Invoked after this entity was attached to the <code>parent</code> entity (override for implementation).
+	 * Hook; invoked after this entity was attached to its parent <code>x</code>.
 	 */
 	function onAdd(parent:Entity):Void {}
 
 	/**
-	 * Invoked after an <code>ancestor</code> was added (override for implementation).
+	 * Hook; invoked after an ancestor <code>x</code> was added to this entity.
 	 */
-	function onAddAncestor(ancestor:Entity):Void {}
+	function onAddAncestor(x:Entity):Void {}
 	
 	/**
-	 * Invoked after a <code>child</code> was added (override for implementation).
+	 * Hook; invoked after a descendant <code>x</code> was added to this entity.
 	 */
-	function onAddDescendant(child:Entity):Void {}
+	function onAddDescendant(x:Entity):Void {}
 	
 	/**
-	 * Invoked after an entity somewhere next to this entity was added (override for implementation).
+	 * Hook; invoked after a sibling <code>x</code> was added to this entity.
 	 */
-	function onAddSibling(sibling:Entity):Void {}
+	function onAddSibling(x:Entity):Void {}
 	
 	/**
-	 * Invoked after this entity was removed from its <code>parent</code> entity (override for implementation).
+	 * Hook; invoked after this entity was removed from its parent <code>x</code>.
 	 */
 	function onRemove(parent:Entity):Void {}
 	
 	/**
-	 * Invoked after an <code>ancestor</code> was removed (override for implementation).
+	 * Hook; invoked after this entity has lost the ancestor <code>x</code>.
 	 */
-	function onRemoveAncestor(ancestor:Entity):Void {}
+	function onRemoveAncestor(x:Entity):Void {}
 	
 	/**
-	 * Invoked after a <code>descendant</code> was removed (override for implementation).
+	 * Hook; invoked after this entity has lost the descendant <code>x</code>.
 	 */
-	function onRemoveDescendant(descendant:Entity):Void {}
+	function onRemoveDescendant(x:Entity):Void {}
 	
 	/**
-	 * Invoked after an entity somewhere next to this entity was removed (override for implementation).
+	 * Hook; invoked after this entity has lost the sibling <code>x</code>.
 	 */
-	function onRemoveSibling(sibling:Entity):Void {}
+	function onRemoveSibling(x:Entity):Void {}
 	
 	/**
-	 * Updates this entity (override for implementation).
+	 * Hook; updates this entity.
 	 */
 	function onAdvance(dt:Float, parent:Entity):Void {}
 	
 	/**
-	 * Renders this entity (override for implementation).
+	 * Hook; renders this entity.
 	 */
 	function onRender(alpha:Float, parent:Entity):Void {}
 	
 	/**
-	 * Receives a <code>message</code> from <code>sender</code> (override for implementation).
+	 * Hook; invoked after <code>sender</code> has sent a <code>message</code> to this entity, passing <code>userData</code>.
 	 */
 	function onMessage(message:String, sender:Entity, userData:Dynamic):Void {}
 	
@@ -1361,8 +1268,9 @@ class Entity implements IObserver, implements IObservable
 					e._observable.free();
 					e._observable = null;
 				}
-				e._class = null;
+				e._classes = null;
 				e.treeNode = null;
+				e._itr = null;
 				e.onFree();
 				return true;
 			});
@@ -1406,9 +1314,33 @@ class Entity implements IObserver, implements IObservable
 		_flags &= ~mask;
 	}
 	
-	inline function _getClass():Class<Entity>
+	function _getClasses():Array<Class<Entity>>
 	{
-		if (_class == null) _class = Type.getClass(this);
-		return _class;
+		if (_classes == null)
+		{
+			if (classLookup == null)
+				classLookup = new Hash();
+			
+			var c = Type.getClass(this);
+			var i = 0;
+			var tmp:Array<Class<Entity>> = [c];
+			var s = Type.getSuperClass(c);
+			while (s != null)
+			{
+				tmp[++i] = cast s;
+				s = Type.getSuperClass(s);
+			}
+			var key = tmp.join(',');
+			if (classLookup.exists(key))
+				_classes = classLookup.get(key);
+			else
+			{
+				classLookup.set(key, tmp);
+				_classes = tmp;
+			}
+		}
+		return _classes;
 	}
+	
+	static var classLookup:Hash<Array<Class<Entity>>>;
 }
