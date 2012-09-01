@@ -53,12 +53,10 @@ If you want to test the latest beta build, you should pull the dev branch and ad
 ### 1.01 (dev)
 
 * fixed: Mathematics.floor(), ceil(), fwrap() for neko, don't use Std.int() for cpp
-* modified: Entity.findXXXById => Entity.findXXXByName
-* modified: optional subclass check in Entity.findXXXByClass
 * modified: keep dispatching Timebase updates when calling MainLoop.pause()
 * modified: make de.polygonal.core.time.Delay cancelable
 * added: math.RootSolver class
-* modified: pass message sender to Entity.onMessage()
+* modified: Entity: pass message sender when sending messages
 * fixed: keep existing fields in macro.Version
 * added: Entity.is() and Entity.isAny()
 * fixed: minor tweening fixes, added tweening examples
@@ -66,8 +64,11 @@ If you want to test the latest beta build, you should pull the dev branch and ad
 * added: TimelineListener as an alternative to TimelineEvent
 * modified: optimized tweening performance
 * added: Entity.iterator() to iterate over all children (non-recursive)
-* modified: Observable.bindMulti(): pass userData to callback function
+* modified: merge Observable.bindMulti() and Observable.bind() into Observable.bind(), fix group filtering
 * fixed: ConfigXML: keep existing fields
+* added: Timebase.fps
+* modified: Entity: shorten names of frequently used methods
+* modified: Entity: more precise recursive message propagation
 
 ### 1.00
 

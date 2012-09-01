@@ -254,25 +254,21 @@ class Timebase extends Observable
 	}
 	
 	/**
-	 * Performs a manual update step.<br/>
-	 * Silently fails if <code>halt()</code> hasn't been called before.
+	 * Performs a manual update step.
 	 */
 	public function manualStep():Void
 	{
-		if (_halted)
-		{
-			realTimeDelta = tickRate;
-			realTime += realTimeDelta;
-			
-			gameTimeDelta = tickRate * timeScale;
-			gameTime += gameTimeDelta;
-			
-			notify(TimebaseEvent.TICK, tickRate);
-			processedTicks++;
-			
-			notify(TimebaseEvent.RENDER, 1);
-			processedFrames++;
-		}
+		realTimeDelta = tickRate;
+		realTime += realTimeDelta;
+		
+		gameTimeDelta = tickRate * timeScale;
+		gameTime += gameTimeDelta;
+		
+		notify(TimebaseEvent.TICK, tickRate);
+		processedTicks++;
+		
+		notify(TimebaseEvent.RENDER, 1);
+		processedFrames++;
 	}
 	
 	function _step()
