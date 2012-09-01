@@ -104,7 +104,7 @@ class Timeline extends Observable, implements IObserver
 		
 		_timebase = Timebase.get();
 		_idCounter = 0;
-		_currTick = _timebase.getProcessedTicks();
+		_currTick = _timebase.processedTicks;
 		_currSubTick = 0;
 		_currInterval = null;
 		_runningIntervals = new DLL<TimeInterval>();
@@ -165,9 +165,9 @@ class Timeline extends Observable, implements IObserver
 		D.assert(repeatInterval >= 0, 'repeatInterval >= 0');
 		
 		if (_tickRate == 0)
-			_tickRate = _timebase.getTickRate();
+			_tickRate = _timebase.tickRate;
 		else
-		if (_timebase.getTickRate() != _tickRate)
+		if (_timebase.tickRate != _tickRate)
 		{
 			var c = _pendingAdditions.size() + _intervalHeap.size() + _runningIntervals.size();
 			D.assert(c == 0, 'tick rate changed');
@@ -177,7 +177,7 @@ class Timeline extends Observable, implements IObserver
 		if (repeatCount != 0 && repeatInterval == .0)
 			repeatInterval = delay; //use delay as interval
 		
-		var delayTicks = M.round(delay / _timebase.getTickRate());
+		var delayTicks = M.round(delay / _timebase.tickRate);
 		var ageTicks = _currTick + delayTicks;
 		
 		var interval           = _getInterval();
@@ -325,7 +325,7 @@ class Timeline extends Observable, implements IObserver
 	 */
 	public function advance():Void
 	{
-		_currTick = _timebase.getProcessedTicks();
+		_currTick = _timebase.processedTicks;
 		_currSubTick = 0;
 		
 		var interval, node;
