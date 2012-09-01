@@ -241,7 +241,7 @@ class ConfigXML
 		
 		var pos = haxe.macro.Context.currentPos();
 		
-		var fields = new Array<Field>();
+		var fields = Context.getBuildFields();
 		var assign = new Array<Expr>();
 		
 		try

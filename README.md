@@ -66,6 +66,8 @@ If you want to test the latest beta build, you should pull the dev branch and ad
 * added: TimelineListener as an alternative to TimelineEvent
 * modified: optimized tweening performance
 * added: Entity.iterator() to iterate over all children (non-recursive)
+* modified: Observable.bindMulti(): pass userData to callback function
+* fixed: ConfigXML: keep existing fields
 
 ### 1.00
 
