@@ -377,7 +377,7 @@ class Tween implements IObservable, implements IObserver, implements TimelineLis
 	
 	function onCancel():Void 
 	{
-		_activeTweens.remove(this);
+		if (_activeTweens != null) _activeTweens.remove(this);
 		notify(TweenEvent.FINISH, _b);
 		if (_onComplete != null) _onComplete();
 		if (_key == null) free();
