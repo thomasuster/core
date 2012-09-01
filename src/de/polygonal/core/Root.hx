@@ -46,6 +46,22 @@ class Root
 	public static var log(default, null):Log = null;
 	
 	/**
+	 * Short for <em>Root.log.debug()</em>.<br/>
+	 * Example:<br/>
+	 * <pre class="prettyprint">
+	 * using de.polygonal.core.Root;
+	 * "Hello World!".debug();
+	 * </pre>
+	 */
+	public static function debug(x:String)
+	{
+		#if debug
+		D.assert(log != null, 'call Root.init() first');
+		#end
+		log.info(x);
+	}
+	
+	/**
 	 * Short for <em>Root.log.info()</em>.<br/>
 	 * Example:<br/>
 	 * <pre class="prettyprint">
