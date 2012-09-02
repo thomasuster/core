@@ -43,6 +43,9 @@ class MainLoop extends Entity
 	
 	public var paused:Bool = true;
 	
+	var _tickTime:Float;
+	var _drawTime:Float;
+	
 	public function new()
 	{
 		super();
@@ -71,11 +74,14 @@ class MainLoop extends Entity
 				
 				if (paused) return;
 				
-				tickTimeSeconds = Timer.stamp();
+				tickTimeSeconds = _tickTime;
+				_tickTime = Timer.stamp();
+				
 				Timeline.get().advance();
 				commit();
 				tick(userData);
-				tickTimeSeconds = Timer.stamp() - tickTimeSeconds;
+				
+				_tickTime = Timer.stamp() - _tickTime;
 				
 				#if verbose
 				var s = Entity.printTopologyStats();
@@ -87,7 +93,8 @@ class MainLoop extends Entity
 				
 				if (paused) return;
 				
-				drawTimeSeconds = Timer.stamp();
+				drawTimeSeconds = _drawTime;
+				_drawTime = Timer.stamp();
 				
 				#if (!no_traces)
 				//identify draw step
@@ -98,7 +105,8 @@ class MainLoop extends Entity
 				#end
 				
 				draw(userData);
-				drawTimeSeconds = Timer.stamp() - drawTimeSeconds;
+				
+				_drawTime = Timer.stamp() - _drawTime;
 		}
 	}
 }
