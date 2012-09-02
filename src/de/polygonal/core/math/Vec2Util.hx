@@ -179,7 +179,7 @@ class Vec2Util
 	/**
 	 * The length of the vector (<code>x</code>,<code>y</code>).
 	 */
-	inline public static function length(x:Float, y:Float):Float
+	inline public static function norm(x:Float, y:Float):Float
 	{
 		return Math.sqrt(x * x + y * y);
 	}
@@ -187,7 +187,7 @@ class Vec2Util
 	/**
 	 * Computes 1/length of the vector (<code>x</code>,<code>y</code>) using a fast inverse square root approximation.
 	 */
-	inline public static function invLength(x:Float, y:Float):Float
+	inline public static function invNorm(x:Float, y:Float):Float
 	{
 		return 1 / M.invSqrt(x * x + y * y);
 	}
