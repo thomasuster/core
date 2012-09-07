@@ -344,5 +344,8 @@ class LogHandler implements IObserver
 	
 	function output(data:String):Void {}
 	
-	function init():Void {}
+	function init():Void
+	{
+		setf(LogHandler.ID | LogHandler.LEVEL | LogHandler.LINE | LogHandler.CLASS | LogHandler.CLASS_SHORT | LogHandler.NAME_SHORT | LogHandler.METHOD);
+	}
 }
