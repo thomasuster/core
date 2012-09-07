@@ -58,7 +58,7 @@ class Root
 		#if debug
 		D.assert(log != null, 'call Root.init() first');
 		#end
-		log.info(x);
+		log.debug(x);
 	}
 	
 	/**
