@@ -30,6 +30,7 @@
 package de.polygonal.core.fmt;
 
 import de.polygonal.core.fmt.ASCII;
+import de.polygonal.core.math.random.Random;
 
 /**
  * <p>Various utility functions for formatting numbers.</p>
@@ -189,5 +190,17 @@ class StringUtil
 			return getPackageName(Type.getClass(x));
 		else
 			throw 'invalid argument';
+	}
+	
+	
+	/**
+	 * Generates a random key of given <code>chars</code> and <code>length</code>.
+	 */
+	public static function generateRandomKey(chars:String, length:Int):String
+	{
+		var s = '';
+		for (i in 0...length)
+			s += chars.charAt(Random.randRange(0, chars.length - 1));
+		return s;
 	}
 }
