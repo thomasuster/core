@@ -69,6 +69,7 @@ If you want to test the latest beta build, you should pull the dev branch and ad
 * added: Timebase.fps
 * modified: Entity: shorten names of frequently used methods
 * modified: Entity: more precise recursive message propagation
+* added: StringUtil.generateRandomKey()
 
 ### 1.00
 

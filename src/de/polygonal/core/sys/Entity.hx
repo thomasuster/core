@@ -36,10 +36,17 @@ import de.polygonal.core.fmt.Sprintf;
 import de.polygonal.core.fmt.StringUtil;
 import de.polygonal.core.math.Limits;
 import de.polygonal.ds.Bits;
+import de.polygonal.ds.Hashable;
+import de.polygonal.ds.HashKey;
+import de.polygonal.ds.IntHashSet;
 import de.polygonal.ds.TreeNode;
 import de.polygonal.core.macro.Assert;
 
-class Entity implements IObserver, implements IObservable
+//descendant: ignore ghosts
+
+@:build(de.polygonal.core.sys.EntityType.gen())
+@:autoBuild(de.polygonal.core.sys.EntityType.gen())
+class Entity implements IObserver, implements IObservable, implements Hashable
 {
 	inline public static var UPDATE_ANCESTOR_ADD      = BIT_ADD_ANCESTOR;
 	inline public static var UPDATE_ANCESTOR_REMOVE   = BIT_REMOVE_ANCESTOR;
@@ -77,6 +84,8 @@ class Entity implements IObserver, implements IObservable
 	inline static var BIT_PENDING = BIT_PENDING_ADD | BIT_PENDING_REMOVE;
 	
 	static var classLookup:Hash<Array<Class<Entity>>>;
+	
+	static var typeMap = new IntHashSet(512);
 	
 	#if verbose
 	inline static var INDEX_ADD               = 0;
@@ -166,19 +175,43 @@ class Entity implements IObserver, implements IObservable
 	 */
 	public var treeNode(default, null):TreeNode<Entity>;
 	
+	/**
+	 * A unique identifier for this object.<br/>
+	 * A hash table transforms this key into an index of an array element by using a hash function.<br/>
+	 * <warn>This value should never be changed by the user.</warn>
+	 */
+	public var key:Int;
+	
 	var _flags:Int;
 	var _observable:Observable;
-	var _classes:Array<Class<Entity>>;
-	var _c:Int = 0;
+	var _c:Int;
+	var _type:Int;
 	
 	public function new(id:String = null)
 	{
 		this.id = id == null ? StringUtil.getUnqualifiedClassName(this) : id;
 		treeNode = new TreeNode<Entity>(this);
+		key = HashKey.next();
 		priority = Limits.UINT16_MAX;
 		_flags = BIT_TICK | BIT_PROCESS_SUBTREE | UPDATE_ALL;
 		_observable = null;
-		_classes = null;
+		_c = 0;
+		
+		var C = Type.getClass(this);
+		_type = untyped C.__type;
+		var a = _type;
+		if (!typeMap.has(a))
+		{
+			typeMap.set(a);
+			typeMap.set((a << 16) | a);
+			var s = Type.getSuperClass(C);
+			while (s != null)
+			{
+				var b:Int = untyped s.__type;
+				typeMap.set((a << 16) | b);
+				s = Type.getSuperClass(s);
+			}
+		}
 	}
 	
 	/**
@@ -363,7 +396,7 @@ class Entity implements IObserver, implements IObservable
 	 * Updates all entities in the subtree rooted at this node (excluding this node) by calling <em>onTick()</em> on all descendants.
 	 * @param timeDelta the time step passed to each descendant.
 	 */
-	public function tick(timeDelta:Float, ?parent:Entity):Void
+	public function tick(timeDelta:Float, parent:Entity = null):Void
 	{
 		propagateTick(timeDelta, parent == null ? this : parent);
 	}
@@ -372,7 +405,7 @@ class Entity implements IObserver, implements IObservable
 	 * Renders all entities in the subtree rooted at this node (excluding this node) by calling <em>onRender()</em> on all descendants.
 	 * @param alpha a blending factor in the range <arg>&#091;0, 1&#093;</arg> between the previous and current state.
 	 */
-	public function draw(alpha:Float, ?parent:Entity):Void
+	public function draw(alpha:Float, parent:Entity = null):Void
 	{
 		propagateDraw(alpha, parent == null ? this : parent);
 	}
@@ -381,7 +414,7 @@ class Entity implements IObserver, implements IObservable
 	 * Adds a child entity to this entity.
 	 * @param x an object inheriting from Entity or a reference to an Entity class.
 	 */
-	public function add(x:Dynamic, priority = Limits.UINT16_MAX):Void
+	public function add(x:Dynamic, priority = Limits.UINT16_MAX):Entity
 	{
 		var c:Entity =
 		#if flash
@@ -398,7 +431,7 @@ class Entity implements IObserver, implements IObservable
 			#if verbose
 			Root.warn(Sprintf.format('entity \'%s\' already added to %s', [c.id, id]));
 			#end
-			return;
+			return c;
 		}
 		
 		#if debug
@@ -417,13 +450,15 @@ class Entity implements IObserver, implements IObservable
 		//mark as pending addition
 		c.clrf(BIT_PENDING_REMOVE);
 		c.setf(BIT_PENDING_ADD);
+		
+		return c;
 	}
 	
 	/**
 	 * Removes a <code>child</code> entity from this entity or this entity if <code>child</code> is omitted.
 	 * @param deep if true, recursively removes all nodes in the subtree rooted at this node.
 	 */
-	public function remove(?child:Entity, deep = false):Void
+	public function remove(child:Entity = null, deep = false):Void
 	{
 		if (child == null)
 		{
@@ -508,14 +543,16 @@ class Entity implements IObserver, implements IObservable
 	 * Returns the first child whose class or subclass matches <code>x</code>
 	 * or null if no entity was found.
 	 */
-	public function child<T>(x:Class<T>):T
+	public function child<T:Entity>(x:Class<T>):T
 	{
+		var a:Int = untyped x.__type;
+		var m = Entity.typeMap;
 		var n = treeNode.children;
 		while (n != null)
 		{
-			for (c in n.val.classList())
-				if (x == cast c)
-					return cast n.val;
+			var e = n.val;
+			if (m.has((e._type << 16) | a))
+				return cast e;
 			n = n.next;
 		}
 		return null;
@@ -544,14 +581,18 @@ class Entity implements IObserver, implements IObservable
 	 */
 	public function descendant<T>(x:Class<T>):T
 	{
+		var a:Int = untyped x.__type;
+		var m = Entity.typeMap;
 		var n = treeNode.children;
 		while (n != null)
 		{
-			for (c in n.val.classList())
-				if (x == cast c)
-					return cast n.val;
-			var e = n.val.descendant(x);
-			if (e != null) return e;
+			var e = n.val;
+			if (m.has((e._type << 16) | a))
+				return cast e;
+			
+			var t = e.descendant(x);
+			if (t != null) return t;
+			
 			n = n.next;
 		}
 		return null;
@@ -580,13 +621,14 @@ class Entity implements IObserver, implements IObservable
 	 */
 	public function sibling<T>(x:Class<T>):T
 	{
+		var a:Int = untyped x.__type;
 		var n = treeNode.getFirstSibling();
+		var m = Entity.typeMap;
 		while (n != null)
 		{
 			var e = n.val;
-			for (c in e.classList())
-				if (x == cast c)
-					return cast e;
+			if (m.has((e._type << 16) | a))
+				return cast e;
 			n = n.next;
 		}
 		return null;
@@ -612,13 +654,14 @@ class Entity implements IObserver, implements IObservable
 	 */
 	public function ancestor<T>(x:Class<T>):T
 	{
+		var a:Int = untyped x.__type;
 		var n = treeNode.parent;
+		var m = Entity.typeMap;
 		while (n != null)
 		{
 			var e = n.val;
-			for (c in e.classList())
-				if (x == cast c)
-					return cast e;
+			if (m.has((e._type << 16) | a))
+				return cast e;
 			n = n.parent;
 		}
 		return null;
@@ -670,7 +713,7 @@ class Entity implements IObserver, implements IObservable
 	 * @param userData additional custom data.
 	 * @param sender used internally.
 	 */
-	public function dropMsg(x:String, userData:Dynamic = null, ?sender:Entity = null):Void
+	public function dropMsg(x:String, userData:Dynamic = null, sender:Entity = null):Void
 	{
 		if (sender == null) sender = this;
 		
@@ -1365,7 +1408,6 @@ class Entity implements IObserver, implements IObservable
 					e._observable.free();
 					e._observable = null;
 				}
-				e._classes = null;
 				e.treeNode = null;
 				e.onFree();
 				return true;
@@ -1408,35 +1450,5 @@ class Entity implements IObserver, implements IObservable
 	inline function clrf(mask:Int):Void
 	{
 		_flags &= ~mask;
-	}
-	
-	inline function classList():Array<Class<Entity>>
-	{
-		if (_classes == null) initClassList();
-		return _classes;
-	}
-	
-	function initClassList()
-	{
-		if (classLookup == null)
-			classLookup = new Hash();
-		
-		var c = Type.getClass(this);
-		var i = 0;
-		var tmp:Array<Class<Entity>> = [c];
-		var s = Type.getSuperClass(c);
-		while (s != null)
-		{
-			tmp[++i] = cast s;
-			s = Type.getSuperClass(s);
-		}
-		var key = tmp.join(',');
-		if (classLookup.exists(key))
-			_classes = classLookup.get(key);
-		else
-		{
-			classLookup.set(key, tmp);
-			_classes = tmp;
-		}
 	}
 }
