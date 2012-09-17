@@ -316,6 +316,7 @@ class Resource extends Observable
 					//download in progress, close stream
 					try { _loader.close(); } catch (unknown:Dynamic) {}
 					notify(ResourceEvent.UNLOAD, this);
+					super.free();
 				}
 			
 			case TXT, RAW, URL, MP3:
