@@ -283,7 +283,7 @@ class ConfigXML
 				var fieldName  = names[i];
 				var fieldValue = values[i];
 				
-				var c, n, p = [];
+				var c = null, n:String, p = [];
 				if (fieldValue.indexOf(',') != -1)
 				{
 					var arrExpr = [];
