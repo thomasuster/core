@@ -84,12 +84,13 @@ class NumberFormat
 	{
 		var s = '';
 		var t = x;
-		while (t > 0)
+		do
 		{
 			var r = t & 7;
 			s = r + s;
-			t >>= 3;
+			t >>>= 3;
 		}
+		while (t > 0);
 		return s;
 	}
 	
