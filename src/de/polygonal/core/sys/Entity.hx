@@ -83,8 +83,6 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	
 	inline static var BIT_PENDING = BIT_PENDING_ADD | BIT_PENDING_REMOVE;
 	
-	static var classLookup:Hash<Array<Class<Entity>>>;
-	
 	static var typeMap = new IntHashSet(512);
 	
 	#if verbose
