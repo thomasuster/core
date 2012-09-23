@@ -533,58 +533,7 @@ class Observable extends HashableItem, implements IObservable
 	 */
 	public function notify(type:Int, userData:Dynamic = null):Void
 	{
-		if (_observerCount == 0 || (type & _blacklist) == type)
-			return; //early out
-		
-		var eventBits = type & ObserverMacro.EVENT_MASK;
-		var groupId = type >>> ObserverMacro.NUM_EVENT_BITS;
-		
-		//when an observer calls notify() while an update is in progress, the current update stops
-		//while the new update is carried out to all observers, e.g.:
-		//we have 3 observers A,B and C - when B invokes an update the update order is [A, B, [A, B, C], C]
-		if (_updating) //update still running?
-		{
-			//stop update and store state so it can be resumed later on
-			_stack.push(_hook);
-			_stack.push(_type);
-			_stack.push(_userData);
-			
-			_type = type;
-			_userData = userData;
-			
-			_update(_observer, type, eventBits, groupId, userData);
-		}
-		else
-		{
-			_updating = true;
-			_type = type;
-			_userData = userData;
-			
-			_update(_observer, type, eventBits, groupId, userData);
-			
-			if (_stack == null) //free() was called?
-			{
-				_hook = null;
-				_observer = null;
-				return;
-			}
-			
-			if (_stack.size() > 0)
-			{
-				while (_stack.size() > 0) 
-				{
-					//restore state
-					userData = _stack.pop();
-					type     = _stack.pop();
-					
-					//resume update
-					_update(_stack.pop(), type, eventBits, groupId, userData);
-				}
-			}
-			
-			_updating = false;
-			_hook = null;
-		}
+		_notify(type, userData);
 	}
 	
 	/**
@@ -640,6 +589,62 @@ class Observable extends HashableItem, implements IObservable
 	public function iterator():Iterator<IObserver>
 	{
 		return new ObservableIterator<IObserver>(_observer);
+	}
+	
+	function _notify(type:Int, userData:Dynamic = null)
+	{
+		if (_observerCount == 0 || (type & _blacklist) == type)
+			return; //early out
+		
+		var eventBits = type & ObserverMacro.EVENT_MASK;
+		var groupId = type >>> ObserverMacro.NUM_EVENT_BITS;
+		
+		//when an observer calls notify() while an update is in progress, the current update stops
+		//while the new update is carried out to all observers, e.g.:
+		//we have 3 observers A,B and C - when B invokes an update the update order is [A, B, [A, B, C], C]
+		if (_updating) //update still running?
+		{
+			//stop update and store state so it can be resumed later on
+			_stack.push(_hook);
+			_stack.push(_type);
+			_stack.push(_userData);
+			
+			_type = type;
+			_userData = userData;
+			
+			_update(_observer, type, eventBits, groupId, userData);
+		}
+		else
+		{
+			_updating = true;
+			_type = type;
+			_userData = userData;
+			
+			_update(_observer, type, eventBits, groupId, userData);
+			
+			if (_stack == null) //free() was called?
+			{
+				_hook = null;
+				_observer = null;
+				return;
+			}
+			
+			if (_stack.size() > 0)
+			{
+				while (_stack.size() > 0)
+				{
+					//restore state
+					userData = _stack.pop();
+					type     = _stack.pop();
+					
+					//resume update
+					_update(_stack.pop(), type, eventBits, groupId, userData);
+				}
+			}
+			
+			_updating = false;
+			_hook = null;
+		}
 	}
 	
 	inline function _update(node:ObserverNode, type:Int, eventBits:Int, groupId:Int, userData:Dynamic)
