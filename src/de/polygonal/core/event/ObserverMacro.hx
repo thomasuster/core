@@ -267,7 +267,7 @@ class ObserverMacro
 		}
 	}
 	
-	static function _makeTypeField(name, tid, gid, pos)
+	static function _makeTypeField(name, tid, gid, pos):Field
 	{
 		if (haxe.macro.Context.defined('display'))
 		{
@@ -284,13 +284,13 @@ class ObserverMacro
 		}
 	}
 	
-	static function _makeGroupIdField(gid, pos)
+	static function _makeGroupIdField(gid, pos):Field
 	{
 		return {name: 'GROUP_ID', doc: null, meta: [], access: [AStatic, APublic, AInline],
 			kind: FVar(TPath({pack : [], name : 'Int', params : [], sub : null}), {expr: EConst(CInt(Std.string(gid))), pos: pos}), pos: pos}
 	}
 	
-	static function _makeGroupMaskField(gid, pos)
+	static function _makeGroupMaskField(gid, pos):Field
 	{
 		var mask = EBinop(OpShl, {expr: EConst(CInt(Std.string(gid))), pos: pos}, {expr: EConst(CInt(Std.string(NUM_EVENT_BITS))), pos: pos});
 		
@@ -298,7 +298,7 @@ class ObserverMacro
 			kind: FVar(TPath({pack : [], name : 'Int', params : [], sub : null}), {expr: mask, pos: pos}), pos: pos}
 	}
 	
-	static function _makeEventMaskField(n, pos)
+	static function _makeEventMaskField(n, pos):Field
 	{
 		var mask = EBinop(OpSub,
 			{expr: EBinop(OpShl, {expr: EConst(CInt('1')), pos: pos}, {expr: EConst(CInt(Std.string(n))), pos: pos}), pos: pos},
