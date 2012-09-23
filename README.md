@@ -70,6 +70,8 @@ If you want to test the latest beta build, you should pull the dev branch and ad
 * modified: Entity: shorten names of frequently used methods
 * modified: Entity: more precise recursive message propagation
 * added: StringUtil.generateRandomKey()
+* added: Compile-time tokenization of Sprintf format string (thanks Zachary Dremann - github.com/Dr-Emann)
+* fixed: ObserverMacro for Haxe 2.11+
 
 ### 1.00
 
