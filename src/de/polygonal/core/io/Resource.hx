@@ -269,7 +269,11 @@ class Resource extends Observable
 		switch (type)
 		{
 			case SWF, PIC:
-				if (context == null) context = new LoaderContext(false, ApplicationDomain.currentDomain);
+				if (context == null)
+				{
+					context = new LoaderContext(false, ApplicationDomain.currentDomain);
+					context.allowCodeImport = true;
+				}
 				_loader.load(request, context);
 			
 			case TXT:

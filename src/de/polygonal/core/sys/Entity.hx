@@ -923,9 +923,9 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	function onDraw(alpha:Float, parent:Entity):Void {}
 	
 	/**
-	 * Hook; invoked after <code>sender</code> has sent a <code>message</code> to this entity, passing <code>userData</code>.
+	 * Hook; invoked after <code>sender</code> has sent a message <code>msg</code> to this entity, passing <code>userData</code>.
 	 */
-	function onMsg(message:String, sender:Entity, userData:Dynamic):Void {}
+	function onMsg(msg:String, sender:Entity, userData:Dynamic):Void {}
 	
 	function prepareAdditions():Void
 	{

@@ -139,7 +139,7 @@ class Timebase extends Observable
 		realTime = 0;
 		realTimeDelta = 0;
 		gameTimeDelta = 0;
-		fps = 0;
+		fps = 60;
 		
 		_accumulator = 0;
 		_accumulatorLimit = tickRate * 10;
@@ -312,7 +312,7 @@ class Timebase extends Observable
 			_accumulator += realTimeDelta * timeScale;
 			
 			//clamp accumulator to prevent 'spiral of death'
-			if (_accumulator >= _accumulatorLimit)
+			if (_accumulator > _accumulatorLimit)
 			{
 				#if verbose
 				Root.warn(Sprintf.format('accumulator clamped from %.2f to %.2f seconds', [_accumulator, _accumulatorLimit]));
