@@ -30,7 +30,7 @@
 package de.polygonal.core.math.random;
 
 #if !flash
-'The ParkMiller31 class is only available for flash'
+using haxe.Int32;
 #end
 
 /**
@@ -42,6 +42,13 @@ package de.polygonal.core.math.random;
  */
 class ParkMiller31 extends RNG
 {
+	
+	private static var max = 
+		#if flash
+			Limits.UINT32_MAX;
+		#else
+			Int32.make(0x7FFF, 0xffff);
+		#end
 	/**
 	 * Default seed value is 1.
 	 */
@@ -68,12 +75,43 @@ class ParkMiller31 extends RNG
 	 */
 	override public function random():Float
 	{
-		var lo:UInt = 16807 * (_seed & 0xffff);
-		var hi:UInt = 16807 * (_seed >>> 16);
-		lo += (hi & 0x7fff) << 16;
-		lo += hi >>> 15;
-		if (lo > 0x7fffffff) lo -= 0x7fffffff;
-		return _seed = lo;
+		#if flash
+			
+			var lo:UInt = 16807 * (_seed & 0xffff);
+			var hi:UInt = 16807 * (_seed >>> 16);
+			lo += (hi & 0x7fff) << 16;
+			lo += hi >>> 15;
+			if (lo > 0x7fffffff) lo -= 0x7fffffff;
+			return _seed = lo;
+			
+		#else
+			
+			var seed = Int32.make((_seed>>>16)&0x7fff, _seed & 0xffff);
+			var lo = Int32.ofInt(16807).mul(seed.and(Int32.ofInt(0xffff)));
+			var hi = Int32.ofInt(16807).mul(seed.ushr(16));
+			lo = lo.add(hi.and(Int32.ofInt(0x7fff)).shl(16));
+			lo = lo.add(hi.ushr(15));
+			
+			if (lo.ucompare(max)>0)
+				lo = lo.sub(max);
+			
+			
+			_seed = lo.toNativeInt();
+			#if !neko
+				return _seed;
+			#else
+				if (lo.ucompare(Int32.ofInt(Limits.INT32_MAX)) <= 0)
+					return _seed;
+				else
+				{
+					var small = lo.and(Int32.ofInt(Limits.INT32_MAX));
+					var ret:Float = small.toInt();
+					ret += 1073741824.0;// add 0x40000000
+					return ret;
+				}
+			#end
+			
+		#end
 	}
 	
 	override public function randomFloat():Float
