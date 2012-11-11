@@ -196,18 +196,18 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 		_c = 0;
 		
 		var C = Type.getClass(this);
-		_type = untyped C.__type;
-		var a = _type;
-		if (!typeMap.has(a))
+		_type = getClassType(C);
+		if (!typeMap.has(_type))
 		{
+			var a = _type;
 			typeMap.set(a);
 			typeMap.set((a << 16) | a);
-			var s = Type.getSuperClass(C);
-			while (s != null)
+			var S = Type.getSuperClass(C);
+			while (S != null)
 			{
-				var b:Int = untyped s.__type;
+				var b = getClassType(S);
 				typeMap.set((a << 16) | b);
-				s = Type.getSuperClass(s);
+				S = Type.getSuperClass(S);
 			}
 		}
 	}
@@ -543,7 +543,7 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	 */
 	public function child<T:Entity>(x:Class<T>):T
 	{
-		var a:Int = untyped x.__type;
+		var a = getClassType(x);
 		var m = Entity.typeMap;
 		var n = treeNode.children;
 		while (n != null)
@@ -577,9 +577,9 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	 * or null if no entity was found.<br/>
 	 * In constrast to <em>c</em>, this method is recursive and searches the entire subtree.
 	 */
-	public function descendant<T>(x:Class<T>):T
+	public function descendant<T:Entity>(x:Class<T>):T
 	{
-		var a:Int = untyped x.__type;
+		var a = getClassType(x);
 		var m = Entity.typeMap;
 		var n = treeNode.children;
 		while (n != null)
@@ -617,9 +617,9 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	/**
 	 * Returns the first sibling whose class or subclass matches <code>x</code> or null if no entity was found.
 	 */
-	public function sibling<T>(x:Class<T>):T
+	public function sibling<T:Entity>(x:Class<T>):T
 	{
-		var a:Int = untyped x.__type;
+		var a:Int = getClassType(x);
 		var n = treeNode.getFirstSibling();
 		var m = Entity.typeMap;
 		while (n != null)
@@ -650,9 +650,9 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	/**
 	 * Returns the first ancestor whose class or subclass matches <code>x</code> or null if no entity was found.
 	 */
-	public function ancestor<T>(x:Class<T>):T
+	public function ancestor<T:Entity>(x:Class<T>):T
 	{
-		var a:Int = untyped x.__type;
+		var a = getClassType(x);
 		var n = treeNode.parent;
 		var m = Entity.typeMap;
 		while (n != null)
@@ -1423,6 +1423,15 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 			n = n.next;
 		}
 		return false;
+	}
+	
+	inline function getClassType<T>(C:Class<T>):Int
+	{
+		#if flash
+		return untyped C.__type;
+		#else
+		return Reflect.field(C, '__type');
+		#end
 	}
 	
 	inline function isGhost()
