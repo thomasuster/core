@@ -53,12 +53,14 @@ class Root
 	 * "Hello World!".debug();
 	 * </pre>
 	 */
-	public static function debug(x:String)
+	inline public static function debug(x:String)
 	{
+		#if log
 		#if debug
 		D.assert(log != null, 'call Root.init() first');
 		#end
 		log.debug(x);
+		#end
 	}
 	
 	/**
@@ -69,12 +71,14 @@ class Root
 	 * "Hello World!".info();
 	 * </pre>
 	 */
-	public static function info(x:String)
+	inline public static function info(x:String)
 	{
+		#if log
 		#if debug
 		D.assert(log != null, 'call Root.init() first');
 		#end
 		log.info(x);
+		#end
 	}
 	
 	/**
@@ -85,12 +89,14 @@ class Root
 	 * "Hello World!".warn();
 	 * </pre>
 	 */
-	public static function warn(x:String)
+	inline public static function warn(x:String)
 	{
+		#if log
 		#if debug
 		D.assert(log != null, 'call Root.init() first');
 		#end
 		log.warn(x);
+		#end
 	}
 	
 	/**
@@ -101,12 +107,14 @@ class Root
 	 * "Hello World!".error();
 	 * </pre>
 	 */
-	public static function error(x:String)
+	inline public static function error(x:String)
 	{
+		#if log
 		#if debug
 		D.assert(log != null, 'call Root.init() first');
 		#end
 		log.error(x);
+		#end
 	}
 	
 	#if flash

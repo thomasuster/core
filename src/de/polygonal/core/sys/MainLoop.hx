@@ -64,7 +64,7 @@ class MainLoop extends Entity
 			case TimebaseEvent.TICK:
 				tickTimeSeconds = 0;
 				
-				#if (!no_traces)
+				#if (!no_traces && log)
 				//identify tick step
 				var log = de.polygonal.core.Root.log;
 				if (log != null)
@@ -96,7 +96,7 @@ class MainLoop extends Entity
 				drawTimeSeconds = _drawTime;
 				_drawTime = Timer.stamp();
 				
-				#if (!no_traces)
+				#if (!no_traces && log)
 				//identify draw step
 				var log = de.polygonal.core.Root.log;
 				if (log != null)
