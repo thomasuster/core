@@ -29,12 +29,12 @@
  */
 package de.polygonal.core.macro;
 
-typedef D = de.polygonal.core.macro.Assert;
-
 #if macro
 import haxe.macro.Context;
 import haxe.macro.Expr;
 #end
+
+typedef D = de.polygonal.core.macro.Assert;
 
 class Assert
 {
