@@ -43,6 +43,7 @@ using de.polygonal.ds.BitFlags;
 class FileHandler extends LogHandler
 {
 	var _fileName:String;
+	var _success:Bool = true;
 	
 	public function new(fileName:String)
 	{
@@ -50,13 +51,15 @@ class FileHandler extends LogHandler
 		
 		_fileName = fileName;
 		
-		#if neko
-		var fout = neko.io.File.write(_fileName, false);
-		#else
-		var fout = cpp.io.File.write(_fileName, false);
-		#end
-		
-		fout.close();
+		try 
+		{
+			var fout = sys.io.File.write(_fileName, false);
+			fout.close();
+		}
+		catch(error:Dynamic)
+		{
+			_success = false;
+		}
 	}
 	
 	override function init():Void
@@ -66,11 +69,9 @@ class FileHandler extends LogHandler
 	
 	override function output(message:String):Void
 	{
-		#if neko
-		var fout = neko.io.File.append(_fileName, false);
-		#else
-		var fout = cpp.io.File.append(_fileName, false);
-		#end
+		if (!_success) return;
+		
+		var fout = sys.io.File.append(_fileName, false);
 		fout.writeString(message + '\r\n');
 		fout.close();
 	}
