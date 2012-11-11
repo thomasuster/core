@@ -35,8 +35,8 @@ import flash.display.DisplayObject;
 
 using de.polygonal.ds.BitFlags;
 
-#if !flash
-'The DisplayObjectTween class is only available for flash'
+#if !nme || !flash
+'The DisplayObjectTween class is only available for flash/nme'
 #end
 
 /**
