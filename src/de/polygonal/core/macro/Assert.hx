@@ -38,13 +38,22 @@ import haxe.macro.Expr;
 
 class Assert
 {
-	@:macro public static function assert(predicate:ExprRequire<Bool>, ?info:ExprRequire<String>):Expr
+	@:macro public static function assert(predicate:Expr, ?info:Expr):Expr
 	{
 		if (!Context.defined('debug')) return {expr: EConst(CInt('0')), pos: Context.currentPos()};
 		
 		if (!_errorClassDefined) _defineErrorClass();
 		
 		var error = false;
+		
+		#if (haxe_211 && haxe3)
+		switch (haxe.macro.Context.typeof(predicate))
+		{
+			case TAbstract(a, b):
+			default:
+				error = true;
+		}
+		#else
 		switch (haxe.macro.Context.typeof(predicate))
 		{
 			case TEnum(t, _):
@@ -52,6 +61,8 @@ class Assert
 			default:
 				error = true;
 		}
+		#end
+		
 		if (error) Context.error('predicate should be a boolean', predicate.pos);
 		
 		switch (haxe.macro.Context.typeof(info))
@@ -63,6 +74,7 @@ class Assert
 			default:
 				error = true;
 		}
+		
 		if (error) Context.error('info should be a string', info.pos);	
 		
 		var p = Context.currentPos();
