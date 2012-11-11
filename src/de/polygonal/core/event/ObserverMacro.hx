@@ -33,7 +33,9 @@ import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.Type;
 
+#if !macro
 using de.polygonal.ds.Bits;
+#end
 
 class ObserverMacro
 {
