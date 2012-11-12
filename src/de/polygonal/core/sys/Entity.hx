@@ -195,19 +195,20 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 		_observable = null;
 		_c = 0;
 		
-		var C = Type.getClass(this);
-		_type = getClassType(C);
+		var c = Type.getClass(this);
+		_type = getClassType(c);
 		if (!typeMap.has(_type))
 		{
 			var a = _type;
-			typeMap.set(a);
-			typeMap.set((a << 16) | a);
-			var S = Type.getSuperClass(C);
-			while (S != null)
+			var m = typeMap;
+			m.set(a);
+			m.set((a << 16) | a);
+			var s = Type.getSuperClass(c);
+			while (s != null)
 			{
-				var b = getClassType(S);
-				typeMap.set((a << 16) | b);
-				S = Type.getSuperClass(S);
+				var b = getClassType(s);
+				m.set((a << 16) | b);
+				s = Type.getSuperClass(s);
 			}
 		}
 	}
@@ -1428,9 +1429,9 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	inline function getClassType<T>(C:Class<T>):Int
 	{
 		#if flash
-		return untyped C.__type;
+		return untyped C.__etype;
 		#else
-		return Reflect.field(C, '__type');
+		return Reflect.field(C, '__etype');
 		#end
 	}
 	

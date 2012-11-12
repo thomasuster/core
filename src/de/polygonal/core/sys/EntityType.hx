@@ -34,18 +34,21 @@ import haxe.macro.Context;
 
 class EntityType 
 {
+	#if macro
 	public static var counter = 1;
+	#end
 	
 	@:macro public static function gen():Array<Field>
 	{
 		if (haxe.macro.Context.defined('display')) return null;
 		var c = haxe.macro.Context.getLocalClass().get();
+		
 		var p = haxe.macro.Context.currentPos();
 		var f = Context.getBuildFields();
 		f.push
 		(
 			{
-				name: '__type',
+				name: '__etype',
 				doc: null,
 				meta: [],
 				access: [APublic, AStatic],
@@ -53,6 +56,7 @@ class EntityType
 				pos: p
 			}
 		);
+		
 		return f;
 	}
 }
