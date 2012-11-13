@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                            _/                                                    _/
  *       _/_/_/      _/_/    _/  _/    _/    _/_/_/    _/_/    _/_/_/      _/_/_/  _/
  *      _/    _/  _/    _/  _/  _/    _/  _/    _/  _/    _/  _/    _/  _/    _/  _/
@@ -29,55 +29,19 @@
  */
 package de.polygonal.core.macro;
 
-#if macro
-import haxe.macro.Context;
-import haxe.macro.Expr;
-#end
-
-typedef D = de.polygonal.core.macro.Assert;
-
-class Assert
+class AssertError 
 {
-	@:macro public static function assert(predicate:Expr, ?info:Expr):Expr
+	public var message:String;
+	
+	public function new(?message:String, ?info:haxe.PosInfos)
 	{
-		if (!Context.defined('debug')) return {expr: EConst(CInt('0')), pos: Context.currentPos()};
-		
-		var error = false;
-		
-		#if (haxe_211 && haxe3)
-		switch (Context.typeof(predicate))
-		{
-			case TAbstract(a, b):
-			default:
-				error = true;
-		}
-		#else
-		switch (Context.typeof(predicate))
-		{
-			case TEnum(t, _):
-				error = t.get().name != 'Bool';
-			default:
-				error = true;
-		}
-		#end
-		
-		if (error) Context.error('predicate should be a boolean', predicate.pos);
-		
-		switch (Context.typeof(info))
-		{
-			case TMono(t):
-				error = t.get() != null;
-			case TInst(t, _):
-				error = t.get().name != 'String';
-			default:
-				error = true;
-		}
-		
-		if (error) Context.error('info should be a string', info.pos);	
-		
-		var p = Context.currentPos();
-		var econd = {expr: EBinop(OpNotEq, {expr: EConst(CIdent('true')), pos: p}, predicate), pos: p};
-		var eif = {expr: EThrow({expr: ENew({name: 'AssertError', pack: ['de', 'polygonal', 'core', 'macro'], params: []}, [info]), pos: p}), pos: p};
-		return {expr: EIf(econd, eif, null), pos: p};
+		this.message = message;
+		throw 'Assertation ' + (message == null ? '' : message + ' ') + 'failed in file ' +
+			info.fileName + 'line ' + info.lineNumber + ', ' + info.className + '::' + info.methodName;
+	}
+	
+	public function toString():String
+	{
+		return message;
 	}
 }
