@@ -35,10 +35,6 @@ import flash.display.DisplayObject;
 
 using de.polygonal.ds.BitFlags;
 
-#if !nme || !flash
-'The DisplayObjectTween class is only available for flash/nme'
-#end
-
 /**
  * <p>Tweens properties of a <em>flash.display.DisplayObject</em>.</p>
  * <p>Faster than <em>GenericTween</em> because no reflection is used.</p>
