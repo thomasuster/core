@@ -27,12 +27,15 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package de.polygonal.core.macro;
+package de.polygonal.core.util;
 
 import de.polygonal.core.fmt.ASCII;
+import haxe.rtti.CType.TypeTree;
+
+#if macro
 import haxe.macro.Context;
 import haxe.macro.Expr;
-import haxe.rtti.CType.TypeTree;
+#end
 
 typedef Pair =
 {
@@ -46,7 +49,7 @@ class PropertyFile
 	@:macro public static function build(url:String, staticFields:Bool):Array<Field>
 	{
 		Context.registerModuleDependency(Std.string(Context.getLocalClass()), url);
-		var pos = haxe.macro.Context.currentPos();
+		var pos = Context.currentPos();
 		
 		var fields = Context.getBuildFields();
 		var assign = new Array<Expr>();

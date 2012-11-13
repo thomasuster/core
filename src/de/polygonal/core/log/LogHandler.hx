@@ -36,6 +36,7 @@ import de.polygonal.core.fmt.Sprintf;
 import de.polygonal.core.fmt.StringUtil;
 import de.polygonal.core.log.LogLevel;
 import de.polygonal.core.log.LogMessage;
+import de.polygonal.core.util.Assert;
 import de.polygonal.ds.Bits;
 
 using de.polygonal.ds.BitFlags;
@@ -179,12 +180,12 @@ class LogHandler implements IObserver
 	 *         handler.setLevel(Level.WARN); //log allows all levels, but the handler filters out everything except Level.WARN.
 	 *     }
 	 * }</pre>
-	 * @throws de.polygonal.AssertError invalid log level (debug only).
+	 * @throws de.polygonal.core.util.AssertError invalid log level (debug only).
 	 */
 	public function setLevel(x:Int):Void
 	{
 		#if debug
-		de.polygonal.core.macro.Assert.assert((x & LogLevel.ALL) > 0, '(x & LogLevel.ALL) > 0');
+		D.assert((x & LogLevel.ALL) > 0, '(x & LogLevel.ALL) > 0');
 		#end
 		
 		_level = x;

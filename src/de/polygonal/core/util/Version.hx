@@ -27,7 +27,7 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package de.polygonal.core.macro;
+package de.polygonal.core.util;
 
 import haxe.macro.Context;
 import haxe.macro.Expr;
@@ -38,7 +38,7 @@ class Version
 	{
 		Context.registerModuleDependency(Std.string(Context.getLocalClass()), url);
 		
-		var pos = haxe.macro.Context.currentPos();
+		var pos = Context.currentPos();
 		
 		var major = 0;
 		var minor = 0;
@@ -53,7 +53,11 @@ class Version
 			major = Std.parseInt(v[0]);
 			minor = Std.parseInt(v[1]);
 			patch = Std.parseInt(v[2]);
+			
+			#if deploy
 			patch++;
+			#end
+			
 			s = major + '.' + minor + '.' + patch;
 		}
 		catch (unknown:Dynamic)

@@ -30,7 +30,7 @@
 package de.polygonal.core.math;
 
 import de.polygonal.core.fmt.Sprintf;
-import de.polygonal.core.macro.Assert;
+import de.polygonal.core.util.Assert;
 import de.polygonal.core.math.Mathematics;
 
 /**
@@ -46,7 +46,7 @@ class TrigApprox
 	/**
 	 * Computes a low-precision sine approximation from an angle <code>x</code> measured in radians.<br/>
 	 * The input angle has to be in the range &#091;-PI, PI&#093;.
-	 * @throws de.polygonal.AssertError <code>x</code> out of range (debug only).
+	 * @throws de.polygonal.core.util.AssertError <code>x</code> out of range (debug only).
 	 */
 	inline public static function lqSin(x:Float):Float
 	{
@@ -61,7 +61,7 @@ class TrigApprox
 	/**
 	 * Computes a low-precision cosine approximation from an angle <code>x</code> measured in radians.<br/>
 	 * The input angle has to be in the range &#091;-PI, PI&#093;.
-	 * @throws de.polygonal.AssertError <code>x</code> out of range (debug only).
+	 * @throws de.polygonal.core.util.AssertError <code>x</code> out of range (debug only).
 	 */
 	inline public static function lqCos(x:Float):Float
 	{
@@ -80,7 +80,7 @@ class TrigApprox
 	/**
 	 * Computes a high-precision sine approximation from an angle <code>x</code> measured in radians.<br/>
 	 * The input angle has to be in the range &#091;-PI, PI&#093;.
-	 * @throws de.polygonal.AssertError <code>x</code> out of range (debug only).
+	 * @throws de.polygonal.core.util.AssertError <code>x</code> out of range (debug only).
 	 */
 	inline public static function hqSin(x:Float):Float
 	{
@@ -109,7 +109,7 @@ class TrigApprox
 	/**
 	 * Computes a high-precision cosine approximation from an angle <code>x</code> in radians.<br/>
 	 * The input angle has to be in the range &#091;-PI, PI&#093;.
-	 * @throws de.polygonal.AssertError <code>x</code> out of range (debug only).
+	 * @throws de.polygonal.core.util.AssertError <code>x</code> out of range (debug only).
 	 */
 	inline public static function hqCos(x:Float):Float
 	{

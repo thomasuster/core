@@ -27,49 +27,21 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package de.polygonal.core.macro;
+package de.polygonal.core.util;
 
-import haxe.macro.Context;
-import haxe.macro.Expr;
-
-class IntEnum
+class AssertError 
 {
-	@:macro public static function build(e:Expr, bitFlags:Bool = false):Array<Field>
+	public var message:String;
+	
+	public function new(?message:String, ?info:haxe.PosInfos)
 	{
-		var pos = Context.currentPos();
-		var fields = Context.getBuildFields();
-		var i = 0;
-		
-		switch (e.expr)
-		{
-			case EArrayDecl(a):
-				for (b in a)
-				{
-					switch (b.expr)
-					{
-						case EConst(c):
-							switch (c)
-							{
-								case CIdent(d):
-									
-									var val = bitFlags ? (1 << i) : i;
-									i++;
-									
-									fields.push({
-										name: d,
-										doc: null,
-										meta: [],
-										access: [AStatic, APublic, AInline],
-										kind: FVar(TPath( { pack: [], name: 'Int', params: [], sub: null } ), { expr: EConst(CInt(Std.string(val))), pos: pos } ),
-										pos: pos});
-								default: Context.error('unsupported declaration', pos);
-							}
-						default: Context.error('unsupported declaration', pos);
-					}
-				}
-			default: Context.error('unsupported declaration', pos);
-		}
-		
-		return fields;
+		this.message = message;
+		throw 'Assertation ' + (message == null ? '' : message + ' ') + 'failed in file ' +
+			info.fileName + 'line ' + info.lineNumber + ', ' + info.className + '::' + info.methodName;
+	}
+	
+	public function toString():String
+	{
+		return message;
 	}
 }

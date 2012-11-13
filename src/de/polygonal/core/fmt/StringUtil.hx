@@ -31,6 +31,7 @@ package de.polygonal.core.fmt;
 
 import de.polygonal.core.fmt.ASCII;
 import de.polygonal.core.math.random.Random;
+import de.polygonal.core.util.Assert;
 
 /**
  * <p>Various utility functions for formatting numbers.</p>
@@ -62,7 +63,7 @@ class StringUtil
 	public static function ellipsis(x:String, maxCharCount:Int, inverse:Bool):String
 	{
 		#if debug
-		de.polygonal.core.macro.Assert.assert(maxCharCount > 2, 'maxCharCount > 2');
+		D.assert(maxCharCount > 2, 'maxCharCount > 2');
 		#end
 		
 		var k = x.length;

@@ -30,6 +30,7 @@
 package de.polygonal.core.math.random;
 
 import de.polygonal.core.math.Limits;
+import de.polygonal.core.util.Assert;
 
 /**
  * <p>A Park-Miller-Carta PRNG (pseudo random number generator).</p>
@@ -51,12 +52,12 @@ class ParkMiller extends RNG
 	}
 	
 	/**
-	 * @throws de.polygonal.AssertError invalid seed value (has to be in the range <arg>&#091;0, 2^31 - 1&#093;</arg> (debug only).
+	 * @throws de.polygonal.core.util.AssertError invalid seed value (has to be in the range <arg>&#091;0, 2^31 - 1&#093;</arg> (debug only).
 	 */
 	override public function setSeed(seed:Int):Void
 	{
 		#if (debug && !neko)
-		de.polygonal.core.macro.Assert.assert(seed >= 0 && seed < Limits.INT32_MAX, 'seed >= 0 && seed < Limits.INT32_MAX');
+		D.assert(seed >= 0 && seed < Limits.INT32_MAX, 'seed >= 0 && seed < Limits.INT32_MAX');
 		#end
 		
 		super.setSeed(seed);

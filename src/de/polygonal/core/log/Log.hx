@@ -33,6 +33,7 @@ import de.polygonal.core.event.IObserver;
 import de.polygonal.core.event.Observable;
 import de.polygonal.core.fmt.StringUtil;
 import de.polygonal.core.log.LogEvent;
+import de.polygonal.core.util.Assert;
 import haxe.PosInfos;
 
 using de.polygonal.core.fmt.StringUtil;
@@ -219,12 +220,12 @@ class Log
 	 *         log.setLevel(LogLevel.OFF);                   //print nothing
 	 *     }
 	 * }</pre>
-	 * @throws de.polygonal.AssertError invalid log level (debug only).
+	 * @throws de.polygonal.core.util.AssertError invalid log level (debug only).
 	 */
 	public function setLevel(x:Int):Void
 	{
 		#if debug
-		de.polygonal.core.macro.Assert.assert((x & LogLevel.ALL) > 0, '(x & LogLevel.ALL) > 0');
+		D.assert((x & LogLevel.ALL) > 0, '(x & LogLevel.ALL) > 0');
 		#end
 		
 		_level = x;

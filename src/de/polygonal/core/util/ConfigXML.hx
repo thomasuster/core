@@ -27,11 +27,14 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package de.polygonal.core.macro;
+package de.polygonal.core.util;
 
+import haxe.rtti.CType.TypeTree;
+
+#if macro
 import haxe.macro.Context;
 import haxe.macro.Expr;
-import haxe.rtti.CType.TypeTree;
+#end
 
 typedef Param =
 {
@@ -239,7 +242,7 @@ class ConfigXML
 	{
 		Context.registerModuleDependency(Std.string(Context.getLocalClass()), url);
 		
-		var pos = haxe.macro.Context.currentPos();
+		var pos = Context.currentPos();
 		
 		var fields = Context.getBuildFields();
 		var assign = new Array<Expr>();

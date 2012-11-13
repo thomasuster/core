@@ -40,7 +40,7 @@ import de.polygonal.ds.Hashable;
 import de.polygonal.ds.HashKey;
 import de.polygonal.ds.IntHashSet;
 import de.polygonal.ds.TreeNode;
-import de.polygonal.core.macro.Assert;
+import de.polygonal.core.util.Assert;
 
 //descendant: ignore ghosts
 

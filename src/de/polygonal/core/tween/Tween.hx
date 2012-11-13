@@ -32,7 +32,7 @@ package de.polygonal.core.tween;
 import de.polygonal.core.event.IObservable;
 import de.polygonal.core.event.IObserver;
 import de.polygonal.core.event.Observable;
-import de.polygonal.core.macro.Assert;
+import de.polygonal.core.util.Assert;
 import de.polygonal.core.math.interpolation.Interpolation;
 import de.polygonal.core.math.interpolation.Mapping;
 import de.polygonal.core.math.Mathematics;

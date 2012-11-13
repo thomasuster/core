@@ -32,7 +32,7 @@ package de.polygonal.core;
 import de.polygonal.core.fmt.Sprintf;
 import de.polygonal.core.log.Log;
 import de.polygonal.core.log.LogHandler;
-import de.polygonal.core.macro.Assert;
+import de.polygonal.core.util.Assert;
 import haxe.PosInfos;
 
 /**

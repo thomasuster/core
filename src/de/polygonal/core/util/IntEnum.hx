@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                            _/                                                    _/
  *       _/_/_/      _/_/    _/  _/    _/    _/_/_/    _/_/    _/_/_/      _/_/_/  _/
  *      _/    _/  _/    _/  _/  _/    _/  _/    _/  _/    _/  _/    _/  _/    _/  _/
@@ -27,57 +27,49 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package de.polygonal.core.macro;
+package de.polygonal.core.util;
 
-#if macro
 import haxe.macro.Context;
 import haxe.macro.Expr;
-#end
 
-typedef D = de.polygonal.core.macro.Assert;
-
-class Assert
+class IntEnum
 {
-	@:macro public static function assert(predicate:Expr, ?info:Expr):Expr
+	@:macro public static function build(e:Expr, bitFlags:Bool = false):Array<Field>
 	{
-		if (!Context.defined('debug')) return {expr: EConst(CInt('0')), pos: Context.currentPos()};
+		var pos = Context.currentPos();
+		var fields = Context.getBuildFields();
+		var i = 0;
 		
-		var error = false;
-		
-		#if (haxe_211 && haxe3)
-		switch (Context.typeof(predicate))
+		switch (e.expr)
 		{
-			case TAbstract(a, b):
-			default:
-				error = true;
+			case EArrayDecl(a):
+				for (b in a)
+				{
+					switch (b.expr)
+					{
+						case EConst(c):
+							switch (c)
+							{
+								case CIdent(d):
+									
+									var val = bitFlags ? (1 << i) : i;
+									i++;
+									
+									fields.push({
+										name: d,
+										doc: null,
+										meta: [],
+										access: [AStatic, APublic, AInline],
+										kind: FVar(TPath( { pack: [], name: 'Int', params: [], sub: null } ), { expr: EConst(CInt(Std.string(val))), pos: pos } ),
+										pos: pos});
+								default: Context.error('unsupported declaration', pos);
+							}
+						default: Context.error('unsupported declaration', pos);
+					}
+				}
+			default: Context.error('unsupported declaration', pos);
 		}
-		#else
-		switch (Context.typeof(predicate))
-		{
-			case TEnum(t, _):
-				error = t.get().name != 'Bool';
-			default:
-				error = true;
-		}
-		#end
 		
-		if (error) Context.error('predicate should be a boolean', predicate.pos);
-		
-		switch (Context.typeof(info))
-		{
-			case TMono(t):
-				error = t.get() != null;
-			case TInst(t, _):
-				error = t.get().name != 'String';
-			default:
-				error = true;
-		}
-		
-		if (error) Context.error('info should be a string', info.pos);	
-		
-		var p = Context.currentPos();
-		var econd = {expr: EBinop(OpNotEq, {expr: EConst(CIdent('true')), pos: p}, predicate), pos: p};
-		var eif = {expr: EThrow({expr: ENew({name: 'AssertError', pack: ['de', 'polygonal', 'core', 'macro'], params: []}, [info]), pos: p}), pos: p};
-		return {expr: EIf(econd, eif, null), pos: p};
+		return fields;
 	}
 }
