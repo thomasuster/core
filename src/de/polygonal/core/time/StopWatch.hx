@@ -82,7 +82,7 @@ class StopWatch
 	inline function _clock(slot:Int)
 	{
 		#if debug
-		de.polygonal.core.macro.Assert.assert(slot >= 0 && slot < 32, 'slot >= 0 && slot < 32');
+		D.assert(slot >= 0 && slot < 32, 'slot >= 0 && slot < 32');
 		#end
 		
 		var now = haxe.Timer.stamp();
@@ -102,7 +102,7 @@ class StopWatch
 	inline function _query(slot:Int)
 	{
 		#if debug
-		de.polygonal.core.macro.Assert.assert(!hasf(1 << slot), '!hasf(1 << slot)');
+		D.assert(!hasf(1 << slot), '!hasf(1 << slot)');
 		#end
 		
 		return _mean.get(slot).val();
@@ -111,7 +111,7 @@ class StopWatch
 	inline function _reset(slot:Int)
 	{
 		#if debug
-		de.polygonal.core.macro.Assert.assert(slot >= 0 && slot < 32, 'slot >= 0 && slot < 32');
+		D.assert(slot >= 0 && slot < 32, 'slot >= 0 && slot < 32');
 		#end
 		
 		clrf(1 << slot);

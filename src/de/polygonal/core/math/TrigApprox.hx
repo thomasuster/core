@@ -66,7 +66,7 @@ class TrigApprox
 	inline public static function lqCos(x:Float):Float
 	{
 		#if debug
-		de.polygonal.core.macro.Assert.assert(x >= -Math.PI && x <= Math.PI, Sprintf.format('x out of range (%.3f)', [x]));
+		D.assert(x >= -Math.PI && x <= Math.PI, Sprintf.format('x out of range (%.3f)', [x]));
 		#end
 		
 		x += M.PI_OVER_2; if (x > M.PI) x -= M.PI2;
@@ -85,7 +85,7 @@ class TrigApprox
 	inline public static function hqSin(x:Float):Float
 	{
 		#if debug
-		de.polygonal.core.macro.Assert.assert(x >= -Math.PI && x <= Math.PI, Sprintf.format('x out of range (%.3f)', [x]));
+		D.assert(x >= -Math.PI && x <= Math.PI, Sprintf.format('x out of range (%.3f)', [x]));
 		#end
 		
 		if (x <= 0)
@@ -114,7 +114,7 @@ class TrigApprox
 	inline public static function hqCos(x:Float):Float
 	{
 		#if debug
-		de.polygonal.core.macro.Assert.assert(x >= -Math.PI && x <= Math.PI, Sprintf.format('x out of range (%.3f)', [x]));
+		D.assert(x >= -Math.PI && x <= Math.PI, Sprintf.format('x out of range (%.3f)', [x]));
 		#end
 		
 		x += M.PI_OVER_2; if (x > M.PI) x -= M.PI2;
@@ -144,7 +144,7 @@ class TrigApprox
 	inline public static function arctan2(y:Float, x:Float):Float
 	{
 		#if debug
-		de.polygonal.core.macro.Assert.assert(!(M.cmpZero(x, 1e-6) && M.cmpZero(y, 1e-6)), 'M.compareZero(x, 1e-6) && M.compareZero(y, 1e-6);');
+		D.assert(!(M.cmpZero(x, 1e-6) && M.cmpZero(y, 1e-6)), 'M.compareZero(x, 1e-6) && M.compareZero(y, 1e-6);');
 		#end
 		
 		var t = M.fabs(y);

@@ -242,7 +242,7 @@ class ResourceLoader extends Observable, implements IObserver
 		}
 		
 		#if debug
-		de.polygonal.core.macro.Assert.assert(pres != null, 'pres != null');
+		D.assert(pres != null, 'pres != null');
 		#end
 		
 		_pq.reprioritize(pres, newPriority);

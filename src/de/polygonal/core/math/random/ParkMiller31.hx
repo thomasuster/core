@@ -64,7 +64,7 @@ class ParkMiller31 extends RNG
 	override public function setSeed(seed:Int):Void
 	{
 		#if (debug && !neko)
-		de.polygonal.core.macro.Assert.assert(seed >= 0 && seed < Limits.INT32_MAX, 'seed >= 0 && seed < Limits.INT32_MAX');
+		D.assert(seed >= 0 && seed < Limits.INT32_MAX, 'seed >= 0 && seed < Limits.INT32_MAX');
 		#end
 		
 		super.setSeed(seed);
