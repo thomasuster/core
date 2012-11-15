@@ -50,7 +50,7 @@ If you want to test the latest beta build, you should pull the dev branch and ad
 
 ## Changelog
 
-### 1.01 (dev)
+### 1.01 (released 2012-11-15)
 
 * fixed: Mathematics.floor(), ceil(), fwrap() for neko, don't use Std.int() for cpp
 * modified: keep dispatching Timebase updates when calling MainLoop.pause()
