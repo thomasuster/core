@@ -27,11 +27,14 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package de.polygonal.core.macro;
+package de.polygonal.core.util;
 
+import haxe.rtti.CType.TypeTree;
+
+#if macro
 import haxe.macro.Context;
 import haxe.macro.Expr;
-import haxe.rtti.CType.TypeTree;
+#end
 
 typedef Param =
 {
@@ -44,7 +47,7 @@ class ConfigXML
 	#if !macro
 	static var _rttiCache:Hash<TypeTree>;
 	
-	public static function getStaticFields(x:Class<Dynamic>, ?filter:EReg):Array<Param>
+	public static function getStaticFields(x:Class<Dynamic>, filter:EReg = null):Array<Param>
 	{
 		var fields = new Array();
 		
@@ -65,7 +68,7 @@ class ConfigXML
 		return fields;
 	}
 	
-	public static function getFieldsByName(x:haxe.rtti.Infos, ?filter:EReg):Array<Param>
+	public static function getFieldsByName(x:haxe.rtti.Infos, filter:EReg = null):Array<Param>
 	{
 		if (_rttiCache == null) _rttiCache = new Hash();
 		
@@ -239,9 +242,9 @@ class ConfigXML
 	{
 		Context.registerModuleDependency(Std.string(Context.getLocalClass()), url);
 		
-		var pos = haxe.macro.Context.currentPos();
+		var pos = Context.currentPos();
 		
-		var fields = new Array<Field>();
+		var fields = Context.getBuildFields();
 		var assign = new Array<Expr>();
 		
 		try
@@ -283,7 +286,7 @@ class ConfigXML
 				var fieldName  = names[i];
 				var fieldValue = values[i];
 				
-				var c, n, p = [];
+				var c = null, n:String, p = [];
 				if (fieldValue.indexOf(',') != -1)
 				{
 					var arrExpr = [];

@@ -1,0 +1,13 @@
+-swf basic-tween.swf
+-main BasicTweenExample
+-swf-version 10
+-swf-header 800:600:60:ffffff
+-lib polygonal
+
+--next
+
+-swf display-object-tween-example.swf
+-main DisplayObjectTweenExample
+-swf-version 10
+-swf-header 800:600:60:ffffff
+-lib polygonal

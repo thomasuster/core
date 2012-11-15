@@ -34,12 +34,15 @@ import de.polygonal.ds.ArrayUtil;
 
 using de.polygonal.ds.BitFlags;
 
+/**
+ * <p>Supports tweening of any field of any object.</p>
+ */
 class GenericTween extends Tween, implements TweenTarget
 {
 	var _object:Dynamic;
 	var _fields:Array<String>;
 	
-	public function new(?key:String, object:Dynamic, field:Dynamic, ease:Ease, to:Float, duration:Float, interpolateState = true)
+	public function new(key:String = null, object:Dynamic, field:Dynamic, ease:Ease, to:Float, duration:Float, interpolateState = false)
 	{
 		_object = object;
 		if (Std.is(field, String))

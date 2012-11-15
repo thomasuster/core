@@ -62,7 +62,7 @@ class Mat22 implements Cloneable<Mat22>
 	public var m11:Float; public var m12:Float;
 	public var m21:Float; public var m22:Float;
 	
-	public function new(?col1:Vec2, ?col2:Vec2) 
+	public function new(col1:Vec2 = null, col2:Vec2 = null) 
 	{
 		if (col1 == null)
 		{

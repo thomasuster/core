@@ -27,49 +27,36 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package de.polygonal.core.macro;
+package de.polygonal.core.sys;
 
-import haxe.macro.Context;
 import haxe.macro.Expr;
+import haxe.macro.Context;
 
-class IntEnum
+class EntityType 
 {
-	@:macro public static function build(e:Expr, bitFlags:Bool = false):Array<Field>
+	#if macro
+	public static var counter = 1;
+	#end
+	
+	@:macro public static function gen():Array<Field>
 	{
-		var pos = Context.currentPos();
-		var fields = Context.getBuildFields();
-		var i = 0;
+		if (haxe.macro.Context.defined('display')) return null;
+		var c = haxe.macro.Context.getLocalClass().get();
 		
-		switch (e.expr)
-		{
-			case EArrayDecl(a):
-				for (b in a)
-				{
-					switch (b.expr)
-					{
-						case EConst(c):
-							switch (c)
-							{
-								case CIdent(d):
-									
-									var val = bitFlags ? (1 << i) : i;
-									i++;
-									
-									fields.push({
-										name: d,
-										doc: null,
-										meta: [],
-										access: [AStatic, APublic, AInline],
-										kind: FVar(TPath( { pack: [], name: 'Int', params: [], sub: null } ), { expr: EConst(CInt(Std.string(val))), pos: pos } ),
-										pos: pos});
-								default: Context.error('unsupported declaration', pos);
-							}
-						default: Context.error('unsupported declaration', pos);
-					}
-				}
-			default: Context.error('unsupported declaration', pos);
-		}
+		var p = haxe.macro.Context.currentPos();
+		var f = Context.getBuildFields();
+		f.push
+		(
+			{
+				name: '__etype',
+				doc: null,
+				meta: [],
+				access: [APublic, AStatic],
+				kind: FVar(TPath({pack: [], name: 'Int', params: [], sub: null}), {expr: EConst(CInt(Std.string(counter++))), pos: p}),
+				pos: p
+			}
+		);
 		
-		return fields;
+		return f;
 	}
 }

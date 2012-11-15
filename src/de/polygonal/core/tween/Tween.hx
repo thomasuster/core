@@ -32,44 +32,54 @@ package de.polygonal.core.tween;
 import de.polygonal.core.event.IObservable;
 import de.polygonal.core.event.IObserver;
 import de.polygonal.core.event.Observable;
+import de.polygonal.core.util.Assert;
 import de.polygonal.core.math.interpolation.Interpolation;
 import de.polygonal.core.math.interpolation.Mapping;
 import de.polygonal.core.math.Mathematics;
 import de.polygonal.core.time.Timebase;
 import de.polygonal.core.time.TimebaseEvent;
 import de.polygonal.core.time.Timeline;
-import de.polygonal.core.time.TimelineEvent;
+import de.polygonal.core.time.TimelineListener;
 import de.polygonal.core.tween.ease.Ease;
 import de.polygonal.core.tween.ease.EaseFactory;
 import de.polygonal.ds.DA;
 
-class Tween implements IObservable, implements IObserver
+/**
+ * <p>Interpolates between two states by using an easing equation.</p>
+ */
+class Tween implements IObservable, implements IObserver, implements TimelineListener
 {
 	static var _activeTweens:DA<Tween>;
 	static var _map:Hash<Tween>;
 	
+	/**
+	 * Stops and destroys all running tweens.
+	 */
 	public static function stopActiveTweens():Void
 	{
 		for (i in _activeTweens) i.free();
 		if (_activeTweens.isEmpty()) _activeTweens = null;
 	}
 	
+	/**
+	 * Returns the <em>Tween</em> object mapped to <code>key</code> or null if no such <em>Tween</em> exists.
+	 */
 	public static function get(key:String):Tween
 	{
 		if (_map == null) return null;
 		return _map.get(key);
 	}
 	
+	/**
+	 * Removes all non-running <em>Tween</em> objects with assigned keys.
+	 */
 	public static function purge():Void
 	{
 		for (i in _map.keys())
 		{
 			var tween = _map.get(i);
 			if (tween._id == -1)
-			{
 				tween.free();
-				_map.remove(i);
-			}
 		}
 	}
 	
@@ -79,7 +89,10 @@ class Tween implements IObservable, implements IObserver
 		return function (alpha:Float):Float return M.lerp(from, to, ease.interpolate(alpha));
 	}
 	
-	public static function create(?key:String, object:Dynamic, fields:Dynamic, ease:Ease, to:Float, duration:Float):Tween
+	/**
+	 * Helper function for tweening any <code>fields</code> of an <code>object</code>.
+	 */
+	public static function create(key:String = null, object:Dynamic, fields:Dynamic, ease:Ease, to:Float, duration:Float, interpolateState = false):Tween
 	{
 		#if (flash || nme)
 		if (Std.is(object, flash.display.DisplayObject))
@@ -104,11 +117,11 @@ class Tween implements IObservable, implements IObserver
 					return t;
 				}
 			}
-			return new DisplayObjectTween(key, object, flags, ease, to, duration);
+			return new DisplayObjectTween(key, object, flags, ease, to, duration, interpolateState);
 		}
 		#end
 		
-		return new GenericTween(key, object, fields, ease, to , duration).run();
+		return new GenericTween(key, object, fields, ease, to , duration, interpolateState).run();
 	}
 	
 	#if (flash || nme)
@@ -148,9 +161,22 @@ class Tween implements IObservable, implements IObserver
 	var _observable:Observable;
 	var _timeline:Timeline;
 	
-	public function new(?key:String, target:TweenTarget, ease:Ease, to:Float, duration:Float, ?interpolateState = true)
+	/**
+	 * @param key assigning a key makes it possible to reuse this <em>Tween</em> object later on by calling <em>Tween</em>.getKey(<code>key</code>).<br/>
+	 * To fully remove a <em>Tween</em> object call <em>Tween.free()</em>.
+	 * @param target the object that gets tweened.
+	 * @param ease the easing method. If null, no easing is applied and <em>Ease.None</em> is used instead.
+	 * @param to the target value.
+	 * @param duration the duration in seconds.
+	 * @param interpolateState if true, applies the tweened value in a separate rendering step.
+	 */
+	public function new(key:String = null, target:TweenTarget, ease:Ease, to:Float, duration:Float, interpolateState = false)
 	{
 		if (ease == null) ease = Ease.None;
+		
+		#if debug
+		D.assert(target != null, 'target is null');
+		#end
 		
 		_key         = key;
 		_target      = target;
@@ -168,25 +194,34 @@ class Tween implements IObservable, implements IObserver
 	
 	public function free():Void
 	{
-		Timeline.get().detach(this);
-		Timeline.get().cancel(_id);
+		if (_timeline == null) return;
+		if (_activeTweens != null) _activeTweens.remove(this);
+		_timeline.detach(this);
+		_timeline.cancel(_id);
 		if (_interpolate) Timebase.get().detach(this);
-		
-		if (_key != null) _map.remove(_key);
+		if (_key != null && _map != null) _map.remove(_key);
 		if (_observable != null) _observable.free();
-		
+		_id         = -1;
+		_key        = null;
 		_target     = null;
+		_timeline   = null;
+		_ease       = null;
+		_onComplete = null;
 		_observable = null;
 		_timeline   = null;
-		_onComplete = null;
-		
-		if (_activeTweens != null)
-			_activeTweens.remove(this);
 	}
 	
+	/**
+	 * The tween progress in the interval <arg>&#091;0, 1&#093;</arg>.
+	 */
 	inline public function getProgress():Float
 	{
 		return Mapping.map(_b, _min, _max, 0, 1);
+	}
+	
+	inline public function getKey():String
+	{
+		return _key;
 	}
 	
 	inline public function getEase():Interpolation<Float>
@@ -194,31 +229,26 @@ class Tween implements IObservable, implements IObserver
 		return _ease;
 	}
 	
-	public function run(?onComplete:Void->Void):Tween
+	public function run(onComplete:Void->Void = null):Tween
 	{
 		if (_key != null)
 		{
 			if (_map == null) _map = new Hash();
-			
 			if (_map.exists(_key))
 			{
-				var tween = _map.get(_key);
-				//stop running tween
-				if (tween._id != -1)
-				{
-					tween.cancel();
-				}
+				//cancel if running
+				if (_id != -1) cancel();
 			}
 			else
 				_map.set(_key, this);
 		}
 		
 		_min = _target.get();
+		
 		if (onComplete != null)
 			_onComplete = onComplete;
 		
-		Timeline.get().attach(this);
-		_id = Timeline.get().schedule(_duration, _delay);
+		_id = _timeline.schedule(this, _duration, _delay);
 		return this;
 	}
 	
@@ -243,7 +273,7 @@ class Tween implements IObservable, implements IObserver
 	
 	public function from(x:Float):Tween
 	{
-		_min = x;
+		_target.set(_min = x);
 		return this;
 	}
 	
@@ -273,7 +303,9 @@ class Tween implements IObservable, implements IObserver
 	
 	public function cancel():Tween
 	{
-		Timeline.get().cancel(_id);
+		_timeline.cancel(_id);
+		_id = 1;
+		if (_interpolate) Timebase.get().detach(this);
 		return this;
 	}
 	
@@ -295,69 +327,59 @@ class Tween implements IObservable, implements IObserver
 	
 	public function update(type:Int, source:IObservable, userData:Dynamic):Void 
 	{
-		if (TimelineEvent.has(type))
+		if (_id == -1) return;
+		var alpha:Float = userData;
+		_target.set(M.lerp(_a, _b, alpha));
+	}
+	
+	function onBlip():Void {}
+	
+	function onStart():Void
+	{
+		if (_activeTweens == null) _activeTweens = new DA();
+		_activeTweens.pushBack(this);
+		if (_interpolate) Timebase.get().attach(this, TimebaseEvent.RENDER);
+		_a = _b = _min;
+		if (!_interpolate) _target.set(_b);
+		notify(TweenEvent.START, _min);
+	}
+	
+	function onProgress(alpha:Float):Void 
+	{
+		if (_id == -1) return;
+		_a = _b; _b = M.lerp(_min, _max, _ease.interpolate(alpha));
+		if (!_interpolate) _target.set(_b);
+		notify(TweenEvent.ADVANCE, _b);
+	}
+	
+	function onEnd():Void 
+	{
+		if (_id == -1) return;
+		_id = -1;
+		_a = _b = _max;
+		_target.set(_b);
+		
+		if (_yoyo && _repeat-- > 0)
 		{
-			if (_timeline.id == _id)
-			{
-				switch (type)
-				{
-					case TimelineEvent.INTERVAL_START:
-						if (_activeTweens == null) _activeTweens = new DA();
-						_activeTweens.pushBack(this);
-						if (_interpolate) Timebase.get().attach(this, TimebaseEvent.RENDER);
-						_a = _b = _min;
-						if (!_interpolate) _target.set(_b);
-						notify(TweenEvent.START);
-					
-					case TimelineEvent.INTERVAL_PROGRESS:
-						var alpha:Float = _timeline.progress;
-						_a = _b; _b = M.lerp(_min, _max, _ease.interpolate(alpha));
-						if (!_interpolate) _target.set(_b);
-						notify(TweenEvent.ADVANCE, _b);
-					
-					case TimelineEvent.INTERVAL_END:
-						source.detach(this);
-						_id = -1;
-						_a = _b = _max;
-						_target.set(_b);
-						
-						if (_yoyo && _repeat-- > 0)
-						{
-							var tmp = _min; _min = _max; _max = tmp;
-							run(_onComplete);
-							return;
-						}
-						else
-						{
-							_activeTweens.remove(this);
-							notify(TweenEvent.FINISH);
-							if (_onComplete != null)
-								_onComplete();
-						}
-						
-						if (_key == null) free();
-					
-					case TimelineEvent.CANCEL:
-						_activeTweens.remove(this);
-						source.detach(this);
-						_id = -1;
-						notify(TweenEvent.FINISH);
-						if (_onComplete != null) _onComplete();
-						if (_key == null) free();
-				}
-			}
+			var tmp = _min; _min = _max; _max = tmp;
+			run(_onComplete);
+			return;
 		}
 		else
-		if (type == TimebaseEvent.RENDER)
 		{
-			if (_id == -1)
-			{
-				source.detach(this);
-				return;
-			}
-			
-			var alpha:Float = userData;
-			_target.set(M.lerp(_a, _b, alpha));
+			_activeTweens.remove(this);
+			notify(TweenEvent.FINISH, _max);
+			if (_onComplete != null)
+				_onComplete();
 		}
+		if (_key == null) free();
+	}
+	
+	function onCancel():Void 
+	{
+		if (_activeTweens != null) _activeTweens.remove(this);
+		notify(TweenEvent.FINISH, _b);
+		if (_onComplete != null) _onComplete();
+		if (_key == null) free();
 	}
 }

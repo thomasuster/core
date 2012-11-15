@@ -31,7 +31,7 @@ package de.polygonal.core.math;
 
 import de.polygonal.core.fmt.Sprintf;
 import de.polygonal.core.math.Vec2;
-import de.polygonal.core.macro.Assert;
+import de.polygonal.core.util.Assert;
 
 /**
  * <b>A 3x2 transformation matrix which can represent any 2D affine transformation</b>.<br/>

@@ -30,11 +30,11 @@
 package de.polygonal.core.math;
 
 import de.polygonal.core.math.Mathematics;
-import de.polygonal.core.macro.Assert;
+import de.polygonal.core.util.Assert;
 
 /**
  * <p>A 3x3 matrix.</p>
- * <p> Matrix operations are applied on the left. E.g. given a matrix M and vector V, matrix*vector is M*V, where V is treated as a column vector.</p>
+ * <p>Matrix operations are applied on the left. E.g. given a matrix M and vector V, matrix*vector is M*V, where V is treated as a column vector.</p>
  */
 class Mat33
 {
@@ -333,7 +333,7 @@ class Mat33
 	
 	/**
 	 * Inverts and returns this matrix.
-	 * @throws de.polygonal.AssertError singular matrix (debug only).
+	 * @throws de.polygonal.core.util.AssertError singular matrix (debug only).
 	 */
 	public function inverse():Mat33
 	{
@@ -362,7 +362,7 @@ class Mat33
 	 * Computes the matrix inverse and stores the result in <code>output</code>.<br/>
 	 * This matrix is left unchanged.
 	 * @return a reference to <code>output</code>.
-	 * @throws de.polygonal.AssertError singular matrix (debug only).
+	 * @throws de.polygonal.core.util.AssertError singular matrix (debug only).
 	 */
 	public function inverseConst(output:Mat33):Mat33
 	{

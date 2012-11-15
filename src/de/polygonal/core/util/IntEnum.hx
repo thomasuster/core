@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                            _/                                                    _/
  *       _/_/_/      _/_/    _/  _/    _/    _/_/_/    _/_/    _/_/_/      _/_/_/  _/
  *      _/    _/  _/    _/  _/  _/    _/  _/    _/  _/    _/  _/    _/  _/    _/  _/
@@ -27,44 +27,49 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package de.polygonal.core.log.handler;
+package de.polygonal.core.util;
 
-import de.polygonal.core.log.LogHandler;
-import de.polygonal.core.log.LogLevel;
-import de.polygonal.core.math.Mathematics;
+import haxe.macro.Context;
+import haxe.macro.Expr;
 
-using de.polygonal.ds.BitFlags;
-
-#if !js
-'The ConsoleHandler class is only available for js'
-#end
-
-/**
- * <p>Writes logging messages using the browser console API.</p> 
- */
-class ConsoleHandler extends LogHandler
+class IntEnum
 {
-	#if js
-	public static function log(x)
+	@:macro public static function build(e:Expr, bitFlags:Bool = false):Array<Field>
 	{
-		untyped console.log(x);
-	}
-	#end
-	
-	public function new()
-	{
-		super();
-	}
-	
-	override function output(message:String):Void
-	{
-		var levelName = LogLevel.getName(M.min(_message.outputLevel, LogLevel.ERROR)).toLowerCase();
+		var pos = Context.currentPos();
+		var fields = Context.getBuildFields();
+		var i = 0;
 		
-		#if js
-		untyped console[levelName](message);
-		#elseif flash
-		if (flash.external.ExternalInterface.available)
-			flash.external.ExternalInterface.call('console.' + levelName, message);
-		#end
+		switch (e.expr)
+		{
+			case EArrayDecl(a):
+				for (b in a)
+				{
+					switch (b.expr)
+					{
+						case EConst(c):
+							switch (c)
+							{
+								case CIdent(d):
+									
+									var val = bitFlags ? (1 << i) : i;
+									i++;
+									
+									fields.push({
+										name: d,
+										doc: null,
+										meta: [],
+										access: [AStatic, APublic, AInline],
+										kind: FVar(TPath( { pack: [], name: 'Int', params: [], sub: null } ), { expr: EConst(CInt(Std.string(val))), pos: pos } ),
+										pos: pos});
+								default: Context.error('unsupported declaration', pos);
+							}
+						default: Context.error('unsupported declaration', pos);
+					}
+				}
+			default: Context.error('unsupported declaration', pos);
+		}
+		
+		return fields;
 	}
 }

@@ -36,6 +36,7 @@ import de.polygonal.core.fmt.Sprintf;
 import de.polygonal.core.fmt.StringUtil;
 import de.polygonal.core.log.LogLevel;
 import de.polygonal.core.log.LogMessage;
+import de.polygonal.core.util.Assert;
 import de.polygonal.ds.Bits;
 
 using de.polygonal.ds.BitFlags;
@@ -179,12 +180,12 @@ class LogHandler implements IObserver
 	 *         handler.setLevel(Level.WARN); //log allows all levels, but the handler filters out everything except Level.WARN.
 	 *     }
 	 * }</pre>
-	 * @throws de.polygonal.AssertError invalid log level (debug only).
+	 * @throws de.polygonal.core.util.AssertError invalid log level (debug only).
 	 */
 	public function setLevel(x:Int):Void
 	{
 		#if debug
-		de.polygonal.core.macro.Assert.assert((x & LogLevel.ALL) > 0, '(x & LogLevel.ALL) > 0');
+		D.assert((x & LogLevel.ALL) > 0, '(x & LogLevel.ALL) > 0');
 		#end
 		
 		_level = x;
@@ -228,7 +229,7 @@ class LogHandler implements IObserver
 	 *     }
 	 * }</pre>
 	 */
-	public function setFormat(flags:Int, ?sep = ':'):Void
+	public function setFormat(flags:Int, sep = ':'):Void
 	{
 		if (flags == 0) nulf();
 		else setf(flags);
@@ -314,7 +315,7 @@ class LogHandler implements IObserver
 		var lineFormat = '%s';
 		
 		if (hasf(LINE))
-			line = Sprintf.format('line %04d ', [_message.posInfos.lineNumber]);
+			line = Sprintf.format('l.%04d ', [_message.posInfos.lineNumber]);
 		
 		var classMethod = '';
 		var classMethodFormat = '%s';
@@ -327,7 +328,7 @@ class LogHandler implements IObserver
 				classMethod = classMethod.substr(classMethod.lastIndexOf('.') + 1);
 			
 			if (incf(CLASS | METHOD))
-				classMethod = classMethod + '::' + _message.posInfos.methodName + '() ';
+				classMethod = classMethod + '.' + _message.posInfos.methodName + '() ';
 			else
 			if (hasf(CLASS))
 				classMethod = classMethod + ' ';
@@ -344,5 +345,8 @@ class LogHandler implements IObserver
 	
 	function output(data:String):Void {}
 	
-	function init():Void {}
+	function init():Void
+	{
+		setf(LogHandler.ID | LogHandler.LEVEL | LogHandler.LINE | LogHandler.CLASS | LogHandler.CLASS_SHORT | LogHandler.NAME_SHORT | LogHandler.METHOD);
+	}
 }

@@ -27,15 +27,18 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package de.polygonal.core.macro;
+package de.polygonal.core.util;
 
+import haxe.macro.Context;
 import haxe.macro.Expr;
 
 class Version
 {
 	@:macro public static function build(url:String):Array<Field>
 	{
-		var pos = haxe.macro.Context.currentPos();
+		Context.registerModuleDependency(Std.string(Context.getLocalClass()), url);
+		
+		var pos = Context.currentPos();
 		
 		var major = 0;
 		var minor = 0;
@@ -50,7 +53,11 @@ class Version
 			major = Std.parseInt(v[0]);
 			minor = Std.parseInt(v[1]);
 			patch = Std.parseInt(v[2]);
+			
+			#if deploy
 			patch++;
+			#end
+			
 			s = major + '.' + minor + '.' + patch;
 		}
 		catch (unknown:Dynamic)
@@ -67,28 +74,38 @@ class Version
 		
 		var date = DateTools.format(Date.now(), '%d.%m.%y %H:%S');
 		
-		return
-		[
-			{
-				name: 'VERSION', doc: null, meta: [], access: [AStatic, APublic, AInline],
-				kind: FVar(TPath({ pack : [], name : 'String', params : [], sub : null}), {expr: EConst(CString('v' + s + ' ' + date)), pos: pos}), pos: pos
-			},
-			{
-				name: 'MAJOR', doc: null, meta: [], access: [AStatic, APublic, AInline],
-				kind: FVar(TPath({ pack : [], name : 'String', params : [], sub : null}), {expr: EConst(CString(Std.string(major))), pos: pos}), pos: pos
-			},
-			{
-				name: 'MINOR', doc: null, meta: [], access: [AStatic, APublic, AInline],
-				kind: FVar(TPath({ pack : [], name : 'String', params : [], sub : null}), {expr: EConst(CString(Std.string(minor))), pos: pos}), pos: pos
-			},
-			{
-				name: 'PATCH', doc: null, meta: [], access: [AStatic, APublic, AInline],
-				kind: FVar(TPath({ pack : [], name : 'String', params : [], sub : null}), {expr: EConst(CString(Std.string(patch))), pos: pos}), pos: pos
-			},
-			{
-				name: 'MAJOR_MINOR_PATCH', doc: null, meta: [], access: [AStatic, APublic, AInline],
-				kind: FVar(TPath({ pack : [], name : 'String', params : [], sub : null}), {expr: EConst(CString(Std.string(major) + '.' + Std.string(minor) + '.' + Std.string(patch))), pos: pos}), pos: pos
-			},
-		];
+		var fields = Context.getBuildFields();
+		
+		fields.push
+		({
+			name: 'VERSION', doc: null, meta: [], access: [AStatic, APublic, AInline],
+			kind: FVar(TPath({ pack : [], name : 'String', params : [], sub : null}), {expr: EConst(CString('v' + s + ' ' + date)), pos: pos}), pos: pos
+		});
+		
+		fields.push
+		({
+			name: 'MAJOR', doc: null, meta: [], access: [AStatic, APublic, AInline],
+			kind: FVar(TPath({ pack : [], name : 'String', params : [], sub : null}), {expr: EConst(CString(Std.string(major))), pos: pos}), pos: pos
+		});
+		
+		fields.push
+		({
+			name: 'MINOR', doc: null, meta: [], access: [AStatic, APublic, AInline],
+			kind: FVar(TPath({ pack : [], name : 'String', params : [], sub : null}), {expr: EConst(CString(Std.string(minor))), pos: pos}), pos: pos
+		});
+		
+		fields.push
+		({
+			name: 'PATCH', doc: null, meta: [], access: [AStatic, APublic, AInline],
+			kind: FVar(TPath({ pack : [], name : 'String', params : [], sub : null}), {expr: EConst(CString(Std.string(patch))), pos: pos}), pos: pos
+		});
+		
+		fields.push
+		({
+			name: 'MAJOR_MINOR_PATCH', doc: null, meta: [], access: [AStatic, APublic, AInline],
+			kind: FVar(TPath({ pack : [], name : 'String', params : [], sub : null}), {expr: EConst(CString(Std.string(major) + '.' + Std.string(minor) + '.' + Std.string(patch))), pos: pos}), pos: pos
+		});
+		
+		return fields;
 	}
 }

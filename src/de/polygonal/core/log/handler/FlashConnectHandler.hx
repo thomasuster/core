@@ -67,7 +67,7 @@ class FlashConnectHandler extends LogHandler
 	
 	override function init():Void
 	{
-		setf(LogHandler.ID | LogHandler.LEVEL | LogHandler.LINE | LogHandler.CLASS | LogHandler.CLASS_SHORT | LogHandler.NAME_SHORT | LogHandler.METHOD);
+		super.init();
 		
 		_socket = new XMLSocket();
 		_socket.addEventListener(Event.CONNECT, _onConnect);

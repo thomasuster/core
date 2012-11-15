@@ -39,7 +39,7 @@ import de.polygonal.ds.HashableItem;
 import de.polygonal.ds.ListSet;
 import de.polygonal.ds.pooling.DynamicObjectPool;
 
-using de.polygonal.ds.Bits;
+//using de.polygonal.ds.Bits;
 
 /**
  * <p>An object with state that is observed by an <em>IObserver</em> implementation.</p>
@@ -99,38 +99,15 @@ class Observable extends HashableItem, implements IObservable
 	}
 	
 	/**
-	 * Calls the function <code>f</code> whenever <code>source</code> triggers an update of the specified <code>type</code>, as long as <code>f</code> returns true.<br/>
-	 * Example:<br/><br/>
+	 * Calls the function <code>func</code> whenever <code>source</code> triggers an update of one type specified in <code>mask</code>.<br/>
+	 * Example:<br/>
 	 * <pre class="prettyprint">
 	 * import de.polygonal.core.event.Observable;
 	 * import de.polygonal.core.time.Timbase;
 	 * import de.polygonal.core.time.TimbaseEvent;
 	 * class Main {
 	 *     static function main() {
-	 *         var observer = function() {
-	 *             trace("tick");
-	 *             return true; //keep alive
-	 *         }
-	 *         Observable.bind(observer, Timebase.get(), TimebaseEvent.TICK);
-	 *     }
-	 * }
-	 * </pre>
-	 */
-	public static function bind(f:Void->Bool, source:IObservable, type:Int)
-	{
-		source.attach(Bind.get(f, type));
-	}
-	
-	/**
-	 * Calls the function <code>f</code> whenever <code>source</code> triggers an update of one of the specified <code>types</code>.<br/>
-	 * Example:<br/><br/>
-	 * <pre class="prettyprint">
-	 * import de.polygonal.core.event.Observable;
-	 * import de.polygonal.core.time.Timbase;
-	 * import de.polygonal.core.time.TimbaseEvent;
-	 * class Main {
-	 *     static function main() {
-	 *         var observer = function(type) {
+	 *         var func = function(type, userData) {
 	 *             if (type == TimebaseEvent.TICK) {
 	 *                 trace("tick");
 	 *                 return false; //stop TICK updates, but keep RENDER updates
@@ -140,38 +117,38 @@ class Observable extends HashableItem, implements IObservable
 	 *                 return true; //keep alive
 	 *             }
 	 *         }
-	 *         Observable.bindMulti(observer, Timebase.get(), TimebaseEvent.TICK | TimebaseEvent.RENDER);
+	 *         Observable.bind(func, Timebase.get(), TimebaseEvent.TICK | TimebaseEvent.RENDER);
 	 *     }
 	 * }
 	 * </pre>
 	 */
-	public static function bindMulti(f:Int->Bool, source:IObservable, types:Int)
+	public static function bind(func:Int->Dynamic->Bool, source:IObservable, mask = 0)
 	{
-		source.attach(MultiBind.get(f, types));
+		source.attach(Bind.get(func, mask), mask);
 	}
 	
 	/**
-	 * Delegates <em>IObserver.udpate()</em> to the given function <code>f</code>, as long as <code>f</code> returns true.<br/>
-	 * Example:<br/><br/>
+	 * Delegates <em>IObserver.update()</em> to the given function <code>func</code>, as long as <code>func</code> returns true.<br/>
+	 * Example:<br/>
 	 * <pre class="prettyprint">
 	 * import de.polygonal.core.event.Observable;
 	 * import de.polygonal.core.time.TimbaseEvent;
 	 * class Main
 	 * {
 	 *     static function main() {
-	 *         var f = function(type:Int, source:Observable, userData:Dynamic):Bool {
+	 *         var func = function(type:Int, source:Observable, userData:Dynamic):Bool {
 	 *             trace(type);
 	 *             return false; //detach from event source
 	 *         }
 	 *         var observable = new Observable();
-	 *         observable.attach(Observable.delegate(f));
+	 *         observable.attach(Observable.delegate(func));
 	 *     }
 	 * }
 	 * </pre>
 	 */
-	public static function delegate(f:Int->IObservable->Dynamic->Bool):IObserver
+	public static function delegate(func:Int->IObservable->Dynamic->Bool):IObserver
 	{
-		return Delegate.get(f);
+		return Delegate.get(func);
 	}
 	
 	var _source:IObservable;
@@ -241,6 +218,7 @@ class Observable extends HashableItem, implements IObservable
 			n.prev     = null;
 			n.next     = null;
 			n.observer = null;
+			n.mask     = null;
 			n          = t;
 		}
 		
@@ -331,7 +309,7 @@ class Observable extends HashableItem, implements IObservable
 	
 	/**
 	 * Registers an observer object <code>o</code> with this object so it is updated when calling <em>notify()</em>.<br/>
-	 * Example:<br/><br/>
+	 * Example:<br/>
 	 * <pre class="prettyprint">
 	 * import de.polygonal.core.event.Observable;
 	 * import de.polygonal.core.event.IObserver;
@@ -367,7 +345,8 @@ class Observable extends HashableItem, implements IObservable
 	 * @param o the observer to register with.
 	 * @param mask a bit field of bit flags defining which event types to register with.<br/>
 	 * This can be used to select a subset of events from an event group.<br/>
-	 * By default, <code>o</code> receives all updates from an event group.
+	 * By default, <code>o</code> receives all updates from an event group.<br/>
+	 * <warn>Must only contain event types from a single group, e.g. this mask is invalid: MyEventA.EVENT_X | MyEventB.EVENT_Y.</warn>
 	 */
 	public function attach(o:IObserver, mask = 0):Void
 	{
@@ -380,18 +359,20 @@ class Observable extends HashableItem, implements IObservable
 		var n = _findNode(o);
 		if (n != null) //observer exists?
 		{
+			var groupId = mask >>> ObserverMacro.NUM_EVENT_BITS;
+			
 			//update bits only
-			if (n.mask == Bits.ALL)
+			if (n.mask[groupId] == Bits.ALL)
 			{
 				if (mask != 0)
-					n.mask = mask & ObserverMacro.EVENT_MASK; //apply given mask
+					n.mask[groupId] = mask & ObserverMacro.EVENT_MASK; //set given mask
 			}
 			else
 			{
 				if (mask != 0)
-					n.mask |= (mask & ObserverMacro.EVENT_MASK); //merge existing mask with new mask
+					n.mask[groupId] |= (mask & ObserverMacro.EVENT_MASK); //merge existing mask with new mask
 				else
-					n.mask = Bits.ALL; //allow all
+					n.mask[groupId] = Bits.ALL; //allow all
 			}
 			return;
 		}
@@ -415,7 +396,17 @@ class Observable extends HashableItem, implements IObservable
 		
 		//set up node object
 		n.observer = o;
-		n.mask = (mask == 0) ? Bits.ALL : (mask & ObserverMacro.EVENT_MASK);
+		
+		if (mask == 0 || mask == Bits.ALL)
+		{
+			n.all = true;
+		}
+		else
+		{
+			var groupId = mask >>> ObserverMacro.NUM_EVENT_BITS;
+			n.mask[groupId] |= (mask == 0) ? Bits.ALL : (mask & ObserverMacro.EVENT_MASK);
+			n.groupBits |= 1 << groupId;
+		}
 		
 		_nodeLookup.set(o.__guid, n);
 		
@@ -431,7 +422,7 @@ class Observable extends HashableItem, implements IObservable
 	
 	/**
 	 * Unregisters an observer object <code>o</code> from this object so it is no longer updated when calling <em>notify()</em>.
-	 * Example:<br/><br/>
+	 * Example:<br/>
 	 * <pre class="prettyprint">
 	 * import de.polygonal.core.event.Observable;
 	 * import de.polygonal.core.event.IObserver;
@@ -470,7 +461,8 @@ class Observable extends HashableItem, implements IObservable
 	 * @param o the observer to unregister from.
 	 * @param mask a bit field of bit flags defining which event types to unregister from.<br/>
 	 * This can be used to select a subset of events from an event group.<br/>
-	 * By default, <code>o</code> is unregistered from the entire event group.
+	 * By default, <code>o</code> is unregistered from the entire event group.<br/>
+	 * <warn>Must only contain event types from a single group.</warn>
 	 */
 	public function detach(o:IObserver, mask:Int = 0):Void
 	{
@@ -483,14 +475,14 @@ class Observable extends HashableItem, implements IObservable
 		if (mask != 0)
 		{
 			//update bits
-			#if !neko
-			n.mask &= ~(mask & ObserverMacro.EVENT_MASK);
-			#else
-			n.mask &= haxe.Int32.toInt(haxe.Int32.complement(haxe.Int32.ofInt(mask & ObserverMacro.EVENT_MASK)));
-			#end
-			n.mask &= ObserverMacro.EVENT_MASK;
-			if (n.mask > 0)
-				return;
+			var groupId = mask >>> ObserverMacro.NUM_EVENT_BITS;
+			n.mask[groupId] &= ~(mask & ObserverMacro.EVENT_MASK);
+			
+			//remove group if empty
+			if (n.mask[groupId] == 0) n.groupBits &= ~(1 << groupId);
+			
+			//don't detach until all groups detached
+			if (n.groupBits > 0) return;
 		}
 		
 		//unlink from observer list
@@ -535,63 +527,13 @@ class Observable extends HashableItem, implements IObservable
 	
 	/**
 	 * Notifies all attached observers to indicate that the state of this object has changed.
-	 * @param type the event type.
+	 * @param type the event type.<br/>
+	 * <warn>Must only contain event types from a single group.</warn>
 	 * @param userData additional event data. Default value is null.
 	 */
 	public function notify(type:Int, userData:Dynamic = null):Void
 	{
-		if (_observerCount == 0 || (type & _blacklist) == type)
-			return; //early out
-		
-		var eventBits = type & ObserverMacro.EVENT_MASK;
-		
-		//when an observer calls notify() while an update is in progress, the current update stops
-		//while the new update is carried out to all observers, e.g.:
-		//we have 3 observers A,B and C - when B invokes an update the update order is [A, B, [A, B, C], C]
-		
-		if (_updating) //update still running?
-		{
-			//stop update and store state so it can be resumed later on
-			_stack.push(_hook);
-			_stack.push(_type);
-			_stack.push(_userData);
-			
-			_type = type;
-			_userData = userData;
-			
-			_update(_observer, type, eventBits, userData);
-		}
-		else
-		{
-			_updating = true;
-			_type = type;
-			_userData = userData;
-			
-			_update(_observer, type, eventBits, userData);
-			
-			if (_stack == null) //free() was called?
-			{
-				_hook = null;
-				_observer = null;
-				return;
-			}
-			
-			if (_stack.size() > 0)
-			{
-				while (_stack.size() > 0) 
-				{
-					//restore state
-					userData = _stack.pop();
-					type     = _stack.pop();
-					
-					//resume update
-					_update(_stack.pop(), type, eventBits, userData);
-				}
-			}
-			
-			_updating = false;
-			_hook = null;
-		}
+		_notify(type, userData);
 	}
 	
 	/**
@@ -608,11 +550,7 @@ class Observable extends HashableItem, implements IObservable
 	 */
 	public function unmute(x:Int):Void
 	{
-		#if !neko
 		_blacklist = _blacklist & ~x;
-		#else
-		_blacklist = _blacklist & haxe.Int32.toInt(haxe.Int32.complement(haxe.Int32.ofInt(x)));
-		#end
 	}
 	
 	/**
@@ -653,15 +591,70 @@ class Observable extends HashableItem, implements IObservable
 		return new ObservableIterator<IObserver>(_observer);
 	}
 	
-	inline function _update(node:ObserverNode, type:Int, eventBits:Int, userData:Dynamic)
+	function _notify(type:Int, userData:Dynamic = null)
+	{
+		if (_observerCount == 0 || (type & _blacklist) == type)
+			return; //early out
+		
+		var eventBits = type & ObserverMacro.EVENT_MASK;
+		var groupId = type >>> ObserverMacro.NUM_EVENT_BITS;
+		
+		//when an observer calls notify() while an update is in progress, the current update stops
+		//while the new update is carried out to all observers, e.g.:
+		//we have 3 observers A,B and C - when B invokes an update the update order is [A, B, [A, B, C], C]
+		if (_updating) //update still running?
+		{
+			//stop update and store state so it can be resumed later on
+			_stack.push(_hook);
+			_stack.push(_type);
+			_stack.push(_userData);
+			
+			_type = type;
+			_userData = userData;
+			
+			_update(_observer, type, eventBits, groupId, userData);
+		}
+		else
+		{
+			_updating = true;
+			_type = type;
+			_userData = userData;
+			
+			_update(_observer, type, eventBits, groupId, userData);
+			
+			if (_stack == null) //free() was called?
+			{
+				_hook = null;
+				_observer = null;
+				return;
+			}
+			
+			if (_stack.size() > 0)
+			{
+				while (_stack.size() > 0)
+				{
+					//restore state
+					userData = _stack.pop();
+					type     = _stack.pop();
+					
+					//resume update
+					_update(_stack.pop(), type, eventBits, groupId, userData);
+				}
+			}
+			
+			_updating = false;
+			_hook = null;
+		}
+	}
+	
+	inline function _update(node:ObserverNode, type:Int, eventBits:Int, groupId:Int, userData:Dynamic)
 	{
 		//update all observers
 		while (node != null)
 		{
 			//preserve reference to next node so a detach() doesn't break an update
 			_hook = node.next;
-			
-			if ((node.mask & eventBits) > 0) //observer is suited for this update?
+			if (node.all || node.mask[groupId] & eventBits > 0) //observer is suited for this update?
 				node.observer.update(type, _source, userData); //update
 			node = _hook;
 		}
@@ -673,21 +666,37 @@ class ObserverNode
 	public var observer:IObserver;
 	public var prev:ObserverNode;
 	public var next:ObserverNode;
-	public var mask:Int;
+	public var groupBits:Int;
+	
+	public var all:Bool;
+	
+	#if flash10
+	public var mask:flash.Vector<Int>;
+	#else
+	public var mask:Array<Int>;
+	#end
 	
 	public function new()
 	{
 		observer = null;
 		prev = null;
 		next = null;
-		mask = 0;
+		groupBits = 0;
+		all = false;
+		var k = 1 << ObserverMacro.NUM_GROUP_BITS;
+		#if flash10
+		mask = new flash.Vector<Int>(k, true);
+		#else
+		mask = de.polygonal.ds.ArrayUtil.alloc(k);
+		for (i in 0...k) mask[i] = 0;
+		#end
 	}
 }
 
 private class ObservableIterator<T>
 {
 	var _walker:ObserverNode;
-
+	
 	public function new(head:ObserverNode)
 	{
 		_walker = head;
@@ -709,79 +718,54 @@ private class ObservableIterator<T>
 private class Bind implements IObserver
 {
 	static var _pool:DynamicObjectPool<Bind>;
-	inline public static function get(f:Void->Bool, type:Int):Bind
+	inline public static function get(f:Int->Dynamic->Bool, mask:Int):Bind
 	{
 		if (_pool == null)
 			_pool = new DynamicObjectPool<Bind>(Bind, null, null, 1024);
 		
-		#if warnings
+		#if verbose
 		if (_pool.capacity() == _pool.size())
-			de.polygonal.core.log.Log.getLog(Observable).warn('bind pool exhausted');
+			Root.warn('Observable.Bind pool exhausted.');
 		#end
 		
 		var o = _pool.get();
 		o._f = f;
-		o._t = type;
+		o._g = mask & ObserverMacro.GROUP_MASK;
+		o._t = mask & ObserverMacro.EVENT_MASK;
 		return o;
 	}
 	
-	var _f:Void->Bool;
+	var _f:Int->Dynamic->Bool;
+	var _g:Int;
 	var _t:Int;
 	
-	public function update(type:Int, source:IObservable, userData:Dynamic):Void 
+	public function update(type:Int, source:IObservable, userData:Dynamic):Void
 	{
-		if (_t == type)
+		if (_t != 0)
 		{
-			if (!_f())
-			{
-				source.detach(this, type);
-				_f = null;
-				_pool.put(this);
-				if (_pool.used() == 0)
-					_pool.reclaim();
-			}
+			if (_g != (type & ObserverMacro.GROUP_MASK)) return;
+			if (_t & (type & ObserverMacro.EVENT_MASK) == 0) return;
 		}
-	}
-}
-
-private class MultiBind implements IObserver
-{
-	static var _pool:DynamicObjectPool<MultiBind>;
-	inline public static function get(f:Int->Bool, type:Int):MultiBind
-	{
-		if (_pool == null)
-			_pool = new DynamicObjectPool<MultiBind>(MultiBind, null, null, 1024);
 		
-		#if warnings
-		if (_pool.capacity() == _pool.size())
-			de.polygonal.core.log.Log.getLog(Observable).warn('MultiBind pool exhausted.');
+		if (_f(type, userData)) return;
+		
+		_t &= ~(type & ObserverMacro.EVENT_MASK);
+		source.detach(this, type);
+		if (_t != 0) return;
+		
+		_f = null;
+		_pool.put(this);
+		
+		#if verbose
+		Root.debug('returning Observable.Bind object to pool.');
 		#end
 		
-		var o = _pool.get();
-		o._f = f;
-		o._t = type;
-		return o;
-	}
-	
-	var _f:Int->Bool;
-	var _t:Int;
-	
-	public function update(type:Int, source:IObservable, userData:Dynamic):Void 
-	{
-		if (_t.hasBits(type))
+		if (_pool.used() == 0)
 		{
-			if (!_f(type))
-			{
-				_t = _t.clrBits(type);
-				source.detach(this, type);
-				if (_t == 0)
-				{
-					_f = null;
-					_pool.put(this);
-					if (_pool.used() == 0)
-						_pool.reclaim();
-				}
-			}
+			#if verbose
+			Root.debug('reclaiming Observable.Bind pool.');
+			#end
+			_pool.reclaim();
 		}
 	}
 }
@@ -807,13 +791,22 @@ private class Delegate implements IObserver
 	
 	public function update(type:Int, source:IObservable, userData:Dynamic):Void 
 	{
-		if (!_f(type, source, userData))
+		if (_f(type, source, userData)) return;
+		
+		source.detach(this);
+		_f = null;
+		_pool.put(this);
+		
+		#if verbose
+		Root.debug('returning Observable.Delegate object to pool.');
+		#end
+		
+		if (_pool.used() == 0)
 		{
-			source.detach(this);
-			_f = null;
-			_pool.put(this);
-			if (_pool.used() == 0)
-				_pool.reclaim();
+			#if verbose
+			Root.debug('reclaiming Observable.Delegate pool.');
+			#end
+			_pool.reclaim();
 		}
 	}
 }

@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                            _/                                                    _/
  *       _/_/_/      _/_/    _/  _/    _/    _/_/_/    _/_/    _/_/_/      _/_/_/  _/
  *      _/    _/  _/    _/  _/  _/    _/  _/    _/  _/    _/  _/    _/  _/    _/  _/
@@ -27,44 +27,21 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package de.polygonal.core.log.handler;
+package de.polygonal.core.util;
 
-import de.polygonal.core.log.LogHandler;
-import de.polygonal.core.log.LogLevel;
-import de.polygonal.core.math.Mathematics;
-
-using de.polygonal.ds.BitFlags;
-
-#if !js
-'The ConsoleHandler class is only available for js'
-#end
-
-/**
- * <p>Writes logging messages using the browser console API.</p> 
- */
-class ConsoleHandler extends LogHandler
+class AssertError 
 {
-	#if js
-	public static function log(x)
-	{
-		untyped console.log(x);
-	}
-	#end
+	public var message:String;
 	
-	public function new()
+	public function new(?message:String, ?info:haxe.PosInfos)
 	{
-		super();
+		this.message = message;
+		throw 'Assertation ' + (message == null ? '' : message + ' ') + 'failed in file ' +
+			info.fileName + 'line ' + info.lineNumber + ', ' + info.className + '::' + info.methodName;
 	}
 	
-	override function output(message:String):Void
+	public function toString():String
 	{
-		var levelName = LogLevel.getName(M.min(_message.outputLevel, LogLevel.ERROR)).toLowerCase();
-		
-		#if js
-		untyped console[levelName](message);
-		#elseif flash
-		if (flash.external.ExternalInterface.available)
-			flash.external.ExternalInterface.call('console.' + levelName, message);
-		#end
+		return message;
 	}
 }

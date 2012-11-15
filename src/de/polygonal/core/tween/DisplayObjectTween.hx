@@ -35,10 +35,10 @@ import flash.display.DisplayObject;
 
 using de.polygonal.ds.BitFlags;
 
-#if !flash
-'The DisplayObjectTween class is only available for flash'
-#end
-
+/**
+ * <p>Tweens properties of a <em>flash.display.DisplayObject</em>.</p>
+ * <p>Faster than <em>GenericTween</em> because no reflection is used.</p>
+ */
 class DisplayObjectTween extends Tween, implements TweenTarget
 {
 	inline public static var X        = Bits.BIT_01;
@@ -53,7 +53,7 @@ class DisplayObjectTween extends Tween, implements TweenTarget
 	var _bits:Int;
 	var _o:DisplayObject;
 	
-	public function new(?key:String, o:DisplayObject, flags:Int, ease:Ease, to:Float, duration:Float, ?interpolateState = true)
+	public function new(key:String = null, o:DisplayObject, flags:Int, ease:Ease, to:Float, duration:Float, interpolateState = false)
 	{
 		_o = o;
 		_bits = flags;

@@ -27,44 +27,17 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package de.polygonal.core.log.handler;
+package de.polygonal.core.time;
 
-import de.polygonal.core.log.LogHandler;
-import de.polygonal.core.log.LogLevel;
-import de.polygonal.core.math.Mathematics;
-
-using de.polygonal.ds.BitFlags;
-
-#if !js
-'The ConsoleHandler class is only available for js'
-#end
-
-/**
- * <p>Writes logging messages using the browser console API.</p> 
- */
-class ConsoleHandler extends LogHandler
+interface TimelineListener
 {
-	#if js
-	public static function log(x)
-	{
-		untyped console.log(x);
-	}
-	#end
+	private function onBlip():Void;
 	
-	public function new()
-	{
-		super();
-	}
+	private function onStart():Void;
 	
-	override function output(message:String):Void
-	{
-		var levelName = LogLevel.getName(M.min(_message.outputLevel, LogLevel.ERROR)).toLowerCase();
-		
-		#if js
-		untyped console[levelName](message);
-		#elseif flash
-		if (flash.external.ExternalInterface.available)
-			flash.external.ExternalInterface.call('console.' + levelName, message);
-		#end
-	}
+	private function onProgress(alpha:Float):Void;
+	
+	private function onEnd():Void;
+	
+	private function onCancel():Void;
 }

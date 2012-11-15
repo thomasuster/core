@@ -29,37 +29,40 @@
  */
 package de.polygonal.core.time;
 
-import de.polygonal.core.event.Observable;
-
 /**
  * Carries out a deferred function call.
  */
-class Delay
+class Delay implements TimelineListener
 {
+	var _id:Int;
+	var _f:Void->Void;
+	
 	/**
-	 * Calls the function <code>f</code> after <code>delay</code> seconds.
+	 * Calls <code>f</code> after <code>delaySeconds</code>.
 	 */
-	public static function delay(f:Void->Void, delay:Float):Void
+	public function new(f:Void->Void, delaySeconds:Float)
 	{
-		if (delay <= 0)
-		{
-			f();
-			return;
-		}
-		
-		var timeline = Timeline.get();
-		var blipId = timeline.schedule(0, delay);
-		
-		Observable.bind(
-			function()
-			{
-				if (timeline.id == blipId)
-				{
-					f();
-					return false;
-				}
-				return true;
-			},
-			Timeline.get(), TimelineEvent.BLIP);
+		_f = f;
+		_id = Timeline.get().schedule(this, 0, delaySeconds);
 	}
+	
+	public function cancel():Void
+	{
+		Timeline.get().cancel(_id);
+		_f = null;
+	}
+	
+	function onBlip():Void 
+	{
+		_f();
+		_f = null;
+	}
+	
+	function onStart():Void {}
+	
+	function onProgress(alpha:Float):Void {}
+	
+	function onEnd():Void {}
+	
+	function onCancel():Void {}
 }

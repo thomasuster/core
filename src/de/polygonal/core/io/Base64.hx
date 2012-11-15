@@ -34,7 +34,7 @@ import haxe.io.BytesData;
 import haxe.io.BytesInput;
 import haxe.io.BytesOutput;
 import de.polygonal.ds.ArrayUtil;
-import de.polygonal.core.macro.Assert;
+import de.polygonal.core.util.Assert;
 
 /**
  * <p>A Base64 encoder/decoder.</p>

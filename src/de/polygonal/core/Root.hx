@@ -32,7 +32,7 @@ package de.polygonal.core;
 import de.polygonal.core.fmt.Sprintf;
 import de.polygonal.core.log.Log;
 import de.polygonal.core.log.LogHandler;
-import de.polygonal.core.macro.Assert;
+import de.polygonal.core.util.Assert;
 import haxe.PosInfos;
 
 /**
@@ -46,6 +46,24 @@ class Root
 	public static var log(default, null):Log = null;
 	
 	/**
+	 * Short for <em>Root.log.debug()</em>.<br/>
+	 * Example:<br/>
+	 * <pre class="prettyprint">
+	 * using de.polygonal.core.Root;
+	 * "Hello World!".debug();
+	 * </pre>
+	 */
+	inline public static function debug(x:String)
+	{
+		#if log
+		#if debug
+		D.assert(log != null, 'call Root.init() first');
+		#end
+		log.debug(x);
+		#end
+	}
+	
+	/**
 	 * Short for <em>Root.log.info()</em>.<br/>
 	 * Example:<br/>
 	 * <pre class="prettyprint">
@@ -53,12 +71,14 @@ class Root
 	 * "Hello World!".info();
 	 * </pre>
 	 */
-	public static function info(x:String)
+	inline public static function info(x:String)
 	{
+		#if log
 		#if debug
 		D.assert(log != null, 'call Root.init() first');
 		#end
 		log.info(x);
+		#end
 	}
 	
 	/**
@@ -69,12 +89,14 @@ class Root
 	 * "Hello World!".warn();
 	 * </pre>
 	 */
-	public static function warn(x:String)
+	inline public static function warn(x:String)
 	{
+		#if log
 		#if debug
 		D.assert(log != null, 'call Root.init() first');
 		#end
 		log.warn(x);
+		#end
 	}
 	
 	/**
@@ -85,12 +107,14 @@ class Root
 	 * "Hello World!".error();
 	 * </pre>
 	 */
-	public static function error(x:String)
+	inline public static function error(x:String)
 	{
+		#if log
 		#if debug
 		D.assert(log != null, 'call Root.init() first');
 		#end
 		log.error(x);
+		#end
 	}
 	
 	#if flash

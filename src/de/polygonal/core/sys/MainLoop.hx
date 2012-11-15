@@ -30,54 +30,31 @@
 package de.polygonal.core.sys;
 
 import de.polygonal.core.event.IObservable;
-import de.polygonal.core.fmt.Sprintf;
-import de.polygonal.core.time.StopWatch;
+import de.polygonal.core.sys.Entity;
 import de.polygonal.core.time.Timebase;
 import de.polygonal.core.time.TimebaseEvent;
 import de.polygonal.core.time.Timeline;
-
-import de.polygonal.core.event.Observable.ObserverNode;
+import haxe.Timer;
 
 class MainLoop extends Entity
 {
-	var _timebase:Timebase;
-	var _timeline:Timeline;
+	public var tickTimeSeconds:Float;
+	public var drawTimeSeconds:Float;
 	
-	#if profile
-	public static var stopWatchSlotAdvance:Int;
-	public static var stopWatchSlotRender:Int;
-	#end
+	public var paused:Bool = true;
 	
-	var _paused:Bool;
+	var _tickTime:Float;
+	var _drawTime:Float;
 	
 	public function new()
 	{
 		super();
-		
-		_timebase = Timebase.get();
-		_timebase.attach(this);
-		_timeline = Timeline.get();
-		
-		#if debug
-		de.polygonal.ui.UI.get().attach(this, de.polygonal.ui.UIEvent.KEY_DOWN);
-		#end
-		
-		#if profile
-		stopWatchSlotAdvance = StopWatch.getFreeSlot();
-		stopWatchSlotRender = StopWatch.getFreeSlot();
-		#end
+		Timebase.get().attach(this);
 	}
 	
-	public function pause():Void
+	override function onFree():Void 
 	{
-		_timebase.halt();
-		_paused = true;
-	}
-	
-	public function resume():Void
-	{
-		_timebase.resume();
-		_paused = false;
+		Timebase.get().detach(this);
 	}
 	
 	override public function update(type:Int, source:IObservable, userData:Dynamic):Void
@@ -85,63 +62,51 @@ class MainLoop extends Entity
 		switch (type)
 		{
 			case TimebaseEvent.TICK:
-				_timeline.advance();
+				tickTimeSeconds = 0;
 				
-				#if (!no_traces)
-				//identify update step
-				for (handler in de.polygonal.core.Root.log.getLogHandler())
-					handler.setPrefix(de.polygonal.core.fmt.Sprintf.format('t%03d', [_timebase.getProcessedTicks() % 1000]));
+				#if (!no_traces && log)
+				//identify tick step
+				var log = de.polygonal.core.Root.log;
+				if (log != null)
+					for (handler in log.getLogHandler())
+						handler.setPrefix(de.polygonal.core.fmt.Sprintf.format('t%03d', [Timebase.get().processedTicks % 1000]));
 				#end
 				
+				if (paused) return;
+				
+				tickTimeSeconds = _tickTime;
+				_tickTime = Timer.stamp();
+				
+				Timeline.get().advance();
 				commit();
+				tick(userData);
 				
-				#if debug
+				_tickTime = Timer.stamp() - _tickTime;
+				
+				#if verbose
 				var s = Entity.printTopologyStats();
-				if (s != null) trace(s);
+				if (s != null) de.polygonal.core.Root.debug(s);
 				#end
-				
-				#if profile
-				StopWatch.clock(stopWatchSlotAdvance);
-				#end
-				
-				advance(userData);
-				
-				#if profile
-				StopWatch.clock(stopWatchSlotAdvance);
-				#end
-				
+			
 			case TimebaseEvent.RENDER:
-				#if (!no_traces)
-				//identify rendering step
-				for (handler in de.polygonal.core.Root.log.getLogHandler())
-					handler.setPrefix(de.polygonal.core.fmt.Sprintf.format('r%03d', [_timebase.getProcessedFrames() % 1000]));
+				drawTimeSeconds = 0;
+				
+				if (paused) return;
+				
+				drawTimeSeconds = _drawTime;
+				_drawTime = Timer.stamp();
+				
+				#if (!no_traces && log)
+				//identify draw step
+				var log = de.polygonal.core.Root.log;
+				if (log != null)
+					for (handler in log.getLogHandler())
+						handler.setPrefix(de.polygonal.core.fmt.Sprintf.format('r%03d', [Timebase.get().processedFrames % 1000]));
 				#end
 				
-				#if profile
-				StopWatch.clock(stopWatchSlotRender);
-				#end
+				draw(userData);
 				
-				render(userData);
-				
-				#if profile
-				StopWatch.clock(stopWatchSlotRender);
-				#end
-				
-			#if debug
-			//pause game graph traversal; perform manual updates when pressing '`'
-			case de.polygonal.ui.UIEvent.KEY_DOWN:
-				#if flash
-				if (de.polygonal.ui.UI.get().currCharCode == de.polygonal.core.fmt.ASCII.TILDE)
-				{
-					if (_paused)
-						_timebase.manualStep();
-				}
-				if (de.polygonal.ui.UI.get().currCharCode == de.polygonal.core.fmt.ASCII.GRAVE)
-				{
-					_paused ? resume() : pause();
-				}
-				#end
-			#end
+				_drawTime = Timer.stamp() - _drawTime;
 		}
 	}
 }

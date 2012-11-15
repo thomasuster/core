@@ -27,34 +27,43 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package de.polygonal.core.macro;
-
-typedef D = de.polygonal.core.macro.Assert;
+package de.polygonal.core.util;
 
 #if macro
 import haxe.macro.Context;
 import haxe.macro.Expr;
 #end
 
+typedef D = de.polygonal.core.util.Assert;
+
 class Assert
 {
-	@:macro public static function assert(predicate:ExprRequire<Bool>, ?info:ExprRequire<String>):Expr
+	@:macro public static function assert(predicate:Expr, ?info:Expr):Expr
 	{
 		if (!Context.defined('debug')) return {expr: EConst(CInt('0')), pos: Context.currentPos()};
 		
-		if (!_errorClassDefined) _defineErrorClass();
-		
 		var error = false;
-		switch (haxe.macro.Context.typeof(predicate))
+		
+		#if (haxe_211 && haxe3)
+		switch (Context.typeof(predicate))
+		{
+			case TAbstract(a, b):
+			default:
+				error = true;
+		}
+		#else
+		switch (Context.typeof(predicate))
 		{
 			case TEnum(t, _):
 				error = t.get().name != 'Bool';
 			default:
 				error = true;
 		}
+		#end
+		
 		if (error) Context.error('predicate should be a boolean', predicate.pos);
 		
-		switch (haxe.macro.Context.typeof(info))
+		switch (Context.typeof(info))
 		{
 			case TMono(t):
 				error = t.get() != null;
@@ -63,70 +72,12 @@ class Assert
 			default:
 				error = true;
 		}
+		
 		if (error) Context.error('info should be a string', info.pos);	
 		
 		var p = Context.currentPos();
 		var econd = {expr: EBinop(OpNotEq, {expr: EConst(CIdent('true')), pos: p}, predicate), pos: p};
-		var eif = {expr: EThrow({expr: ENew({name: 'AssertError', pack: ['de', 'polygonal'], params: []}, [info]), pos: p}), pos: p};
+		var eif = {expr: EThrow({expr: ENew({name: 'AssertError', pack: ['de', 'polygonal', 'core', 'util'], params: []}, [info]), pos: p}), pos: p};
 		return {expr: EIf(econd, eif, null), pos: p};
 	}
-	
-	#if macro
-	static var _errorClassDefined:Bool = false;
-	static function _defineErrorClass():Void
-	{
-		var p = Context.currentPos();
-		
-		var info1 = Context.parse('"Assertation \'" + x + "\' failed in file " + info.fileName + "line " + info.lineNumber + ", " + info.className + "::" + info.methodName', Context.currentPos());
-		var info2 = Context.parse('"Assertation failed in file " + info.fileName + "line " + info.lineNumber + ", " + info.className + "::" + info.methodName', Context.currentPos());
-		var body = {expr: EIf
-		(
-			{expr: EBinop(OpNotEq, {expr: EConst(CIdent('x')), pos: p}, {expr: EConst(CIdent('null')), pos: p}), pos: p},
-			{expr: EBlock([{expr: EBinop(OpAssign, {expr: EConst(CIdent('message')), pos: p}, info1), pos: p}]), pos: p},
-			{expr: EBlock([{expr: EBinop(OpAssign, {expr: EConst(CIdent('message')), pos: p}, info2), pos: p}]), pos: p}
-		), pos: p};
-		
-		Context.defineType
-		({
-			pack: ['de', 'polygonal'],
-			name: 'AssertError',
-			pos: p,
-			meta: [],
-			params: [],
-			isExtern: false,
-			kind: TDClass(),
-			fields:
-			[
-				{
-					name: 'new',
-					doc: null,
-					meta: [],
-					access: [APublic],
-					kind: FFun({args:
-						[
-							{name: 'x', opt: false, type: TPath({pack: [], name: 'String', params: [], sub: null}), value: null},
-							{name: 'info', opt: true, type: TPath({pack: ['haxe'], name: 'PosInfos', params: [], sub: null}), value: null}
-						],
-						ret: null, expr: {expr: EBlock([body]), pos: p}, params: []}), pos: p
-				},
-				{
-					name: 'toString',
-					doc: null,
-					meta: [],
-					access: [APublic],
-					kind: FFun({args: [], ret: null, expr: {expr: EBlock([{expr: EReturn({expr: EConst(CIdent('message')), pos: p}), pos: p}]), pos: p}, params: []}), pos: p
-				},
-				{
-					name: 'message',
-					doc: null,
-					meta: [],
-					access: [APublic],
-					kind: FVar(TPath({pack: [], name: 'String', params: [], sub: null})), pos: p
-				}
-			]
-		});
-		
-		_errorClassDefined = true;
-	}
-	#end
 }

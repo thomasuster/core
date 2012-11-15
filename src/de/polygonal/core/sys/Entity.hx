@@ -35,11 +35,18 @@ import de.polygonal.core.event.Observable;
 import de.polygonal.core.fmt.Sprintf;
 import de.polygonal.core.fmt.StringUtil;
 import de.polygonal.core.math.Limits;
-import de.polygonal.core.macro.Assert;
 import de.polygonal.ds.Bits;
+import de.polygonal.ds.Hashable;
+import de.polygonal.ds.HashKey;
+import de.polygonal.ds.IntHashSet;
 import de.polygonal.ds.TreeNode;
+import de.polygonal.core.util.Assert;
 
-class Entity implements IObserver, implements IObservable
+//descendant: ignore ghosts
+
+@:build(de.polygonal.core.sys.EntityType.gen())
+@:autoBuild(de.polygonal.core.sys.EntityType.gen())
+class Entity implements IObserver, implements IObservable, implements Hashable
 {
 	inline public static var UPDATE_ANCESTOR_ADD      = BIT_ADD_ANCESTOR;
 	inline public static var UPDATE_ANCESTOR_REMOVE   = BIT_REMOVE_ANCESTOR;
@@ -55,29 +62,30 @@ class Entity implements IObserver, implements IObservable
 	inline public static var UPDATE_SIBLING           = BIT_ADD_SIBLING | BIT_REMOVE_SIBLING;
 	inline public static var UPDATE_ALL               = UPDATE_ANCESTOR | UPDATE_DESCENDANT | UPDATE_SIBLING;
 	
-	inline static var BIT_ADVANCE           = Bits.BIT_01;
-	inline static var BIT_RENDER            = Bits.BIT_02;
-	inline static var BIT_STOP_PROPAGATION  = Bits.BIT_03;
-	inline static var BIT_PROCESS_SUBTREE   = Bits.BIT_04;
-	inline static var BIT_PENDING_ADD       = Bits.BIT_05;
-	inline static var BIT_PENDING_REMOVE    = Bits.BIT_06;
-	inline static var BIT_ADDED             = Bits.BIT_07;
-	inline static var BIT_REMOVED           = Bits.BIT_08;
-	inline static var BIT_PROCESS           = Bits.BIT_09;
-	inline static var BIT_COMMIT_REMOVAL    = Bits.BIT_10;
-	inline static var BIT_COMMIT_SUICIDE    = Bits.BIT_11;
-	inline static var BIT_INITIATOR         = Bits.BIT_12;
-	inline static var BIT_RECOMMIT          = Bits.BIT_13;
-	inline static var BIT_ADD_ANCESTOR      = Bits.BIT_14;
-	inline static var BIT_REMOVE_ANCESTOR   = Bits.BIT_15;
-	inline static var BIT_ADD_DESCENDANT    = Bits.BIT_16;
-	inline static var BIT_REMOVE_DESCENDANT = Bits.BIT_17;
-	inline static var BIT_ADD_SIBLING       = Bits.BIT_18;
-	inline static var BIT_REMOVE_SIBLING    = Bits.BIT_19;
+	inline static var BIT_TICK              = Bits.BIT_01;
+	inline static var BIT_DRAW              = Bits.BIT_02;
+	inline static var BIT_PROCESS_SUBTREE   = Bits.BIT_03;
+	inline static var BIT_PENDING_ADD       = Bits.BIT_04;
+	inline static var BIT_PENDING_REMOVE    = Bits.BIT_05;
+	inline static var BIT_ADDED             = Bits.BIT_06;
+	inline static var BIT_REMOVED           = Bits.BIT_07;
+	inline static var BIT_PROCESS           = Bits.BIT_08;
+	inline static var BIT_COMMIT_REMOVAL    = Bits.BIT_09;
+	inline static var BIT_COMMIT_SUICIDE    = Bits.BIT_10;
+	inline static var BIT_INITIATOR         = Bits.BIT_11;
+	inline static var BIT_RECOMMIT          = Bits.BIT_12;
+	inline static var BIT_ADD_ANCESTOR      = Bits.BIT_13;
+	inline static var BIT_REMOVE_ANCESTOR   = Bits.BIT_14;
+	inline static var BIT_ADD_DESCENDANT    = Bits.BIT_15;
+	inline static var BIT_REMOVE_DESCENDANT = Bits.BIT_16;
+	inline static var BIT_ADD_SIBLING       = Bits.BIT_17;
+	inline static var BIT_REMOVE_SIBLING    = Bits.BIT_18;
 	
 	inline static var BIT_PENDING = BIT_PENDING_ADD | BIT_PENDING_REMOVE;
 	
-	#if debug
+	static var typeMap = new IntHashSet(512);
+	
+	#if verbose
 	inline static var INDEX_ADD               = 0;
 	inline static var INDEX_REMOVE            = 1;
 	inline static var INDEX_ADD_ANCESTOR      = 2;
@@ -98,15 +106,10 @@ class Entity implements IObserver, implements IObservable
 	public static var format:Entity->String = null;
 	
 	/**
-	 * The name of this entity.<br/>
-	 * The default value is the unqualified class name of this entity.
+	 * The id of this entity.<br/>
+	 * The default value is the unqualified class name of this object.
 	 */
-	public var name:Dynamic;
-	
-	/**
-	 * The type of this entity.
-	 */
-	public var type:Int;
+	public var id:String;
 	
 	/**
 	 * The processing order of this entity.<br/>
@@ -116,67 +119,98 @@ class Entity implements IObserver, implements IObservable
 	public var priority:Int;
 	
 	/**
-	 * If false, <em>onAdvance()</em> is not called on this entity.<br/>
+	 * Custom data associated with this object.
+	 */
+	public var userData:Dynamic;
+	
+	/**
+	 * If false, <em>onTick()</em> is not called on this entity.<br/>
 	 * Default ist true.
 	 */
-	public var doAdvance(get_doAdvance, set_doAdvance):Bool;
-	function get_doAdvance():Bool
+	public var doTick(get_doTick, set_doTick):Bool;
+	function get_doTick():Bool
 	{
-		return _hasFlag(BIT_ADVANCE);
+		return hasf(BIT_TICK);
 	}
-	function set_doAdvance(value:Bool):Bool
+	function set_doTick(value:Bool):Bool
 	{
-		value ? _setFlag(BIT_ADVANCE) : _clrFlag(BIT_ADVANCE);
+		value ? setf(BIT_TICK) : clrf(BIT_TICK);
 		return value;
 	}
 	
 	/**
-	 * If false, <em>onRender()</em> is not called on this entity.<br/>
+	 * If false, <em>onDraw()</em> is not called on this entity.<br/>
 	 * Default ist false.
 	 */
-	public var doRender(get_doRender, set_doRender):Bool;
-	function get_doRender():Bool
+	public var doDraw(get_doDraw, set_doDraw):Bool;
+	function get_doDraw():Bool
 	{
-		return _hasFlag(BIT_RENDER);
+		return hasf(BIT_DRAW);
 	}
-	function set_doRender(value:Bool):Bool
+	function set_doDraw(value:Bool):Bool
 	{
-		value ? _setFlag(BIT_RENDER) : _clrFlag(BIT_RENDER);
+		value ? setf(BIT_DRAW) : clrf(BIT_DRAW);
 		return value;
 	}
 	
 	/**
-	 * If false, the children of this node are neither updated nor rendered.<br/>
+	 * If false, all descendants of this node are neither updated nor rendered.<br/>
 	 * Default is true.
 	 */
 	public var doChildren(get_doChildren, set_doChildren):Bool;
 	function get_doChildren():Bool
 	{
-		return _hasFlag(BIT_PROCESS_SUBTREE);
+		return hasf(BIT_PROCESS_SUBTREE);
 	}
 	function set_doChildren(value:Bool):Bool
 	{
-		value ? _setFlag(BIT_PROCESS_SUBTREE) : _clrFlag(BIT_PROCESS_SUBTREE);
+		value ? setf(BIT_PROCESS_SUBTREE) : clrf(BIT_PROCESS_SUBTREE);
 		return value;
 	}
 	
 	/**
-	 * The tree node that stores this entity.
+	 * The tree node storing this entity.
 	 */
 	public var treeNode(default, null):TreeNode<Entity>;
 	
+	/**
+	 * A unique identifier for this object.<br/>
+	 * A hash table transforms this key into an index of an array element by using a hash function.<br/>
+	 * <warn>This value should never be changed by the user.</warn>
+	 */
+	public var key:Int;
+	
 	var _flags:Int;
 	var _observable:Observable;
-	var _class:Class<Entity>;
+	var _c:Int;
+	var _type:Int;
 	
-	public function new(name:Dynamic = null)
+	public function new(id:String = null)
 	{
-		this.name = name == null ? StringUtil.getUnqualifiedClassName(this) : name;
+		this.id = id == null ? StringUtil.getUnqualifiedClassName(this) : id;
 		treeNode = new TreeNode<Entity>(this);
+		key = HashKey.next();
 		priority = Limits.UINT16_MAX;
-		_flags = BIT_ADVANCE | BIT_PROCESS_SUBTREE | UPDATE_ALL;
+		_flags = BIT_TICK | BIT_PROCESS_SUBTREE | UPDATE_ALL;
 		_observable = null;
-		_class = null;
+		_c = 0;
+		
+		var c = Type.getClass(this);
+		_type = getClassType(c);
+		if (!typeMap.has(_type))
+		{
+			var a = _type;
+			var m = typeMap;
+			m.set(a);
+			m.set((a << 16) | a);
+			var s = Type.getSuperClass(c);
+			while (s != null)
+			{
+				var b = getClassType(s);
+				m.set((a << 16) | b);
+				s = Type.getSuperClass(s);
+			}
+		}
 	}
 	
 	/**
@@ -186,35 +220,41 @@ class Entity implements IObserver, implements IObservable
 	 */
 	public function free():Void
 	{
-		if (_hasFlag(BIT_COMMIT_SUICIDE))
+		if (hasf(BIT_COMMIT_SUICIDE))
 		{
-			#if log
-			de.polygonal.core.log.Log.getLog(Entity).warn(Sprintf.format('entity \'%s\' already freed', [Std.string(name)]));
+			#if verbose
+			Root.warn(Sprintf.format('entity \'%s\' already freed', [Std.string(id)]));
 			#end
 			return;
 		}
 		
+		//TODO why only with parents?
 		if (treeNode.hasParent())
 		{
-			_setFlag(BIT_COMMIT_SUICIDE);
+			setf(BIT_COMMIT_SUICIDE);
 			remove();
 		}
 	}
 	
-	///TODO
 	/**
-	 * Whenever an entity is added or removed, the ancestors, descendants and siblings of this entity are notified about the change.<br/>
+	 * An iterator over all children (non-recursive).<br/>
+	 * Convenience method for <em>treeNode.childIterator()</em>.
 	 */
-	public function hideUpdate(flags:Int):Void//, deep = false, rise = false):Void
+	inline public function iterator():Iterator<Entity>
 	{
-		_clrFlag(flags);
+		return treeNode.childIterator();
+	}
+	
+	public function hideUpdate(flags:Int, deep = false, rise = false):Void
+	{
+		clrf(flags);
 		
-		/*if (deep)
+		if (deep)
 		{
 			var n = treeNode.children;
 			while (n != null)
 			{
-				n.val.setFlag(x, deep);
+				n.val.hideUpdate(flags);
 				n = n.next;
 			}
 		}
@@ -223,52 +263,35 @@ class Entity implements IObserver, implements IObservable
 			var n = treeNode.parent;
 			while (n != null)
 			{
-				n.val.setFlag(x);
+				n.val.hideUpdate(flags);
 				n = n.parent;
 			}
-		}*/
-		
-		/*public function clrFlag(x:Int, deep = false):Void
-		{
-			_clrFlag(x);
-			if (deep)
-			{
-				var n = treeNode.children;
-				while (n != null)
-				{
-					n.val.clrFlag(x, deep);
-					n = n.next;
-				}
-			}
-		}*/
+		}
 	}
 	
-	public function stopPropagation():Void
+	/**
+	 * <ul>
+	 * <li>Stops message propagation if called inside <em>onMsg()</em>.</li>
+	 * <li>Stops calling <em>onTick()</em> on all descendants if called inside <em>onTick()</em>.</li>
+	 * <li>Stops calling <em>onDraw()</em> on all descendants if called inside <em>onDraw()</em>.</li>
+	 * </ul>
+	 */
+	inline public function stop():Void
 	{
-		_setFlag(BIT_STOP_PROPAGATION);
+		_c++;
 	}
 	
-	public function sleep(deep = false)
-	{
-		if (deep)
-			_clrFlag(BIT_ADVANCE | BIT_RENDER | BIT_PROCESS_SUBTREE);
-		else
-			_clrFlag(BIT_ADVANCE | BIT_RENDER);
-	}
-	
-	public function wakeup(deep = false)
-	{
-		if (deep)
-			_setFlag(BIT_ADVANCE | BIT_RENDER | BIT_PROCESS_SUBTREE);
-		else
-			_setFlag(BIT_ADVANCE | BIT_RENDER);
-	}
-	
+	/**
+	 * Returns the parent entity or null if this entity is not a child.
+	 */
 	inline public function getParent():Entity
 	{
 		return treeNode.hasParent() ? treeNode.parent.val : null;
 	}
 	
+	/**
+	 * Returns true if this entity is a child entity.
+	 */
 	inline public function hasParent():Bool
 	{
 		return treeNode.hasParent();
@@ -285,6 +308,9 @@ class Entity implements IObserver, implements IObservable
 		return cast n.val;
 	}
 	
+	/**
+	 * Sorts the children according to their <em>priority</em> value.
+	 */
 	public function sortChildren():Void
 	{
 		var n = treeNode.children;
@@ -292,127 +318,154 @@ class Entity implements IObserver, implements IObservable
 		{
 			if (n.val.priority < Limits.INT16_MAX)
 			{
-				treeNode.sort(_sortChildrenCompare, true);
+				treeNode.sort(sortChildrenCompare, true);
 				break;
 			}
 			n = n.next;
 		}
 	}
 	
+	/**
+	 * Carries out any pending changes (additions/removals).
+	 */
 	public function commit():Void
 	{
-		#if debug
+		#if verbose
 		for (i in 0...9) _stats[i] = 0;
 		#end
 		
-		//always start as high as possible
-		var root = treeNode.getRoot();
-		var e = root.val;
+		#if verbose
+		if (treeNode != treeNode.getRoot())
+			Root.debug('commit() called at child entity ' + id);
+		#end
+		
+		//always start at root node
+		if (!treeNode.isRoot())
+		{
+			treeNode.getRoot().val.commit();
+			return;
+		}
 		
 		//defer update if tree is being processed
-		if (e._hasFlag(BIT_INITIATOR))
+		if (hasf(BIT_INITIATOR))
 		{
-			#if (log && debug)
-			de.polygonal.core.log.Log.getLog(Entity).warn('postpone commit at entity ' + name);
+			#if verbose
+			Root.debug('postpone commit() at entity ' + id);
 			#end
-			e._setFlag(BIT_RECOMMIT);
+			setf(BIT_RECOMMIT);
 			return;
 		}
 		
 		//early out
-		if (!_isDirty())
+		if (!isDirty())
 		{
-			_clrFlag(BIT_INITIATOR | BIT_RECOMMIT);
+			clrf(BIT_INITIATOR | BIT_RECOMMIT);
 			return;
 		}
 		
 		//lock
-		_setFlag(BIT_INITIATOR);
+		setf(BIT_INITIATOR);
 		
-		e._prepareAdditions();
-		e._registerHi();
-		e._registerLo();
-		e._register();
+		prepareAdditions();
+		registerHi();
+		registerLo();
+		register();
 		
-		e._prepareRemovals();
-		e._unregisterHi();
-		e._unregisterLo();
-		e._unregister();
-		e._removeNodes();
+		prepareRemovals();
+		unregisterHi();
+		unregisterLo();
+		unregister();
+		removeNodes();
 		
 		//unlock
-		_clrFlag(BIT_INITIATOR);
+		clrf(BIT_INITIATOR);
 		
 		//recursive update?
-		if (_hasFlag(BIT_RECOMMIT))
+		if (hasf(BIT_RECOMMIT))
 		{
-			_clrFlag(BIT_RECOMMIT);
+			#if verbose
+			Root.warn('carry out recursive commit() at entity ' + id);
+			#end
+			clrf(BIT_RECOMMIT);
 			commit();
 		}
 	}
 
 	/**
-	 * Updates all entities in the subtree rooted at this node (excluding this node) by calling <em>onAdvance()</em> on each node.
-	 * @param dt the time step passed to each node.
+	 * Updates all entities in the subtree rooted at this node (excluding this node) by calling <em>onTick()</em> on all descendants.
+	 * @param timeDelta the time step passed to each descendant.
 	 */
-	public function advance(dt:Float, ?parent:Entity):Void
+	public function tick(timeDelta:Float, parent:Entity = null):Void
 	{
-		_propagateAdvance(dt, parent == null ? this : parent);
+		propagateTick(timeDelta, parent == null ? this : parent);
 	}
 	
 	/**
-	 * Renders all entities in the subtree rooted at this node (excluding this node) by calling <em>onRender()</em> on each node.
-	 * @param  alpha a blending factor in the range <arg>&#091;0, 1&#093;</arg> between the previous and current state.
+	 * Renders all entities in the subtree rooted at this node (excluding this node) by calling <em>onRender()</em> on all descendants.
+	 * @param alpha a blending factor in the range <arg>&#091;0, 1&#093;</arg> between the previous and current state.
 	 */
-	public function render(alpha:Float, ?parent:Entity):Void
+	public function draw(alpha:Float, parent:Entity = null):Void
 	{
-		_propagateRender(alpha, parent == null ? this : parent);
+		propagateDraw(alpha, parent == null ? this : parent);
 	}
 	
 	/**
-	 * Adds a <em>child</em> entity to this entity.
+	 * Adds a child entity to this entity.
+	 * @param x an object inheriting from Entity or a reference to an Entity class.
 	 */
-	public function add(child:Entity, priority = Limits.UINT16_MAX):Void
+	public function add(x:Dynamic, priority = Limits.UINT16_MAX):Entity
 	{
-		if (child._hasFlag(BIT_PENDING_ADD))
+		var c:Entity =
+		#if flash
+		if (untyped x.hasOwnProperty('prototype'))
+		#else
+		if (Type.getClass(x) == null)
+		#end
+			cast Type.createInstance(x, []);
+		else
+			x;
+		
+		if (c.hasf(BIT_PENDING_ADD))
 		{
-			#if log
-			de.polygonal.core.log.Log.getLog(Entity).warn(Sprintf.format('entity \'%s\' already added to %s', [child.name, name]));
+			#if verbose
+			Root.warn(Sprintf.format('entity \'%s\' already added to %s', [c.id, id]));
 			#end
-			return;
+			return c;
 		}
 		
 		#if debug
-		D.assert(!treeNode.contains(child), 'given entity is a child of this entity');
-		#if log
-		if (treeNode.getRoot().val._hasFlag(BIT_INITIATOR))
-			de.polygonal.core.log.Log.getLog(Entity).warn(Sprintf.format('entity \'%s\' added during tree update', [child.name]));
+		D.assert(!treeNode.contains(c), 'given entity is a child of this entity');
 		#end
+		#if verbose
+		if (treeNode.getRoot().val.hasf(BIT_INITIATOR))
+			Root.warn(Sprintf.format('entity \'%s\' added during tree update', [c.id]));
 		#end
 		
-		if (priority != Limits.UINT16_MAX) child.priority = priority;
+		if (priority != Limits.UINT16_MAX) c.priority = priority;
 		
 		//modify tree
-		treeNode.appendNode(child.treeNode);
+		treeNode.appendNode(c.treeNode);
 		
 		//mark as pending addition
-		child._clrFlag(BIT_PENDING_REMOVE);
-		child._setFlag(BIT_PENDING_ADD);
+		c.clrf(BIT_PENDING_REMOVE);
+		c.setf(BIT_PENDING_ADD);
+		
+		return c;
 	}
 	
 	/**
-	 * Removes a <em>child</em> entity from this entity or this entity if <em>child</em> is omitted.
+	 * Removes a <code>child</code> entity from this entity or this entity if <code>child</code> is omitted.
 	 * @param deep if true, recursively removes all nodes in the subtree rooted at this node.
 	 */
-	public function remove(?child:Entity, deep = false):Void
+	public function remove(child:Entity = null, deep = false):Void
 	{
 		if (child == null)
 		{
 			//remove this entity
 			if (getParent() == null)
 			{
-				#if log
-				de.polygonal.core.log.Log.getLog(Entity).warn('root node can\'t be removed.');
+				#if verbose
+				Root.warn('root node can\'t be removed.');
 				#end
 				return;
 			}
@@ -420,37 +473,39 @@ class Entity implements IObserver, implements IObservable
 			return;
 		}
 		
-		if (child._hasFlag(BIT_PENDING_REMOVE | BIT_COMMIT_REMOVAL))
+		if (child.hasf(BIT_PENDING_REMOVE | BIT_COMMIT_REMOVAL))
 		{
-			#if log
-			de.polygonal.core.log.Log.getLog(Entity).warn(Sprintf.format('entity \'%s\' already removed from \'%s\'', [Std.string(child.name), Std.string(name)]));
+			#if verbose
+			Root.warn(Sprintf.format('entity \'%s\' already removed from \'%s\'', [Std.string(child.id), Std.string(id)]));
 			#end
 			return;
 		}
 		
 		#if debug
 		D.assert(child != this, 'given entity (%s) equals this entity.');
-		D.assert(treeNode.contains(child), Sprintf.format('given entity (%s) is not a child of this entity (%s).', [Std.string(child.name), Std.string(name)]));
-		#if log
-		if (treeNode.getRoot().val._hasFlag(BIT_INITIATOR))
-			de.polygonal.core.log.Log.getLog(Entity).warn(Sprintf.format('entity \'%s\' removed during tree update', [child.name]));
+		D.assert(treeNode.contains(child), Sprintf.format('given entity (%s) is not a child of this entity (%s).', [Std.string(child.id), Std.string(id)]));
 		#end
+		#if verbose
+		if (treeNode.getRoot().val.hasf(BIT_INITIATOR))
+			Root.warn(Sprintf.format('entity \'%s\' removed during tree update', [child.id]));
 		#end
 		
-		child.sleep();
+		//TODO also sleep subtree?
+		//put to sleep
+		child.clrf(BIT_TICK | BIT_DRAW);
 		
 		//mark as pending removal
-		child._clrFlag(BIT_PENDING_ADD);
-		child._setFlag(BIT_PENDING_REMOVE);
+		child.clrf(BIT_PENDING_ADD);
+		child.setf(BIT_PENDING_REMOVE);
 		
-		if (_hasFlag(BIT_COMMIT_REMOVAL))
+		if (hasf(BIT_COMMIT_REMOVAL))
 		{
 			//this node was marked for removal, so child can be removed directly
-			child._setFlag(BIT_COMMIT_REMOVAL);
-			child._clrFlag(BIT_PENDING_REMOVE);
-			child.sleep();
+			child.setf(BIT_COMMIT_REMOVAL);
+			child.clrf(BIT_PENDING_REMOVE);
+			child.clrf(BIT_TICK | BIT_DRAW);
 			child.onRemove(this);
-			#if debug
+			#if verbose
 			_stats[INDEX_REMOVE]++;
 			_stats[INDEX_SUM]++;
 			#end
@@ -484,186 +539,235 @@ class Entity implements IObserver, implements IObservable
 	}
 	
 	/**
-	 * Returns the first occurrence of an entity whose name matches <code>x</code> or null if no entity was found.
-	 * @param deep if true, searches the entire subtree rooted at this node.
+	 * Returns the first child whose class or subclass matches <code>x</code>
+	 * or null if no entity was found.
 	 */
-	public function findChildById(x:Dynamic, deep = false):Entity
+	public function child<T:Entity>(x:Class<T>):T
 	{
-		if (deep)
-		{
-			for (i in treeNode)
-			{
-				if (i == this) continue;
-				if (i.name == x) return i;
-			}
-			return null;
-		}
-		else
-		{
-			var n = treeNode.children;
-			while (n != null)
-			{
-				var e = n.val;
-				if (e.name == x) return e;
-				n = n.next;
-			}
-		}
-		return null;
-	}
-	
-	/**
-	 * Returns the first occurrence of an entity whose class matches <code>x</code> or null if no entity was found.
-	 * @param deep if true, searches the entire subtree rooted at this node.
-	 */
-	public function findChildByClass<T>(x:Class<T>, deep = false):T
-	{
-		var c:Class<Dynamic>;
-		if (deep)
-		{
-			for (i in treeNode)
-			{
-				if (i == this) continue;
-				c = i._getClass();
-				if (c == x) return cast i;
-			}
-		}
-		else
-		{
-			var n = treeNode.children;
-			while (n != null)
-			{
-				var e = n.val;
-				c = e._getClass();
-				if (c == x) return cast e;
-				n = n.next;
-			}
-		}
-		return null;
-	}
-	
-	/**
-	 * Returns the first occurrence of an entity whose name matches <code>x</code> or null if no entity was found.
-	 */
-	public function findSiblingById(x:Dynamic):Entity
-	{
-		var n = treeNode.getFirstSibling();
-		while (n != null)
-		{
-			var e = n.val;
-			if (e.name == x) return e;
-			n = n.next;
-		}
-		return null;
-	}
-	
-	/**
-	 * Returns the first occurrence of an entity whose class matches <code>x</code> or null if no entity was found.
-	 */
-	public function findSiblingByClass<T>(x:Class<T>):T
-	{
-		var c:Class<Dynamic>;
-		var n = treeNode.getFirstSibling();
-		while (n != null)
-		{
-			var e = n.val;
-			c = e._getClass();
-			if (c == x) return cast e;
-			n = n.next;
-		}
-		return null;
-	}
-	
-	/**
-	 * Returns the first occurrence of an entity whose name matches <code>x</code> or null if no entity was found.
-	 */
-	public function findParentById(x:Dynamic):Entity
-	{
-		var n = treeNode.parent;
-		while (n != null)
-		{
-			var e = n.val;
-			if (e.name == x) return e;
-			n = n.parent;
-		}
-		return null;
-	}
-	
-	/**
-	 * Returns the first occurrence of an entity whose class matches <code>x</code> or null if no entity was found.
-	 */
-	public function findParentByClass<T>(x:Class<T>):T
-	{
-		var c:Class<Dynamic>;
-		var n = treeNode.parent;
-		while (n != null)
-		{
-			var e = n.val;
-			c = e._getClass();
-			if (c == x) return cast e;
-			n = n.parent;
-		}
-		return null;
-	}
-	
-	/**
-	 * Sends a message <code>x</code> to all ancestors of this node.<br/>
-	 * Bubbling can be aborted by calling <em>stopPropagation()</em>.
-	 */
-	public function liftMessage(x:String, userData:Dynamic = null):Void
-	{
-		var n = treeNode.parent;
-		while (n != null)
-		{
-			var e = n.val;
-			if (e._hasFlag(BIT_PENDING | BIT_COMMIT_SUICIDE)) break;
-			e._clrFlag(BIT_STOP_PROPAGATION);
-			e.onMessage(x, userData);
-			if (e._hasFlag(BIT_STOP_PROPAGATION)) break;
-			n = n.parent;
-		}
-	}
-	
-	/**
-	 * Sends a message <code>x</code> to all descendants of this node.<br/>
-	 * Bubbling can be aborted by calling <em>stopPropagation()</em>.
-	 */
-	public function dropMessage(x:String, userData:Dynamic = null):Void
-	{
+		var a = getClassType(x);
+		var m = Entity.typeMap;
 		var n = treeNode.children;
 		while (n != null)
 		{
 			var e = n.val;
-			if (e._hasFlag(BIT_PENDING | BIT_COMMIT_SUICIDE))
+			if (m.has((e._type << 16) | a))
+				return cast e;
+			n = n.next;
+		}
+		return null;
+	}
+	
+	/**
+	 * Returns the first child whose <em>id</em> matches <code>x</code>
+	 * or null if no entity was found.
+	 */
+	public function childById(x:String):Entity
+	{
+		var n = treeNode.children;
+		while (n != null)
+		{
+			if (n.val.id == x)
+				return n.val;
+			n = n.next;
+		}
+		return null;
+	}
+	
+	/**
+	 * Returns the first descendant whose class or subclass matches <code>x</code>
+	 * or null if no entity was found.<br/>
+	 * In constrast to <em>c</em>, this method is recursive and searches the entire subtree.
+	 */
+	public function descendant<T:Entity>(x:Class<T>):T
+	{
+		var a = getClassType(x);
+		var m = Entity.typeMap;
+		var n = treeNode.children;
+		while (n != null)
+		{
+			var e = n.val;
+			if (m.has((e._type << 16) | a))
+				return cast e;
+			
+			var t = e.descendant(x);
+			if (t != null) return t;
+			
+			n = n.next;
+		}
+		return null;
+	}
+	
+	/**
+	 * Returns the first descendant whose <em>id</em> matches <code>x</code>
+	 * or null if no entity was found.<br/>
+	 * In constrast to <em>cid</em>, this method is recursive and searches the entire subtree.
+	 */
+	public function descendantById(x:String):Entity
+	{
+		var n = treeNode.children;
+		while (n != null)
+		{
+			if (n.val.id == x) return n.val;
+			var e = n.val.descendantById(x);
+			if (e != null) return e;
+			n = n.next;
+		}
+		return null;
+	}
+	
+	/**
+	 * Returns the first sibling whose class or subclass matches <code>x</code> or null if no entity was found.
+	 */
+	public function sibling<T:Entity>(x:Class<T>):T
+	{
+		var a:Int = getClassType(x);
+		var n = treeNode.getFirstSibling();
+		var m = Entity.typeMap;
+		while (n != null)
+		{
+			var e = n.val;
+			if (m.has((e._type << 16) | a))
+				return cast e;
+			n = n.next;
+		}
+		return null;
+	}
+	
+	/**
+	 * Returns the first sibling whose <em>id</em> matches <code>x</code> or null if no entity was found.
+	 */
+	public function siblingById(x:String):Entity
+	{
+		var n = treeNode.getFirstSibling();
+		while (n != null)
+		{
+			var e = n.val;
+			if (e.id == x) return e;
+			n = n.next;
+		}
+		return null;
+	}
+	
+	/**
+	 * Returns the first ancestor whose class or subclass matches <code>x</code> or null if no entity was found.
+	 */
+	public function ancestor<T:Entity>(x:Class<T>):T
+	{
+		var a = getClassType(x);
+		var n = treeNode.parent;
+		var m = Entity.typeMap;
+		while (n != null)
+		{
+			var e = n.val;
+			if (m.has((e._type << 16) | a))
+				return cast e;
+			n = n.parent;
+		}
+		return null;
+	}
+	
+	/**
+	 * Returns the first ancestor whose <em>id</em> matches <code>x</code> or null if no entity was found.
+	 */
+	public function ancestorById(x:String):Entity
+	{
+		var n = treeNode.parent;
+		while (n != null)
+		{
+			var e = n.val;
+			if (e.id == x) return e;
+			n = n.parent;
+		}
+		return null;
+	}
+	
+	/**
+	 * Sends a message <code>x</code> to all ancestors of this node until it reaches the root node.<br/>
+	 * If an ancestor calls <em>stop()</em>, message bubbling stops at this node.
+	 * @param userData additional custom data.
+	 */
+	public function liftMsg(x:String, userData:Dynamic = null):Void
+	{
+		var n = treeNode.parent;
+		while (n != null)
+		{
+			var e = n.val;
+			if (e.isGhost()) break;
+			
+			var c = e._c;
+			e.onMsg(x, this, userData);
+			if (c < e._c)
+			{
+				e._c--;
+				break;
+			}
+			
+			n = n.parent;
+		}
+	}
+	
+	/**
+	 * Sends a message <code>x</code> to all descendants of this node, until it reaches all leaf nodes.<br/>
+	 * If a descendant calls <em>stop()</em>, the subtree of the current node is excluded from further message propagation.
+	 * @param userData additional custom data.
+	 * @param sender used internally.
+	 */
+	public function dropMsg(x:String, userData:Dynamic = null, sender:Entity = null):Void
+	{
+		if (sender == null) sender = this;
+		
+		var n = treeNode.children;
+		while (n != null)
+		{
+			var e = n.val;
+			if (e.isGhost())
 			{
 				n = n.next;
 				continue;
 			}
-			e._clrFlag(BIT_STOP_PROPAGATION);
-			e.onMessage(x, userData);
-			if (e._hasFlag(BIT_STOP_PROPAGATION)) break;
-			e.dropMessage(x, userData);
+			
+			var c = e._c;
+			e.onMsg(x, sender, userData);
+			if (c < e._c)
+			{
+				e._c--;
+				n = n.next;
+				continue;
+			}
+			e.dropMsg(x, userData, sender);
+			
 			n = n.next;
 		}
 	}
 	
 	/**
 	 * Sends a message <code>x</code> to all siblings of this node.<br/>
-	 * Bubbling can be aborted by calling <em>stopPropagation()</em>.
+	 * First, the message is sent to all siblings 'left' of this node (following <em>treeNode</em>.prev),
+	 * then to siblings 'right' of this node (following <em>treeNode</em>.next).<br/>
+	 * If a sibling calls <em>stop()</em>, propagation stops, excluding all siblings 'left' or 'right' of the current
+	 * node.
+	 * @param userData additional custom data.
 	 */
-	public function slipMessage(x:String, userData:Dynamic = null):Void
+	public function slipMsg(x:String, userData:Dynamic = null):Void
 	{
 		var n = treeNode.prev;
 		while (n != null)
 		{
 			var e = n.val;
-			if (e._hasFlag(BIT_PENDING | BIT_COMMIT_SUICIDE))
+			if (e.isGhost())
 			{
 				n = n.prev;
 				continue;
 			}
-			e._clrFlag(BIT_STOP_PROPAGATION);
-			e.onMessage(x, userData);
-			if (e._hasFlag(BIT_STOP_PROPAGATION)) return;
+			
+			var c = e._c;
+			e.onMsg(x, this, userData);
+			if (c < e._c)
+			{
+				e._c--;
+				break;
+			}
+			
 			n = n.prev;
 		}
 		
@@ -671,16 +775,59 @@ class Entity implements IObserver, implements IObservable
 		while (n != null)
 		{
 			var e = n.val;
-			if (e._hasFlag(BIT_PENDING | BIT_COMMIT_SUICIDE))
+			if (e.isGhost())
 			{
 				n = n.next;
 				continue;
 			}
-			e._clrFlag(BIT_STOP_PROPAGATION);
-			e.onMessage(x, userData);
-			if (e._hasFlag(BIT_STOP_PROPAGATION)) return;
+			
+			var c = e._c;
+			e.onMsg(x, this, userData);
+			if (c < e._c)
+			{
+				e._c--;
+				break;
+			}
+			
 			n = n.next;
 		}
+	}
+	
+	/**
+	 * Convenience method for Std.is(this, <code>x</code>);
+	 */
+	inline public function is<T>(x:Class<T>):Bool
+	{
+		return Std.is(this, x);
+	}
+	
+	/**
+	 * Handles multiple calls to <em>is()</em> in one shot by checking all classes in <code>x</code> against this class.
+	 */
+	public function isAny(x:Array<Class<Dynamic>>):Bool
+	{
+		for (i in x)
+		{
+			if (Std.is(this, i))
+				return true;
+		}
+		return false;
+	}
+	
+	public function sleep(deep = false)
+	{
+		if (deep)
+			clrf(BIT_TICK | BIT_DRAW | BIT_PROCESS_SUBTREE);
+		else
+			clrf(BIT_TICK | BIT_DRAW);
+	}
+	
+	public function wakeup(deep = false)
+	{
+		if (deep)
+			setf(BIT_TICK | BIT_DRAW | BIT_PROCESS_SUBTREE);
+		else
+			setf(BIT_TICK | BIT_DRAW);
 	}
 	
 	public function toString():String
@@ -688,12 +835,12 @@ class Entity implements IObserver, implements IObservable
 		if (format != null) return format(this);
 		
 		if (treeNode == null)
-			return Sprintf.format('[name=%s (freed)]', [Std.string(name)]);
+			return Sprintf.format('[id=%s (freed)]', [Std.string(id)]);
 		
 		if (priority != Limits.UINT16_MAX)
-			return Sprintf.format('[name=%s #c=%d, p=%02d%s]', [Std.string(name), treeNode.numChildren(), priority, _hasFlag(BIT_PENDING) ? ' p' : '']);
+			return Sprintf.format('[id=%s #c=%d, p=%02d%s]', [Std.string(id), treeNode.numChildren(), priority, hasf(BIT_PENDING) ? ' p' : '']);
 		else
-			return Sprintf.format('[name=%s #c=%d%s]', [Std.string(name), treeNode.numChildren(), _hasFlag(BIT_PENDING) ? ' p' : '']);
+			return Sprintf.format('[id=%s #c=%d%s]', [Std.string(id), treeNode.numChildren(), hasf(BIT_PENDING) ? ' p' : '']);
 	}
 	
 	public function getObservable():Observable
@@ -721,112 +868,110 @@ class Entity implements IObserver, implements IObservable
 	public function update(type:Int, source:IObservable, userData:Dynamic):Void {}
 	
 	/**
-	 * Invoked by <em>free()</em> on all children,
-	 * giving each one the opportunity to perform some cleanup (override for implementation).
+	 * Hook; invoked by <em>free()</em> on all children,
+	 * giving each one the opportunity to perform some cleanup.
 	 */
 	function onFree():Void {}
 	
 	/**
-	 * Invoked after this entity was attached to the <code>parent</code> entity (override for implementation).
+	 * Hook; invoked after this entity was attached to its parent <code>x</code>.
 	 */
 	function onAdd(parent:Entity):Void {}
 
 	/**
-	 * Invoked after an <code>ancestor</code> was added (override for implementation).
+	 * Hook; invoked after an ancestor <code>x</code> was added to this entity.
 	 */
-	function onAddAncestor(ancestor:Entity):Void {}
+	function onAddAncestor(x:Entity):Void {}
 	
 	/**
-	 * Invoked after a <code>child</code> was added (override for implementation).
+	 * Hook; invoked after a descendant <code>x</code> was added to this entity.
 	 */
-	function onAddDescendant(child:Entity):Void {}
+	function onAddDescendant(x:Entity):Void {}
 	
 	/**
-	 * Invoked after an entity somewhere next to this entity was added (override for implementation).
+	 * Hook; invoked after a sibling <code>x</code> was added to this entity.
 	 */
-	function onAddSibling(sibling:Entity):Void {}
+	function onAddSibling(x:Entity):Void {}
 	
 	/**
-	 * Invoked after this entity was removed from its <code>parent</code> entity (override for implementation).
+	 * Hook; invoked after this entity was removed from its parent <code>x</code>.
 	 */
 	function onRemove(parent:Entity):Void {}
 	
 	/**
-	 * Invoked after an <code>ancestor</code> was removed (override for implementation).
+	 * Hook; invoked after this entity has lost the ancestor <code>x</code>.
 	 */
-	function onRemoveAncestor(ancestor:Entity):Void {}
+	function onRemoveAncestor(x:Entity):Void {}
 	
 	/**
-	 * Invoked after a <code>descendant</code> was removed (override for implementation).
+	 * Hook; invoked after this entity has lost the descendant <code>x</code>.
 	 */
-	function onRemoveDescendant(descendant:Entity):Void {}
+	function onRemoveDescendant(x:Entity):Void {}
 	
 	/**
-	 * Invoked after an entity somewhere next to this entity was removed (override for implementation).
+	 * Hook; invoked after this entity has lost the sibling <code>x</code>.
 	 */
-	function onRemoveSibling(sibling:Entity):Void {}
+	function onRemoveSibling(x:Entity):Void {}
 	
 	/**
-	 * Updates this entity (override for implementation).
+	 * Hook; updates this entity.
 	 */
-	function onAdvance(dt:Float, parent:Entity):Void {}
+	function onTick(timeDelta:Float, parent:Entity):Void {}
 	
 	/**
-	 * Renders this entity (override for implementation).
+	 * Hook; renders this entity.
 	 */
-	function onRender(alpha:Float, parent:Entity):Void {}
+	function onDraw(alpha:Float, parent:Entity):Void {}
 	
 	/**
-	 * Receives a <code>message</code> (override for implementation).
+	 * Hook; invoked after <code>sender</code> has sent a message <code>msg</code> to this entity, passing <code>userData</code>.
 	 */
-	function onMessage(message:String, userData:Dynamic):Void {}
+	function onMsg(msg:String, sender:Entity, userData:Dynamic):Void {}
 	
-	
-	
-	function _prepareAdditions():Void
+	function prepareAdditions():Void
 	{
-		//postorder: set BIT_PENDING_ADD -> BIT_PROCESS for all e in subtree
-		if (_hasFlag(BIT_PENDING_ADD))
+		//preorder: change BIT_PENDING_ADD to BIT_PROCESS
+		if (hasf(BIT_PENDING_ADD))
 		{
-			_clrFlag(BIT_PENDING_ADD);
-			_setFlag(BIT_PROCESS);
+			clrf(BIT_PENDING_ADD);
+			setf(BIT_PROCESS);
 		}
 		var n = treeNode.children;
 		while (n != null)
 		{
-			n.val._prepareAdditions();
+			n.val.prepareAdditions();
 			n = n.next;
 		}
 	}
 	
-	function _registerHi():Void
+	function registerHi():Void
 	{
 		//bottom -> up construction
 		var n = treeNode.children;
 		while (n != null)
 		{
-			n.val._registerHi();
+			n.val.registerHi();
 			n = n.next;
 		}
 		
 		var p = treeNode.parent;
 		if (p != null)
 		{
-			if (_hasFlag(BIT_PROCESS))
-				_propagateOnAddAncestor(p.val);
+			if (hasf(BIT_PROCESS))
+				propagateOnAddAncestor(p.val);
 			else 
 			{
-				if (_getFlag(BIT_PENDING | BIT_ADD_ANCESTOR) == BIT_ADD_ANCESTOR)
-					_propagateOnAddAncestorBackTrack(p.val);
+				if (getf(BIT_PENDING | BIT_ADD_ANCESTOR) == BIT_ADD_ANCESTOR)
+					propagateOnAddAncestorBackTrack(p.val);
 			}
 		}
 	}
 	
-	function _propagateOnAddAncestor(x:Entity):Void
+	function propagateOnAddAncestor(x:Entity):Void
 	{
-		if (_getFlag(BIT_PENDING | BIT_ADD_ANCESTOR) == BIT_ADD_ANCESTOR)
+		if (getf(BIT_PENDING | BIT_ADD_ANCESTOR) == BIT_ADD_ANCESTOR)
 		{
-			#if debug
+			#if verbose
 			_stats[INDEX_ADD_ANCESTOR]++;
 			_stats[INDEX_SUM]++;
 			#end
@@ -834,135 +979,136 @@ class Entity implements IObserver, implements IObservable
 		}
 		
 		//propagate to children?
-		if (_hasFlag(BIT_ADD_ANCESTOR))
+		if (hasf(BIT_ADD_ANCESTOR))
 		{
 			var n = treeNode.children;
 			while (n != null)
 			{
 				var e = n.val;
-				if (!e._hasFlag(BIT_PENDING))
-					e._propagateOnAddAncestor(x);
+				if (!e.hasf(BIT_PENDING))
+					e.propagateOnAddAncestor(x);
 				n = n.next;
 			}
 		}
 	}
 	
-	function _propagateOnAddAncestorBackTrack(x:Entity):Void
+	function propagateOnAddAncestorBackTrack(x:Entity):Void
 	{
-		if (_hasFlag(BIT_PROCESS))
+		if (hasf(BIT_PROCESS))
 		{
-			_propagateOnAddAncestor(x);
+			propagateOnAddAncestor(x);
 			return;
 		}
 		var n = treeNode.children;
 		while (n != null)
 		{
 			var e = n.val;
-			if (e._getFlag(BIT_PENDING) == 0)
-				e._propagateOnAddAncestorBackTrack(x);
+			if (e.getf(BIT_PENDING) == 0)
+				e.propagateOnAddAncestorBackTrack(x);
 			n = n.next;
 		}
 	}
 	
-	function _registerLo():Void
+	function registerLo():Void
 	{
 		//postorder: bottom -> up construction
 		var n = treeNode.children;
 		while (n != null)
 		{
-			n.val._registerLo();
+			n.val.registerLo();
 			n = n.next;
 		}
 		var p = treeNode.parent;
 		if (p != null)
 		{
-			if (_getFlag(BIT_PROCESS | BIT_ADD_DESCENDANT) == (BIT_PROCESS | BIT_ADD_DESCENDANT))
-				_propagateOnAddDescendant(p.val);
+			if (getf(BIT_PROCESS | BIT_ADD_DESCENDANT) == (BIT_PROCESS | BIT_ADD_DESCENDANT))
+				propagateOnAddDescendant(p.val);
 			else
 			{
-				if (_getFlag(BIT_PENDING | BIT_ADD_DESCENDANT) == BIT_ADD_DESCENDANT)
-					_propagateOnAddDescendantBackTrack(p.val);
+				if (getf(BIT_PENDING | BIT_ADD_DESCENDANT) == BIT_ADD_DESCENDANT)
+					propagateOnAddDescendantBackTrack(p.val);
 			}
 		}
 	}
 	
-	function _propagateOnAddDescendant(x:Entity):Void
+	function propagateOnAddDescendant(x:Entity):Void
 	{
-		if (x._getFlag(BIT_PENDING | BIT_ADD_DESCENDANT) == BIT_ADD_DESCENDANT)
+		if (x.getf(BIT_PENDING | BIT_ADD_DESCENDANT) == BIT_ADD_DESCENDANT)
 		{
-			#if debug
+			#if verbose
 			_stats[INDEX_ADD_DESCENDANT]++;
 			_stats[INDEX_SUM]++;
 			#end
 			x.onAddDescendant(this);
 		}
 		
-		if (_hasFlag(BIT_ADD_DESCENDANT))
+		if (hasf(BIT_ADD_DESCENDANT))
 		{
 			var n = treeNode.children;
 			while (n != null)
 			{
 				var e = n.val;
-				if (e._getFlag(BIT_PENDING | BIT_ADD_DESCENDANT) == BIT_ADD_DESCENDANT)
-					e._propagateOnAddDescendant(x);
+				if (e.getf(BIT_PENDING | BIT_ADD_DESCENDANT) == BIT_ADD_DESCENDANT)
+					e.propagateOnAddDescendant(x);
 				n = n.next;
 			}
 		}
 	}
 	
-	function _propagateOnAddDescendantBackTrack(x:Entity):Void
+	function propagateOnAddDescendantBackTrack(x:Entity):Void
 	{
-		if (_hasFlag(BIT_PROCESS))
+		if (hasf(BIT_PROCESS))
 		{
-			_propagateOnAddDescendant(x);
+			propagateOnAddDescendant(x);
 			return;
 		}
 		var n = treeNode.children;
 		while (n != null)
 		{
 			var e = n.val;
-			if (e._getFlag(BIT_PENDING | BIT_ADD_DESCENDANT) == BIT_ADD_DESCENDANT)
-				e._propagateOnAddDescendantBackTrack(x);
+			if (e.getf(BIT_PENDING | BIT_ADD_DESCENDANT) == BIT_ADD_DESCENDANT)
+				e.propagateOnAddDescendantBackTrack(x);
 			n = n.next;
 		}
 	}
 	
-	function _register():Void
+	function register():Void
 	{
+		//postorder
 		var n = treeNode.children;
 		while (n != null)
 		{
-			n.val._register();
+			n.val.register();
 			n = n.next;
 		}
-		if (_hasFlag(BIT_PROCESS))
+		if (hasf(BIT_PROCESS))
 		{
 			var p = treeNode.parent.val;
 			
-			if (_hasFlag(BIT_ADD_SIBLING))
-				p._propagateOnAddSibling(this);
+			if (hasf(BIT_ADD_SIBLING))
+				p.propagateOnAddSibling(this);
 			
 			onAdd(p);
-			#if debug
+			#if verbose
 			_stats[INDEX_ADD]++;
 			_stats[INDEX_SUM]++;
 			#end
 		}
-		_clrFlag(BIT_PROCESS);
+		clrf(BIT_PROCESS);
 	}
 	
-	function _propagateOnAddSibling(child:Entity):Void
+	function propagateOnAddSibling(child:Entity):Void
 	{
-		child._setFlag(BIT_ADDED);
+		child.setf(BIT_ADDED);
 		var n = treeNode.children;
 		while (n != null)
 		{
 			var e = n.val;
-			if (!e._hasFlag(BIT_ADDED))
+			if (!e.hasf(BIT_ADDED))
 			{
 				e.onAddSibling(child);
 				child.onAddSibling(e);
-				#if debug
+				#if verbose
 				_stats[INDEX_ADD_SIBLING]++;
 				_stats[INDEX_ADD_SIBLING]++;
 				_stats[INDEX_SUM]++;
@@ -972,55 +1118,55 @@ class Entity implements IObserver, implements IObservable
 		}
 	}
 	
-	function _prepareRemovals():Void
+	function prepareRemovals():Void
 	{
-		if (_hasFlag(BIT_PENDING_REMOVE))
+		if (hasf(BIT_PENDING_REMOVE))
 		{
-			_clrFlag(BIT_PENDING_REMOVE);
-			_setFlag(BIT_PROCESS);
+			clrf(BIT_PENDING_REMOVE);
+			setf(BIT_PROCESS);
 		}
 		var n = treeNode.children;
 		while (n != null)
 		{
-			n.val._prepareRemovals();
+			n.val.prepareRemovals();
 			n = n.next;
 		}
 	}
 	
-	function _unregister():Void
+	function unregister():Void
 	{
 		var n = treeNode.children;
 		while (n != null)
 		{
-			n.val._unregister();
+			n.val.unregister();
 			n = n.next;
 		}
 		
 		if (treeNode.parent == null) return;
 		
-		if (_hasFlag(BIT_PROCESS))
+		if (hasf(BIT_PROCESS))
 		{
-			_setFlag(BIT_COMMIT_REMOVAL);
+			setf(BIT_COMMIT_REMOVAL);
 			var p = treeNode.parent.val;
 			onRemove(p);
 			
-			if (_hasFlag(BIT_REMOVE_SIBLING))
-				p._propagateOnRemoveSibling(this);
+			if (hasf(BIT_REMOVE_SIBLING))
+				p.propagateOnRemoveSibling(this);
 		}
 	}
 	
-	function _propagateOnRemoveSibling(child:Entity):Void
+	function propagateOnRemoveSibling(child:Entity):Void
 	{
-		child._setFlag(BIT_REMOVED);
+		child.setf(BIT_REMOVED);
 		var n = treeNode.children;
 		while (n != null)
 		{
 			var e = n.val;
-			if (!e._hasFlag(BIT_REMOVED))
+			if (!e.hasf(BIT_REMOVED))
 			{
 				e.onRemoveSibling(child);
 				child.onRemoveSibling(e);
-				#if debug
+				#if verbose
 				_stats[INDEX_REMOVE_SIBLING]++;
 				_stats[INDEX_REMOVE_SIBLING]++;
 				_stats[INDEX_SUM]++;
@@ -1030,153 +1176,152 @@ class Entity implements IObserver, implements IObservable
 		}
 	}
 	
-	function _unregisterHi():Void
+	function unregisterHi():Void
 	{
 		var n = treeNode.children;
 		while (n != null)
 		{
-			n.val._unregisterHi();
+			n.val.unregisterHi();
 			n = n.next;
 		}
 		var p = treeNode.parent;
-		if (_hasFlag(BIT_PROCESS))
-			_propagateOnRemoveAncestor(p.val);
+		if (hasf(BIT_PROCESS))
+			propagateOnRemoveAncestor(p.val);
 		else
 		{
 			if (p == null) return;
-			if (_hasFlag(BIT_PENDING)) return;
+			if (hasf(BIT_PENDING)) return;
 			if (treeNode.children == null) return;
-			_propagateOnRemoveAncestorBackTrack(p.val);
+			propagateOnRemoveAncestorBackTrack(p.val);
 		}
 	}
 	
-	function _propagateOnRemoveAncestor(x:Entity):Void
+	function propagateOnRemoveAncestor(x:Entity):Void
 	{
-		if (_getFlag(BIT_PENDING | BIT_REMOVE_ANCESTOR) == BIT_REMOVE_ANCESTOR)
+		if (getf(BIT_PENDING | BIT_REMOVE_ANCESTOR) == BIT_REMOVE_ANCESTOR)
 		{
 			onRemoveAncestor(x);
-			#if debug
+			#if verbose
 			_stats[INDEX_REMOVE_ANCESTOR]++;
 			_stats[INDEX_SUM]++;
 			#end
 		}
 		
 		//propagate to children?
-		if (_hasFlag(BIT_REMOVE_ANCESTOR))
+		if (hasf(BIT_REMOVE_ANCESTOR))
 		{
 			var n = treeNode.children;
 			while (n != null)
 			{
 				var e = n.val;
-				if (!e._hasFlag(BIT_PENDING))
-					e._propagateOnRemoveAncestor(x);
+				if (!e.hasf(BIT_PENDING))
+					e.propagateOnRemoveAncestor(x);
 				n = n.next;
 			}
 		}
 	}
 	
-	function _propagateOnRemoveAncestorBackTrack(x:Entity):Void
+	function propagateOnRemoveAncestorBackTrack(x:Entity):Void
 	{
-		if (_hasFlag(BIT_PROCESS))
+		if (hasf(BIT_PROCESS))
 		{
-			_propagateOnRemoveAncestor(x);
+			propagateOnRemoveAncestor(x);
 			return;
 		}
 		var n = treeNode.children;
 		while (n != null)
 		{
 			var e = n.val;
-			if (e._getFlag(BIT_PENDING) == 0)
-				e._propagateOnRemoveAncestorBackTrack(x);
+			if (e.getf(BIT_PENDING) == 0)
+				e.propagateOnRemoveAncestorBackTrack(x);
 			n = n.next;
 		}
 	}
 	
-	function _unregisterLo():Void
+	function unregisterLo():Void
 	{
 		var n = treeNode.children;
 		while (n != null)
 		{
-			n.val._unregisterLo();
+			n.val.unregisterLo();
 			n = n.next;
 		}
 		var p = treeNode.parent;
-		if (_getFlag(BIT_PROCESS | BIT_REMOVE_DESCENDANT) == (BIT_PROCESS | BIT_REMOVE_DESCENDANT))
-			_propagateOnRemoveDescendant(p.val);
+		if (getf(BIT_PROCESS | BIT_REMOVE_DESCENDANT) == (BIT_PROCESS | BIT_REMOVE_DESCENDANT))
+			propagateOnRemoveDescendant(p.val);
 		else
 		{
 			if (p == null) return;
-			if (_getFlag(BIT_PENDING | BIT_REMOVE_DESCENDANT) == BIT_PENDING) return;
+			if (getf(BIT_PENDING | BIT_REMOVE_DESCENDANT) == BIT_PENDING) return;
 			if (treeNode.children == null) return;
-			_propagateOnRemoveDescendantBackTrack(p.val);
+			propagateOnRemoveDescendantBackTrack(p.val);
 		}
 	}
 	
-	function _propagateOnRemoveDescendant(x:Entity):Void
+	function propagateOnRemoveDescendant(x:Entity):Void
 	{
-		if (x._getFlag(BIT_PENDING | BIT_REMOVE_DESCENDANT) == BIT_REMOVE_DESCENDANT)
+		if (x.getf(BIT_PENDING | BIT_REMOVE_DESCENDANT) == BIT_REMOVE_DESCENDANT)
 		{
 			x.onRemoveDescendant(this);
-			#if debug
+			#if verbose
 			_stats[INDEX_REMOVE_DESCENDANT]++;
 			_stats[INDEX_SUM]++;
 			#end
 		}
 		
-		if (_hasFlag(BIT_REMOVE_DESCENDANT))
+		if (hasf(BIT_REMOVE_DESCENDANT))
 		{
 			var n = treeNode.children;
 			while (n != null)
 			{
 				var e = n.val;
-				if (e._getFlag(BIT_PENDING | BIT_REMOVE_DESCENDANT) == BIT_REMOVE_DESCENDANT)
-					e._propagateOnRemoveDescendant(x);
+				if (e.getf(BIT_PENDING | BIT_REMOVE_DESCENDANT) == BIT_REMOVE_DESCENDANT)
+					e.propagateOnRemoveDescendant(x);
 				n = n.next;
 			}
 		}
 	}
 	
-	function _propagateOnRemoveDescendantBackTrack(x:Entity):Void
+	function propagateOnRemoveDescendantBackTrack(x:Entity):Void
 	{
-		if (_getFlag(BIT_PROCESS | BIT_REMOVE_DESCENDANT) == (BIT_PROCESS | BIT_REMOVE_DESCENDANT))
+		if (getf(BIT_PROCESS | BIT_REMOVE_DESCENDANT) == (BIT_PROCESS | BIT_REMOVE_DESCENDANT))
 		{
-			_propagateOnRemoveDescendant(x);
+			propagateOnRemoveDescendant(x);
 			return;
 		}
 		var n = treeNode.children;
 		while (n != null)
 		{
 			var e = n.val;
-			if (e._getFlag(BIT_PENDING | BIT_REMOVE_DESCENDANT) == BIT_REMOVE_DESCENDANT)
-				e._propagateOnRemoveDescendantBackTrack(x);
+			if (e.getf(BIT_PENDING | BIT_REMOVE_DESCENDANT) == BIT_REMOVE_DESCENDANT)
+				e.propagateOnRemoveDescendantBackTrack(x);
 			n = n.next;
 		}
 	}
 	
-	function _removeNodes():Void
+	function removeNodes():Void
 	{
 		var n = treeNode.children;
 		while (n != null)
 		{
 			var hook = n.next;
-			n.val._removeNodes();
+			n.val.removeNodes();
 			n = hook;
 		}
 		
 		sortChildren();
 		
-		if (_hasFlag(BIT_COMMIT_REMOVAL))
+		if (hasf(BIT_COMMIT_REMOVAL))
 		{
 			treeNode.unlink();
 			//recursively destroy subtree rooted at this node?
-			if (_hasFlag(BIT_COMMIT_SUICIDE)) _free();
+			if (hasf(BIT_COMMIT_SUICIDE)) propagateFree();
 		}
 		
-		//clean up flags
-		_clrFlag(BIT_PROCESS | BIT_COMMIT_REMOVAL | BIT_ADDED | BIT_REMOVED);
+		clrf(BIT_PROCESS | BIT_COMMIT_REMOVAL | BIT_ADDED | BIT_REMOVED);
 	}
 	
-	function _propagateAdvance(timeDelta:Float, parent:Entity):Void
+	function propagateTick(timeDelta:Float, parent:Entity):Void
 	{
 		#if debug
 		D.assert(treeNode != null, 'treeNode != null');
@@ -1186,19 +1331,31 @@ class Entity implements IObserver, implements IObservable
 		while (n != null)
 		{
 			var e = n.val;
-			if (e._hasFlag(BIT_PENDING | BIT_COMMIT_SUICIDE))
+			if (e.isGhost())
 			{
 				n = n.next;
 				continue;
 			}
-			e._clrFlag(BIT_STOP_PROPAGATION);
-			if (e._hasFlag(BIT_ADVANCE)) e.onAdvance(timeDelta, parent);
-			if (e._doSubtree()) e._propagateAdvance(timeDelta, e);
+			
+			if (e.hasf(BIT_TICK))
+			{
+				var c = e._c;
+				e.onTick(timeDelta, parent);
+				if (c < e._c)
+					e._c--;
+				else
+				if (e.hasf(BIT_PROCESS_SUBTREE))
+					e.propagateTick(timeDelta, e);
+			}
+			else
+			if (e.hasf(BIT_PROCESS_SUBTREE))
+				e.propagateTick(timeDelta, e);
+			
 			n = n.next;
 		}
 	}
 	
-	function _propagateRender(alpha:Float, parent:Entity):Void
+	function propagateDraw(alpha:Float, parent:Entity):Void
 	{
 		#if debug
 		D.assert(treeNode != null, 'treeNode != null');
@@ -1208,24 +1365,36 @@ class Entity implements IObserver, implements IObservable
 		while (n != null)
 		{
 			var e = n.val;
-			if (e._hasFlag(BIT_PENDING | BIT_COMMIT_SUICIDE))
+			if (e.isGhost())
 			{
 				n = n.next;
 				continue;
 			}
-			e._clrFlag(BIT_STOP_PROPAGATION);
-			if (e._hasFlag(BIT_RENDER)) e.onRender(alpha, parent);
-			if (e._doSubtree()) e._propagateRender(alpha, e);
+			
+			if (e.hasf(BIT_DRAW))
+			{
+				var c = e._c;
+				e.onDraw(alpha, parent);
+				if (c < e._c)
+					e._c--;
+				else
+				if (e.hasf(BIT_PROCESS_SUBTREE))
+					e.propagateDraw(alpha, e);
+			}
+			else
+			if (e.hasf(BIT_PROCESS_SUBTREE))
+				e.propagateDraw(alpha, e);
+			
 			n = n.next;
 		}
 	}
 	
-	function _sortChildrenCompare(a:Entity, b:Entity):Int
+	function sortChildrenCompare(a:Entity, b:Entity):Int
 	{
 		return a.priority - b.priority;
 	}
 	
-	function _free():Void
+	function propagateFree():Void
 	{
 		var tmp = treeNode;
 		treeNode.postorder
@@ -1238,7 +1407,6 @@ class Entity implements IObserver, implements IObservable
 					e._observable.free();
 					e._observable = null;
 				}
-				e._class = null;
 				e.treeNode = null;
 				e.onFree();
 				return true;
@@ -1246,48 +1414,49 @@ class Entity implements IObserver, implements IObservable
 		tmp.free();
 	}
 	
-	function _isDirty():Bool
+	function isDirty():Bool
 	{
-		if (_hasFlag(BIT_PENDING)) return true;
+		if (hasf(BIT_PENDING)) return true;
 		var n = treeNode.children;
 		while (n != null)
 		{
-			if (n.val._isDirty()) return true;
+			if (n.val.isDirty()) return true;
 			n = n.next;
 		}
 		return false;
 	}
 	
-	
-	
-	inline function _doSubtree():Bool
+	inline function getClassType<T>(C:Class<T>):Int
 	{
-		return _flags & (BIT_STOP_PROPAGATION | BIT_PROCESS_SUBTREE) == BIT_PROCESS_SUBTREE;
+		#if flash
+		return untyped C.__etype;
+		#else
+		return Reflect.field(C, '__etype');
+		#end
 	}
 	
-	inline function _getFlag(mask:Int):Int
+	inline function isGhost()
+	{
+		return hasf(BIT_PENDING | BIT_COMMIT_SUICIDE);
+	}
+	
+	inline function getf(mask:Int):Int
 	{
 		return _flags & mask;
 	}
 	
-	inline function _hasFlag(mask:Int):Bool
+	inline function hasf(mask:Int):Bool
 	{
 		return _flags & mask > 0;
 	}
 	
-	inline function _setFlag(mask:Int):Void
+	inline function setf(mask:Int):Void
 	{
 		_flags |= mask;
 	}
 	
-	inline function _clrFlag(mask:Int):Void
+	inline function clrf(mask:Int):Void
 	{
 		_flags &= ~mask;
-	}
-	
-	inline function _getClass():Class<Entity>
-	{
-		if (_class == null) _class = Type.getClass(this);
-		return _class;
 	}
 }

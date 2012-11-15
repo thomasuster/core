@@ -47,7 +47,7 @@ import flash.net.URLLoaderDataFormat;
 import flash.net.URLRequest;
 import flash.system.ApplicationDomain;
 import flash.system.LoaderContext;
-import de.polygonal.core.macro.Assert;
+import de.polygonal.core.util.Assert;
 
 /**
  * <p>A resource provides a unified interface for loading different types of external data into an application.</p>
@@ -112,7 +112,7 @@ class Resource extends Observable
 		_resources = new Array<Resource>();
 	}
 	
-	public static function loadSimple(url:String, ?key:String, onComplete:Void->Void):Void
+	public static function loadSimple(url:String, key:String = null, onComplete:Void->Void):Void
 	{
 		var res = new Resource(new URLRequest(url), key);
 		res.attach(Observable.delegate(function(type, source, userData)
@@ -203,7 +203,7 @@ class Resource extends Observable
 	 * @param userData custom user data. if omitted, userData is set to <code>request</code>.<em>url</em>.
 	 * @param type the resource type. if omitted, the type is guessed from the file extension.
 	 */
-	public function new(request:URLRequest, ?userData:Dynamic, ?type:ResourceType):Void
+	public function new(request:URLRequest, userData:Dynamic = null, type:ResourceType = null):Void
 	{
 		super();
 		
@@ -262,14 +262,18 @@ class Resource extends Observable
 	/**
 	 * Starts the download operation.
 	 */
-	public function load(?observer:IObserver):Void
+	public function load(observer:IObserver = null):Void
 	{
 		if (observer != null) attach(observer);
 		
 		switch (type)
 		{
 			case SWF, PIC:
-				if (context == null) context = new LoaderContext(false, ApplicationDomain.currentDomain);
+				if (context == null)
+				{
+					context = new LoaderContext(false, ApplicationDomain.currentDomain);
+					context.allowCodeImport = true;
+				}
 				_loader.load(request, context);
 			
 			case TXT:
@@ -316,6 +320,7 @@ class Resource extends Observable
 					//download in progress, close stream
 					try { _loader.close(); } catch (unknown:Dynamic) {}
 					notify(ResourceEvent.UNLOAD, this);
+					super.free();
 				}
 			
 			case TXT, RAW, URL, MP3:
