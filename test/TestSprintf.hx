@@ -21,6 +21,21 @@ class TestSprintf extends TestCase
 		//assertEquals('[123.000 123]', Sprintf.format('[%#g %g]', [123.0, 123.0]));
 	}
 	
+	public function testbB()
+	{
+		//TODO # flag
+		assertEquals('[0]', Sprintf.format('[%b]', [0]));
+		assertEquals('[1]', Sprintf.format('[%b]', [1]));
+		assertEquals('[10]', Sprintf.format('[%b]', [2]));
+		assertEquals('[1111]', Sprintf.format('[%b]', [15]));
+		assertEquals('[11111111]', Sprintf.format('[%b]', [255]));
+		assertEquals('[1111111111111111]', Sprintf.format('[%b]', [65535]));
+		assertEquals('[11111111111111111111111111111111]', Sprintf.format('[%b]', [-1]));
+		
+		//assertEquals('[0]', Sprintf.format('[%B]', [0]));
+		//assertEquals('[1]', Sprintf.format('[%B]', [1]));
+	}
+	
 	public function testxX()
 	{
 		assertEquals('[50]', Sprintf.format('[%x]', [80]));
