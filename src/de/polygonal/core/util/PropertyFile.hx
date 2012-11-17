@@ -37,12 +37,6 @@ import haxe.macro.Context;
 import haxe.macro.Expr;
 #end
 
-typedef Pair =
-{
-	var key:String;
-	var val:Dynamic;
-}
-
 class PropertyFile
 {
 	#if macro
@@ -54,10 +48,105 @@ class PropertyFile
 		var fields = Context.getBuildFields();
 		var assign = new Array<Expr>();
 		
+		var access = [APublic];
+		if (staticFields)
+		{
+			access.push(AStatic);
+			access.push(AInline);
+		}
+		
+		var map = parse(neko.io.File.getContent(url));
+		for (key in map.keys())
+		{
+			var val = map.get(key);
+			
+			var c = null, n:String, p = [];
+			if (val.indexOf(',') != -1)
+			{
+				var arrExpr = [];
+				var arrType;
+				var tmp:Array<String> = val.split(',');
+				
+				if (tmp[0].indexOf('.') != -1)
+				{
+					for (i in tmp) arrExpr.push({expr: EConst(CFloat(Std.string(Std.parseFloat(i)))), pos: pos});
+					arrType = 'Float';
+				}
+				else
+				{
+					var int = Std.parseInt(tmp[0]);
+					if (int == null)
+					{
+						for (i in tmp) arrExpr.push({expr: EConst(CString(i)), pos: pos});
+						arrType = 'String';
+					}
+					else
+					{
+						for (i in tmp) arrExpr.push({expr: EConst(CInt(Std.string(Std.parseInt(i)))), pos: pos});
+						arrType = 'Int';
+					}
+				}
+				
+				n = 'Array';
+				c = EArrayDecl(arrExpr);
+				p = [TPType(TPath({sub: null, name: arrType, pack: [], params: []}))];
+			}
+			else
+			if (val.indexOf('.') != -1)
+			{
+				if (Math.isNaN(Std.parseFloat(val)))
+				{
+					c = EConst(CString(val));
+					n = 'String';
+				}
+				else
+				{
+					c = EConst(CFloat(val));
+					n = 'Float';
+				}
+			}
+			else
+			if (val == 'true' || val == 'false')
+			{
+				c = EConst(CIdent(val));
+				n = 'Bool';
+			}
+			else
+			{
+				var int = Std.parseInt(val);
+				if (int == null)
+				{
+					c = EConst(CString(val));
+					n = 'String';
+				}
+				else
+				{
+					c = EConst(CInt(val));
+					n = 'Int';
+				}
+			}
+			
+			if (c == null)
+				Context.error('invalid field type', Context.currentPos());
+			
+			if (staticFields)
+				fields.push({name: key, doc: null, meta: [], access: access, kind: FVar(TPath({pack: [], name: n, params: p, sub: null}), {expr: c, pos: pos}), pos: pos});
+			else
+			{
+				fields.push({name: key, doc: null, meta: [], access: access, kind: FVar(TPath({pack: [], name: n, params: p, sub: null})), pos: pos});
+				assign.push({expr: EBinop(Binop.OpAssign, {expr: EConst(CIdent(key)), pos: pos}, {expr: c, pos: pos}), pos:pos});
+			}
+		}
+		
+		if (!staticFields) fields.push({name: 'new', doc: null, meta: [], access: [APublic], kind: FFun({args: [], ret: null, expr: {expr: EBlock(assign), pos:pos}, params: []}), pos: pos});
+		return fields;
+	}
+	#end
+	
+	public static function parse(s:String):Hash<String>
+	{
 		try
 		{
-			var s = neko.io.File.getContent(url);
-			
 			var a = [];
 			var b = '';
 			var i = 0;
@@ -104,111 +193,25 @@ class PropertyFile
 				b += s.charAt(i++);
 			}
 			
-			if (b != '')
-				a.push(b);
+			if (b != '') a.push(b);
 			
-			var access = [APublic];
-			if (staticFields)
-			{
-				access.push(AStatic);
-				access.push(AInline);
-			}
-			
+			var pairs = new Hash();
 			var next = 0;
 			for (i in 0...a.length >> 1)
 			{
-				var fieldName  = a[next++];
-				var fieldValue = a[next++];
-				
-				var c = null, n:String, p = [];
-				if (fieldValue.indexOf(',') != -1)
-				{
-					var arrExpr = [];
-					var arrType;
-					var tmp = fieldValue.split(',');
-					
-					if (tmp[0].indexOf('.') != -1)
-					{
-						for (i in tmp) arrExpr.push({expr: EConst(CFloat(Std.string(Std.parseFloat(i)))), pos: pos});
-						arrType = 'Float';
-					}
-					else
-					{
-						var int = Std.parseInt(tmp[0]);
-						if (int == null)
-						{
-							for (i in tmp) arrExpr.push({expr: EConst(CString(i)), pos: pos});
-							arrType = 'String';
-						}
-						else
-						{
-							for (i in tmp) arrExpr.push({expr: EConst(CInt(Std.string(Std.parseInt(i)))), pos: pos});
-							arrType = 'Int';
-						}
-					}
-					
-					n = 'Array';
-					c = EArrayDecl(arrExpr);
-					p = [TPType(TPath({sub: null, name: arrType, pack: [], params: []}))];
-				}
-				else
-				if (fieldValue.indexOf('.') != -1)
-				{
-					if (Math.isNaN(Std.parseFloat(fieldValue)))
-					{
-						c = EConst(CString(fieldValue));
-						n = 'String';
-					}
-					else
-					{
-						c = EConst(CFloat(fieldValue));
-						n = 'Float';
-					}
-				}
-				else
-				if (fieldValue == 'true' || fieldValue == 'false')
-				{
-					c = EConst(CIdent(fieldValue));
-					n = 'Bool';
-				}
-				else
-				{
-					var int = Std.parseInt(fieldValue);
-					if (int == null)
-					{
-						c = EConst(CString(fieldValue));
-						n = 'String';
-					}
-					else
-					{
-						c = EConst(CInt(fieldValue));
-						n = 'Int';
-					}
-				}
-				
-				if (c == null)
-					Context.error('invalid field type', Context.currentPos());
-				
-				if (staticFields)
-					fields.push({name: fieldName, doc: null, meta: [], access: access, kind: FVar(TPath({pack: [], name: n, params: p, sub: null}), {expr: c, pos: pos}), pos: pos});
-				else
-				{
-					fields.push({name: fieldName, doc: null, meta: [], access: access, kind: FVar(TPath({pack: [], name: n, params: p, sub: null})), pos: pos});
-					assign.push({expr: EBinop(Binop.OpAssign, {expr: EConst(CIdent(fieldName)), pos: pos}, {expr: c, pos: pos}), pos:pos});
-				}
+				var key = a[next++];
+				var val = a[next++];
+				pairs.set(key, val);
 			}
+			return pairs;
 		}
 		catch (unknown:Dynamic)
 		{
-			Context.error('error parsing file: ' + unknown, Context.currentPos());
+			return throw ('error parsing file: ' + unknown);
 		}
-		
-		if (!staticFields) fields.push({name: 'new', doc: null, meta: [], access: [APublic], kind: FFun({args: [], ret: null, expr: {expr: EBlock(assign), pos:pos}, params: []}), pos: pos});
-		return fields;
 	}
-	#end
 	
-	public static function getStaticFields(x:Class<Dynamic>, filter:EReg = null):Array<Pair>
+	public static function getStaticFields(x:Class<Dynamic>, filter:EReg = null):Array<{key:String, val:Dynamic}>
 	{
 		var pairs = new Array();
 		
