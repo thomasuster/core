@@ -29,6 +29,8 @@
  */
 package de.polygonal.core.math.random;
 
+import de.polygonal.core.util.Assert;
+
 #if !flash
 using haxe.Int32;
 #end

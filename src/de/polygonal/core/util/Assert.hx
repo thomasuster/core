@@ -44,7 +44,7 @@ class Assert
 		
 		var error = false;
 		
-		#if (haxe_211 && haxe3)
+		#if haxe_211
 		switch (Context.typeof(predicate))
 		{
 			case TAbstract(a, b):
