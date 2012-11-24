@@ -294,12 +294,10 @@ class Log
 
 	inline function output(level:Int, x:Dynamic, ?posInfos:PosInfos):Void
 	{
-		var s = Std.string(x);
-		
 		_counter++; if (_counter == 1000) _counter = 0;
 		
 		_logMessage.id          = _counter;
-		_logMessage.data        = s;
+		_logMessage.data        = x;
 		_logMessage.log         = this;
 		_logMessage.outputLevel = level;
 		_logMessage.posInfos    = posInfos;
