@@ -211,24 +211,39 @@ class PropertyFile
 		}
 	}
 	
-	public static function getStaticFields(x:Class<Dynamic>, filter:EReg = null):Array<{key:String, val:Dynamic}>
+	public static function getClassFields(x:Class<haxe.rtti.Infos>, include:EReg = null, excludeFunctions = true):Array<{name:String, value:Dynamic}>
 	{
-		var pairs = new Array();
-		
-		for (f in Type.getClassFields(x))
+		var typeInfo:TypeTree;
+		var rtti:String = Reflect.field(x, '__rtti');
+		var xml = Xml.parse(rtti).firstElement();
+		typeInfo = new haxe.rtti.XmlParser().processElement(xml);
+		var fields = [];
+		switch (typeInfo)
 		{
-			if (f == '__rtti') continue;
-			
-			if (filter == null)
-			{
-				pairs.push({key: f, val: Reflect.field(x, f)});
-				continue;
-			}
-			
-			if (filter.match(f))
-				pairs.push({key: f, val: Reflect.field(x, f)});
+			case TClassdecl(cl):
+				for (f in cl.statics)
+				{
+					if (excludeFunctions)
+					{
+						switch (f.type)
+						{
+							case CFunction(_, _):
+								continue;
+							default:
+						}
+					}
+					
+					if (include != null)
+					{
+						if (include.match(f.name))
+							fields.push({name: f.name, value: Reflect.field(x, f.name)});
+					}
+					else
+						fields.push({name: f.name, value: Reflect.field(x, f.name)});
+				}
+			default:
+				throw 'not a class';
 		}
-		
-		return pairs;
+		return fields;
 	}
 }
