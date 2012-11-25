@@ -173,17 +173,22 @@ class Root
 		
 		haxe.Log.trace = function(x:Dynamic, ?posInfos:PosInfos)
 		{
-			var s = Std.string(x);
-			if (posInfos.customParams != null)
+			if (Std.is(x, String))
 			{
-				if (~/%(([+\- #0])*)?((\d+)|(\*))?(\.(\d?|(\*)))?[hlL]?[bcdieEfgGosuxX]/g.match(s))
-					s = Sprintf.format(s, posInfos.customParams);
-				else
-					s += ',' + posInfos.customParams.join(',');
+				var s:String = x;
+				if (posInfos.customParams != null)
+				{
+					if (~/%(([+\- #0])*)?((\d+)|(\*))?(\.(\d?|(\*)))?[hlL]?[bcdieEfgGosuxX]/g.match(s))
+						s = Sprintf.format(s, posInfos.customParams);
+					else
+						s += ',' + posInfos.customParams.join(',');
+				}
+				
+				x = s;
 			}
 			
-			Root.log.debug(s, posInfos);
-			nativeTrace(s, posInfos);
+			Root.log.debug(x, posInfos);
+			nativeTrace(x, posInfos);
 		}
 		trace('log initialized.');
 		#end
