@@ -53,7 +53,7 @@ class Root
 	 * "Hello World!".debug();
 	 * </pre>
 	 */
-	inline public static function debug(x:String)
+	inline public static function debug(x:Dynamic):Void
 	{
 		#if log
 		#if debug
@@ -71,7 +71,7 @@ class Root
 	 * "Hello World!".info();
 	 * </pre>
 	 */
-	inline public static function info(x:String)
+	inline public static function info(x:Dynamic):Void
 	{
 		#if log
 		#if debug
@@ -89,7 +89,7 @@ class Root
 	 * "Hello World!".warn();
 	 * </pre>
 	 */
-	inline public static function warn(x:String)
+	inline public static function warn(x:Dynamic):Void
 	{
 		#if log
 		#if debug
@@ -107,7 +107,7 @@ class Root
 	 * "Hello World!".error();
 	 * </pre>
 	 */
-	inline public static function error(x:String)
+	inline public static function error(x:Dynamic):Void
 	{
 		#if log
 		#if debug
@@ -150,6 +150,7 @@ class Root
 	public static function init(handlers:Array<LogHandler> = null, keepNativeTrace = false)
 	{
 		#if !no_traces
+		#if log
 		var nativeTrace = function(v:Dynamic, ?infos:PosInfos) {};
 		if (keepNativeTrace) nativeTrace = haxe.Log.trace;
 		
@@ -185,6 +186,7 @@ class Root
 			nativeTrace(s, posInfos);
 		}
 		trace('log initialized.');
+		#end
 		#end
 	}
 }

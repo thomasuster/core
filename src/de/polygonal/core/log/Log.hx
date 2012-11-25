@@ -123,9 +123,11 @@ class Log
 	 */
 	public function attach(x:LogHandler):Void
 	{
+		#if log
 		for (observer in _observable)
 			if (observer == x) return;
 		_observable.attach(x, 0);
+		#end
 	}
 
 	/**
@@ -133,7 +135,9 @@ class Log
 	 */
 	public function detach(x:LogHandler):Void
 	{
+		#if log
 		_observable.detach(x);
+		#end
 	}
 	
 	/**
@@ -141,8 +145,10 @@ class Log
 	 */
 	public function detachAll():Void
 	{
+		#if log
 		for (handler in _observable.getObserverList())
 			detach(cast handler);
+		#end
 	}
 	
 	/**
@@ -222,8 +228,10 @@ class Log
 	 * }</pre>
 	 * @throws de.polygonal.core.util.AssertError invalid log level (debug only).
 	 */
+	#if !log inline #end
 	public function setLevel(x:Int):Void
 	{
+		#if log
 		#if debug
 		D.assert((x & LogLevel.ALL) > 0, '(x & LogLevel.ALL) > 0');
 		#end
@@ -242,15 +250,17 @@ class Log
 			x >>= 1;
 			_mask = _mask.clrBits(x);
 		}
+		#end
 	}
 	
 	/**
 	 * Logs a <em>LogLevel.DEBUG</em> message.
 	 * @param x the log message.
 	 */
+	#if !log inline #end
 	public function debug(x:Dynamic, ?posInfos:PosInfos):Void
 	{
-		#if !no_log
+		#if log
 		if (_observable.size() > 0)
 			if (_mask.hasBits(LogLevel.DEBUG)) output(LogLevel.DEBUG, x, posInfos);
 		#end
@@ -260,9 +270,10 @@ class Log
 	 * Logs a <em>LogLevel.INFO</em> message.
 	 * @param x the log message.
 	 */
+	#if !log inline #end
 	public function info(x:Dynamic, ?posInfos:PosInfos):Void
 	{
-		#if !no_log
+		#if log
 		if (_observable.size() > 0)
 			if (_mask.hasBits(LogLevel.INFO)) output(LogLevel.INFO, x, posInfos);
 		#end
@@ -272,9 +283,10 @@ class Log
 	 * Logs a <em>LogLevel.WARN</em> message.
 	 * @param x the log message.
 	 */
+	#if !log inline #end
 	public function warn(x:Dynamic, ?posInfos:PosInfos):Void
 	{
-		#if !no_log
+		#if log
 		if (_observable.size() > 0)
 			if (_mask.hasBits(LogLevel.WARN)) output(LogLevel.WARN, x, posInfos);
 		#end
@@ -284,9 +296,10 @@ class Log
 	 * Logs a <em>LogLevel.ERROR</em> message.
 	 * @param x the log message.
 	 */
+	#if !log inline #end
 	public function error(x:Dynamic, ?posInfos:PosInfos):Void
 	{
-		#if !no_log
+		#if log
 		if (_observable.size() > 0)
 			if (_mask.hasBits(LogLevel.ERROR)) output(LogLevel.ERROR, x, posInfos);
 		#end
