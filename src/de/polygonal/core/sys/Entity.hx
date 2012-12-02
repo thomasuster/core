@@ -33,8 +33,8 @@ import de.polygonal.core.event.IObservable;
 import de.polygonal.core.event.IObserver;
 import de.polygonal.core.event.Observable;
 import de.polygonal.core.fmt.Sprintf;
-import de.polygonal.core.fmt.StringUtil;
 import de.polygonal.core.math.Limits;
+import de.polygonal.core.util.ClassUtil;
 import de.polygonal.ds.Bits;
 import de.polygonal.ds.Hashable;
 import de.polygonal.ds.HashKey;
@@ -187,7 +187,7 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	
 	public function new(id:String = null)
 	{
-		this.id = id == null ? StringUtil.getUnqualifiedClassName(this) : id;
+		this.id = id == null ? ClassUtil.getUnqualifiedClassName(this) : id;
 		treeNode = new TreeNode<Entity>(this);
 		key = HashKey.next();
 		priority = Limits.UINT16_MAX;
@@ -415,6 +415,10 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	 */
 	public function add(x:Dynamic, priority = Limits.UINT16_MAX):Entity
 	{
+		#if debug
+		D.assert(x != null, 'x is null');
+		#end
+		
 		var c:Entity =
 		#if flash
 		if (untyped x.hasOwnProperty('prototype'))
