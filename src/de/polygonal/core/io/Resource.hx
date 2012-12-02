@@ -137,7 +137,7 @@ class Resource extends Observable
 	/**
 	 * The resource data:
 	 * <ul>
-	 * <li>a <em>DisplayObject</em> (<em>ResourceType.SWF, ResourceType.PIC</em>)</li>
+	 * <li>a <em>DisplayObject</em> or <em>Bitmap</em> object(<em>ResourceType.SWF, ResourceType.PIC</em>)</li>
 	 * <li>a <em>Sound</em> object (<em>ResourceType.MP3</em>)</li>
 	 * <li>a <em>String</em> containing the text of the loaded file (<em>ResourceType.TXT</em>)</li>
 	 * <li>a <em>ByteArray</em> containing raw binary data (<em>ResourceType.RAW</em>)</li>
@@ -215,10 +215,10 @@ class Resource extends Observable
 			var suffix = request.url.substr(request.url.lastIndexOf('.') + 1);
 			switch (suffix)
 			{
-				case 'swf':               type = ResourceType.SWF;
-				case 'gif', 'png', 'jpg': type = ResourceType.PIC;
-				case 'mp3':               type = ResourceType.MP3;
-				case 'xml', 'txt':        type = ResourceType.TXT;
+				case 'swf':                  type = ResourceType.SWF;
+				case 'gif', 'png', 'jpg':    type = ResourceType.PIC;
+				case 'mp3':                  type = ResourceType.MP3;
+				case 'xml', 'txt', 'plist' : type = ResourceType.TXT;
 				
 				default:
 				throw 'unknown file type';
