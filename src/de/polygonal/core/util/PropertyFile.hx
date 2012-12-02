@@ -29,9 +29,6 @@
  */
 package de.polygonal.core.util;
 
-import de.polygonal.core.fmt.ASCII;
-import haxe.rtti.CType.TypeTree;
-
 #if macro
 import haxe.macro.Context;
 import haxe.macro.Expr;
@@ -143,107 +140,111 @@ class PropertyFile
 	}
 	#end
 	
-	public static function parse(s:String):Hash<String>
+	/**
+	 * Parses a .properties file according to this <a href='http://en.wikipedia.org/wiki/Java_properties'>format</a>.
+	 * @return a hash with all key/value pairs defined in <code>str</code>.
+	 */
+	public static function parse(str:String):Hash<String>
 	{
-		try
+		var pairs = new Hash<String>();
+		
+		var line = '';
+		
+		var i = 0;
+		var k = str.length - 1;
+		while (i < k)
 		{
-			var a = [];
-			var b = '';
-			var i = 0;
-			while (i < s.length)
-			{
-				var c = s.charCodeAt(i);
-				
-				//skip comment?
-				if (c == ASCII.NUMBERSIGN || c == ASCII.EXCLAM)
-				{
-					i++;
-					var t = '';
-					while (s.charCodeAt(i) != ASCII.NEWLINE)
-					{
-						t += s.charAt(i);
-						i++;
-					}
-					continue;
-				}
-				
-				//skip whitespace?
-				if (ASCII.isWhite(c))
-				{
-					if (b != '')
-					{
-						a.push(b);
-						b = '';
-					}
-					i++;
-					continue;
-				}
-				
-				if (c == ASCII.COLON || c == ASCII.EQUAL)
-				{
-					if (b != '')
-					{
-						a.push(b);
-						b = '';
-					}
-					i++;
-					continue;
-				}
-				
-				b += s.charAt(i++);
-			}
+			var c = str.charAt(i++);
+			var peek = str.charAt(i);
 			
-			if (b != '') a.push(b);
-			
-			var pairs = new Hash();
-			var next = 0;
-			for (i in 0...a.length >> 1)
+			if (c == '\r')
 			{
-				var key = a[next++];
-				var val = a[next++];
-				pairs.set(key, val);
+				if (peek == '\n')
+				{
+					i++;
+					if (str.charAt(i - 3) != '\\')
+					{
+						var pair = parseLine(line);
+						if (pair != null) pairs.set(pair.key, pair.val);
+						line = '';
+					}
+				}
+				else
+				if (str.charAt(i - 2) != '\\')
+				{
+					var pair = parseLine(line);
+					if (pair != null) pairs.set(pair.key, pair.val);
+					line = '';
+				}
 			}
-			return pairs;
+			else
+			if (c == '\n')
+			{
+				if (str.charAt(i - 2) != '\\')
+				{
+					var pair = parseLine(line);
+					if (pair != null) pairs.set(pair.key, pair.val);
+					line = '';
+				}
+			}
+			else
+			if (c == '\\') {}
+			else
+				line += c;
 		}
-		catch (unknown:Dynamic)
-		{
-			return throw ('error parsing file: ' + unknown);
-		}
+		
+		line += str.charAt(k);
+		
+		var pair = parseLine(line);
+		if (pair != null) pairs.set(pair.key, pair.val);
+		
+		return pairs;
 	}
 	
-	public static function getClassFields(x:Class<haxe.rtti.Infos>, include:EReg = null, excludeFunctions = true):Array<{name:String, value:Dynamic}>
+	static function parseLine(str:String):{key:String, val:String}
 	{
-		var typeInfo:TypeTree;
-		var rtti:String = Reflect.field(x, '__rtti');
-		var xml = Xml.parse(rtti).firstElement();
-		typeInfo = new haxe.rtti.XmlParser().processElement(xml);
-		var fields = [];
-		switch (typeInfo)
+		var i = 0;
+		var k = str.length;
+		
+		while (i < k)
 		{
-			case TClassdecl(cl):
-				for (f in cl.statics)
-				{
-					if (excludeFunctions)
-					{
-						switch (f.type)
-						{
-							case CFunction(_, _):
-								continue;
-							default:
-						}
-					}
-					
-					if (include != null)
-					{
-						if (include.match(f.name))
-							fields.push({name: f.name, value: Reflect.field(x, f.name)});
-					}
-					else
-						fields.push({name: f.name, value: Reflect.field(x, f.name)});
-				}
-			default:
-				throw 'not a class';
+			if (str.charAt(i) == ' ')
+				i++;
+			else
+				break;
 		}
-		return fields;
+		
+		var c = str.charAt(i);
+		if (c == '#') return null;
+		if (c == '!') return null;
+		
+		var key = '';
+		while (i < k)
+		{
+			var c = str.charAt(i++);
+			if (c == ' ' || c == ':' || c == '=') break;
+			key += c;
+		}
+		
+		while (i < k)
+		{
+			if (str.charAt(i) == ' ')
+				i++;
+			else
+				break;
+		}
+		
+		var val = '';
+		while (i < k)
+		{
+			var c = str.charAt(i++);
+			val += c;
+		}
+		
+		if (val == '') val = key;
+		
+		if (val == key && val == '') return null;
+		
+		return {key: key, val: val};
 	}
 }
