@@ -208,7 +208,8 @@ class PropertyFile
 		
 		while (i < k)
 		{
-			if (str.charAt(i) == ' ')
+			var c = str.charAt(i);
+			if (c == ' ' || c == '\t')
 				i++;
 			else
 				break;
@@ -222,13 +223,14 @@ class PropertyFile
 		while (i < k)
 		{
 			var c = str.charAt(i++);
-			if (c == ' ' || c == ':' || c == '=') break;
+			if (c == ' ' || c == '\t' || c == ':' || c == '=') break;
 			key += c;
 		}
 		
 		while (i < k)
 		{
-			if (str.charAt(i) == ' ')
+			var c = str.charAt(i);
+			if (c == ' ' || c == '\t')
 				i++;
 			else
 				break;
