@@ -53,6 +53,7 @@ If you want to test the latest beta build, you should pull the dev branch and ad
 ### 1.xx (dev-branch)
 
  * modified: change LogMessage.data type to Dynamic
+ * added: ClassUtil class
 
 ### 1.01 (released 2012-11-15)
 
