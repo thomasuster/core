@@ -138,6 +138,7 @@ class Timebase extends Observable
 		timeScale = 1;
 		realTime = 0;
 		realTimeDelta = 0;
+		gameTime = 0;
 		gameTimeDelta = 0;
 		fps = 60;
 		
