@@ -348,7 +348,7 @@ class Mathematics
 			{
 				var s0 = 1 - t;
 				var s1 = t;
-				return m.atan2(s0 * c1 + s1 * c2, s0 * r1 + s1 * r2) * 2;
+				return m.atan2(s0 * c1 + s1 * c2, s0 * r1 + s1 * r2) * 2.;
 			}
 		}
 	}
