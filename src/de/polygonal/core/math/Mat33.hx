@@ -149,6 +149,30 @@ class Mat33
 		return this;
 	}
 	
+	/** Set as rotation matrix, rotating by <code>angle</code> radians around x-axis. */
+	inline public function setRotateX(angle:Float):Mat33
+	{
+		_fastTrig(angle);
+		var s = sineCosine.x;
+		var c = sineCosine.y;
+		m11 = 1; m12 = 0; m13 = 0;
+		m21 = 0; m22 = c; m23 =-s;
+		m31 = 0; m32 = s; m33 = c;
+		return this;
+	}
+	
+	/** Set as rotation matrix, rotating by <code>angle</code> radians around y-axis. */
+	inline public function setRotateY(angle:Float):Mat33
+	{
+		_fastTrig(angle);
+		var s = sineCosine.x;
+		var c = sineCosine.y;
+		m11 = c; m12 = 0; m13 = s;
+		m21 = 0; m22 = 1; m23 = 0;
+		m31 =-s; m32 = 0; m33 = c;
+		return this;
+	}
+	
 	/** Set as rotation matrix, rotating by <code>angle</code> radians around z-axis. */
 	inline public function setRotateZ(angle:Float):Mat33
 	{
