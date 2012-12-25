@@ -52,7 +52,7 @@ class PropertyFile
 			access.push(AInline);
 		}
 		
-		var map = parse(neko.io.File.getContent(url));
+		var map = parse(sys.io.File.getContent(url));
 		for (key in map.keys())
 		{
 			var val = map.get(key);
