@@ -80,6 +80,8 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	inline static var BIT_REMOVE_DESCENDANT = Bits.BIT_16;
 	inline static var BIT_ADD_SIBLING       = Bits.BIT_17;
 	inline static var BIT_REMOVE_SIBLING    = Bits.BIT_18;
+	inline static var BIT_TICK_BEFORE_SLEEP = Bits.BIT_19;
+	inline static var BIT_DRAW_BEFORE_SLEEP = Bits.BIT_20;
 	
 	inline static var BIT_PENDING = BIT_PENDING_ADD | BIT_PENDING_REMOVE;
 	
@@ -188,8 +190,8 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	public function new(id:String = null)
 	{
 		this.id = id == null ? ClassUtil.getUnqualifiedClassName(this) : id;
-		treeNode = new TreeNode<Entity>(this);
 		key = HashKey.next();
+		treeNode = new TreeNode<Entity>(this);
 		priority = Limits.UINT16_MAX;
 		_flags = BIT_TICK | BIT_PROCESS_SUBTREE | UPDATE_ALL;
 		_observable = null;
@@ -624,7 +626,7 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	 */
 	public function sibling<T:Entity>(x:Class<T>):T
 	{
-		var a:Int = getClassType(x);
+		var a = getClassType(x);
 		var n = treeNode.getFirstSibling();
 		var m = Entity.typeMap;
 		while (n != null)
@@ -820,6 +822,10 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	
 	public function sleep(deep = false)
 	{
+		clrf(BIT_TICK_BEFORE_SLEEP | BIT_DRAW_BEFORE_SLEEP);
+		if (hasf(BIT_TICK)) setf(BIT_TICK_BEFORE_SLEEP);
+		if (hasf(BIT_DRAW)) setf(BIT_DRAW_BEFORE_SLEEP);
+		
 		if (deep)
 			clrf(BIT_TICK | BIT_DRAW | BIT_PROCESS_SUBTREE);
 		else
@@ -828,10 +834,10 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	
 	public function wakeup(deep = false)
 	{
-		if (deep)
-			setf(BIT_TICK | BIT_DRAW | BIT_PROCESS_SUBTREE);
-		else
-			setf(BIT_TICK | BIT_DRAW);
+		if (hasf(BIT_TICK_BEFORE_SLEEP)) setf(BIT_TICK);
+		if (hasf(BIT_DRAW_BEFORE_SLEEP)) setf(BIT_DRAW);
+		
+		if (deep) setf(BIT_PROCESS_SUBTREE);
 	}
 	
 	public function toString():String
@@ -1433,9 +1439,9 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	inline function getClassType<T>(C:Class<T>):Int
 	{
 		#if flash
-		return untyped C.__etype;
+		return untyped C.___type;
 		#else
-		return Reflect.field(C, '__etype');
+		return Reflect.field(C, '___type');
 		#end
 	}
 	

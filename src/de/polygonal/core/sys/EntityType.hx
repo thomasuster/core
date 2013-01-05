@@ -48,7 +48,7 @@ class EntityType
 		f.push
 		(
 			{
-				name: '__etype',
+				name: '___type',
 				doc: null,
 				meta: [],
 				access: [APublic, AStatic],
