@@ -346,6 +346,12 @@ class Mat44
 	/**
 	 * Defines a parallel projection, same as <i>glOrtho()</i>.<br/>
 	 * @see http://publib.boulder.ibm.com/infocenter/pseries/v5r3/index.jsp?topic=/com.ibm.aix.opengl/doc/openglrf/glOrtho.htm
+	 * @param l coordinates for the left clipping plane.
+	 * @param r coordinates for the right clipping plane.
+	 * @param b coordinates for the bottom clipping plane.
+	 * @param t coordinates for the top clipping plane.
+	 * @param n coordinates for the near clipping plane.
+	 * @param f coordinates for the far clipping plane.
 	 */
 	public function setOrtho(l:Float, r:Float, b:Float, t:Float, n:Float, f:Float):Mat44
 	{
@@ -361,20 +367,15 @@ class Mat44
 	
 	/**
 	 * Defines a parallel projection.<br/>
-	 * Simplied version of <em>setOrtho6()</em> using 4 parameters instead of 6.
-	 * @param w width of field of view
-	 * @param h height of field of view
-	 * @param n near clipping plane
-	 * @param f far clipping plane
+	 * Simplied version of <em>setOrtho6()</em> using 4 parameters instead of 6 for a symmetrical viewing volume.
+	 * @param width width of field of view
+	 * @param height height of field of view
+	 * @param near near clipping plane
+	 * @param far far clipping plane
 	 */
-	public function setOrthoSimple(w:Float, h:Float, n:Float, f:Float):Mat44
+	public function setOrthoSimple(width:Float, height:Float, near:Float, far:Float):Mat44
 	{
-		var d = f - n;
-		m11 = 2 / w; m12 = 0;     m13 = 0;     m14 = 0;
-		m21 = 0;     m22 = 2 / h; m23 = 0;     m24 = 0;
-		m31 = 0;     m32 = 0;     m33 = 1 / d; m34 = -n / d;
-		m41 = 0;     m42 = 0;     m43 = 0;     m44 = 1;
-		return this;
+		return setOrtho(0, width, 0, height, near, far);
 	}
 	
 	/**
