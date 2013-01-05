@@ -885,7 +885,7 @@ class Mat44
 	}
 	
 	/**
-	 * Copies all 16 matrix elements to the given matrix <code>x</code>.<br/>
+	 * Copies all 16 matrix elements from this matrix to the given matrix <code>x</code>.<br/>
 	 * If <code>x</code> is omitted, a new Matrix3D object is created on the fly.
 	 */
 	public function toMatrix3D(x:flash.geom.Matrix3D = null):flash.geom.Matrix3D
@@ -895,6 +895,21 @@ class Mat44
 			_scratchVector = new flash.Vector<Float>(16, true);
 		x.rawData = toVector(_scratchVector);
 		return x;
+	}
+	
+	/**
+	 * Copies all 16 matrix elements from the given matrix <code>x</code> into this matrix.<br/>
+	 * if <code>x</code> is omitted, a new Matrix3D object is created on the fly.
+	 */
+	public function ofMatrix3D(x:flash.geom.Matrix3D = null):Mat44
+	{
+		if (x == null) x = new flash.geom.Matrix3D();
+		var t = x.rawData;
+		m11 = t[ 0]; m12 = t[ 1]; m13 = t[ 2]; m14 = t[ 3];
+		m21 = t[ 4]; m22 = t[ 5]; m23 = t[ 6]; m24 = t[ 7];
+		m31 = t[ 8]; m32 = t[ 9]; m33 = t[10]; m34 = t[11];
+		m41 = t[12]; m42 = t[13]; m43 = t[14]; m44 = t[15];
+		return this;
 	}
 	
 	/**
