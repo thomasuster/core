@@ -598,4 +598,16 @@ class Mathematics
 	{
 		return (x ? 1 : 0);
 	}
+	
+	/**
+	 * Casts a float to an integer. For cpp, this is faster than Std.int().
+	 */
+	inline public static function int(f:Float):Int
+	{
+		#if cpp
+		return cast f;
+		#else
+		return Std.int(f);
+		#end
+	}
 }
