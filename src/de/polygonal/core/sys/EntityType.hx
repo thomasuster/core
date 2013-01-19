@@ -29,34 +29,115 @@
  */
 package de.polygonal.core.sys;
 
-import haxe.macro.Expr;
+#if macro
 import haxe.macro.Context;
+import haxe.macro.Expr;
+#end
 
-class EntityType 
+/**
+ * Generates an unique identifier for every class extending de.polygonal.core.sys.Entity.
+ */
+class EntityType
 {
 	#if macro
-	public static var counter = 1;
-	#end
+	inline static var CACHE_PATH = 'tmp_entity_type_cache';
 	
-	@:macro public static function gen():Array<Field>
+	static var callbackRegistered = false;
+	static var types:Hash<Int> = null;
+	static var cache:String = null;
+	static var next = -1;
+	static var changed = false;
+	
+	#if haxe3 macro #else @:macro #end
+	public static function gen():Array<Field>
 	{
-		if (haxe.macro.Context.defined('display')) return null;
-		var c = haxe.macro.Context.getLocalClass().get();
+		if (Context.defined('display')) return null;
+		Context.registerModuleDependency('de.polygonal.core.sys.Entity', 'cache');
 		
-		var p = haxe.macro.Context.currentPos();
+		//write cache file when done
+		if (!callbackRegistered)
+		{
+			callbackRegistered = true;
+			Context.onGenerate(onGenerate);
+		}
+		
+		var c = Context.getLocalClass().get();
 		var f = Context.getBuildFields();
-		f.push
+		
+		//create unique id for the local class
+		var id = c.module;
+		if (c.module.indexOf(c.name) == -1)
+			id += c.name;
+		
+		if (cache == null)
+			if (sys.FileSystem.exists(CACHE_PATH))
+				cache = sys.io.File.getContent(CACHE_PATH);
+		
+		if (cache != null)
+		{
+			if (types == null)
+			{
+				//parse cache file and store in types map
+				types = new Hash<Int>();
+				next = -1;
+				for (i in cache.split(';'))
+				{
+					var ereg = ~/([\w.]+):(\d+)/;
+					ereg.match(i);
+					var j = Std.parseInt(ereg.matched(2));
+					if (j > next) next = j;
+					types.set(ereg.matched(1), j);
+				}
+			}
+			
+			if (types.exists(id))
+			{
+				//reuse type
+				addType(f, types.get(id));
+			}
+			else
+			{
+				//append type
+				next++;
+				addType(f, next);
+				types.set(id, next);
+				cache += ';' + id + ':' + next;
+				changed = true;
+			}
+		}
+		else
+		{
+			//no cache file exists
+			addType(f, 1);
+			cache = id + ':' + 1;
+			changed = true;
+		}
+		
+		return f;
+	}
+	
+	static function addType(fields:Array<Field>, type:Int):Void
+	{
+		var p = Context.currentPos();
+		fields.push
 		(
 			{
 				name: '___type',
 				doc: null,
 				meta: [],
 				access: [APublic, AStatic],
-				kind: FVar(TPath({pack: [], name: 'Int', params: [], sub: null}), {expr: EConst(CInt(Std.string(counter++))), pos: p}),
+				kind: FVar(TPath({pack: [], name: 'Int', params: [], sub: null}), {expr: EConst(CInt(Std.string(type))), pos: p}),
 				pos: p
 			}
 		);
-		
-		return f;
 	}
+	
+	static function onGenerate(types:Array<haxe.macro.Type>):Void
+	{
+		if (!changed) return;
+		var fout = sys.io.File.write(CACHE_PATH, false);
+		fout.writeString(cache);
+		fout.close();
+	}
+	#end
 }
