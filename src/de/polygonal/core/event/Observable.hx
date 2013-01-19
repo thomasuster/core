@@ -540,7 +540,7 @@ class Observable extends HashableItem, implements IObservable
 	 * Disables all updates of type <code>x</code>.<br/>
 	 * Improves performance if an event group repeatedly fires frequent updates that are not handled by an application (e.g. mouse move events).
 	 */
-	public function mute(x:Int):Void
+	public function muteType(x:Int):Void
 	{
 		_blacklist |= x;
 	}
@@ -548,7 +548,7 @@ class Observable extends HashableItem, implements IObservable
 	/**
 	 * Removes the update type <code>x</code> from a blacklist of disabled updates, see <em>mute()</em>.<br/>
 	 */
-	public function unmute(x:Int):Void
+	public function unmuteType(x:Int):Void
 	{
 		_blacklist = _blacklist & ~x;
 	}
