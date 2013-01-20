@@ -34,7 +34,8 @@ import haxe.macro.Expr;
 
 class IntEnum
 {
-	@:macro public static function build(e:Expr, bitFlags:Bool = false):Array<Field>
+	#if haxe3 macro #else @:macro #end
+	public static function build(e:Expr, bitFlags:Bool = false):Array<Field>
 	{
 		var pos = Context.currentPos();
 		var fields = Context.getBuildFields();

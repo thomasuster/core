@@ -38,7 +38,8 @@ typedef D = de.polygonal.core.util.Assert;
 
 class Assert
 {
-	@:macro public static function assert(predicate:Expr, ?info:Expr):Expr
+	#if haxe3 macro #else @:macro #end
+	public static function assert(predicate:Expr, ?info:Expr):Expr
 	{
 		if (!Context.defined('debug')) return {expr: EConst(CInt('0')), pos: Context.currentPos()};
 		
@@ -47,7 +48,11 @@ class Assert
 		#if haxe_211
 		switch (Context.typeof(predicate))
 		{
+			#if haxe3
+			case TAbstract:
+			#else
 			case TAbstract(a, b):
+			#end
 			default:
 				error = true;
 		}

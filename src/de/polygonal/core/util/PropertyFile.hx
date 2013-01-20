@@ -37,7 +37,8 @@ import haxe.macro.Expr;
 class PropertyFile
 {
 	#if macro
-	@:macro public static function build(url:String, staticFields:Bool):Array<Field>
+	#if haxe3 macro #else @:macro #end
+	public static function build(url:String, staticFields:Bool):Array<Field>
 	{
 		Context.registerModuleDependency(Std.string(Context.getLocalClass()), url);
 		var pos = Context.currentPos();
