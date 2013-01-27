@@ -34,8 +34,8 @@ import de.polygonal.core.event.IObserver;
 import de.polygonal.core.event.Observable;
 import de.polygonal.core.fmt.Sprintf;
 import de.polygonal.core.math.Mathematics;
-import de.polygonal.core.util.Assert;
 import de.polygonal.core.time.Timeline;
+import de.polygonal.core.util.Assert;
 import de.polygonal.ds.ArrayedQueue;
 import de.polygonal.ds.Cloneable;
 import de.polygonal.ds.Collection;
@@ -74,12 +74,11 @@ class Timeline extends Observable, implements IObserver
 	public static function bindToTimebase(x:Bool):Void
 	{
 		if (x)
-			Timebase.get().attach(Timeline.get(), TimebaseEvent.TICK);
+			Timebase.attach(Timeline.get(), TimebaseEvent.TICK);
 		else
-			Timebase.get().detach(Timeline.get());
+			Timebase.detach(Timeline.get());
 	}
 	
-	var _timebase:Timebase;
 	var _idCounter:Int;
 	
 	var _currTick:Int;
@@ -102,9 +101,8 @@ class Timeline extends Observable, implements IObserver
 	{
 		reserve(100);
 		
-		_timebase = Timebase.get();
 		_idCounter = 0;
-		_currTick = _timebase.processedTicks;
+		_currTick = Timebase.processedTicks;
 		_currSubTick = 0;
 		_currInterval = null;
 		_runningIntervals = new DLL<TimeInterval>();
@@ -130,13 +128,12 @@ class Timeline extends Observable, implements IObserver
 	{
 		for (i in _all) for (j in i) j.onCancel();
 		
-		_timebase.detach(this);
+		Timebase.detach(this);
 		_runningIntervals.free();
 		_pendingAdditions.free();
 		_intervalHeap.free();
 		_intervalPool.free();
 		
-		_timebase         = null;
 		_runningIntervals = null;
 		_pendingAdditions = null;
 		_intervalHeap     = null;
@@ -165,9 +162,9 @@ class Timeline extends Observable, implements IObserver
 		D.assert(repeatInterval >= 0, 'repeatInterval >= 0');
 		
 		if (_tickRate == 0)
-			_tickRate = _timebase.tickRate;
+			_tickRate = Timebase.tickRate;
 		else
-		if (_timebase.tickRate != _tickRate)
+		if (Timebase.tickRate != _tickRate)
 		{
 			var c = _pendingAdditions.size() + _intervalHeap.size() + _runningIntervals.size();
 			D.assert(c == 0, 'tick rate changed');
@@ -177,7 +174,7 @@ class Timeline extends Observable, implements IObserver
 		if (repeatCount != 0 && repeatInterval == .0)
 			repeatInterval = delay; //use delay as interval
 		
-		var delayTicks = M.round(delay / _timebase.tickRate);
+		var delayTicks = M.round(delay / Timebase.tickRate);
 		var ageTicks = _currTick + delayTicks;
 		
 		var interval           = _getInterval();
@@ -204,7 +201,6 @@ class Timeline extends Observable, implements IObserver
 	public function cancel(id:Int):Bool
 	{
 		if (id < 0) return false;
-		
 		for (collection in _all)
 		{
 			for (interval in collection)
@@ -325,7 +321,7 @@ class Timeline extends Observable, implements IObserver
 	 */
 	public function advance():Void
 	{
-		_currTick = _timebase.processedTicks;
+		_currTick = Timebase.processedTicks;
 		_currSubTick = 0;
 		
 		var interval, node;
@@ -445,7 +441,7 @@ class Timeline extends Observable, implements IObserver
 		if (_intervalPool.isEmpty())
 		{
 			#if debug
-			Root.log.warn('TimeInterval pool exhausted');
+			//Root.log.warn('TimeInterval pool exhausted');
 			#end
 			return new TimeInterval(this);
 		}
