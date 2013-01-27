@@ -34,7 +34,8 @@ import haxe.macro.Expr;
 
 class Version
 {
-	@:macro public static function build(url:String):Array<Field>
+	#if haxe3 macro #else @:macro #end
+	public static function build(url:String):Array<Field>
 	{
 		Context.registerModuleDependency(Std.string(Context.getLocalClass()), url);
 		
@@ -47,7 +48,7 @@ class Version
 		var s;
 		try
 		{
-			s = neko.io.File.getContent(url);
+			s = sys.io.File.getContent(url);
 			var v = s.split('.');
 			
 			major = Std.parseInt(v[0]);
@@ -65,10 +66,10 @@ class Version
 			s = '0.0.0';
 		}
 		
-		var fout = neko.io.File.write(url, false);
+		var fout = sys.io.File.write(url, false);
 		fout.close();
 		
-		var fout = neko.io.File.append(url, false);
+		var fout = sys.io.File.append(url, false);
 		fout.writeString(s);
 		fout.close();
 		

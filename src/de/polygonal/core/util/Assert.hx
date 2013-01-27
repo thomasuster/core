@@ -45,14 +45,10 @@ class Assert
 		
 		var error = false;
 		
-		#if haxe_211
+		#if haxe3
 		switch (Context.typeof(predicate))
 		{
-			#if haxe3
-			case TAbstract:
-			#else
-			case TAbstract(a, b):
-			#end
+			case TAbstract(_, _):
 			default:
 				error = true;
 		}
