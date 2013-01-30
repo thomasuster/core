@@ -346,6 +346,12 @@ class Mat44
 	/**
 	 * Defines a parallel projection, same as <i>glOrtho()</i>.<br/>
 	 * @see http://publib.boulder.ibm.com/infocenter/pseries/v5r3/index.jsp?topic=/com.ibm.aix.opengl/doc/openglrf/glOrtho.htm
+	 * @param l coordinates for the left clipping plane.
+	 * @param r coordinates for the right clipping plane.
+	 * @param b coordinates for the bottom clipping plane.
+	 * @param t coordinates for the top clipping plane.
+	 * @param n coordinates for the near clipping plane.
+	 * @param f coordinates for the far clipping plane.
 	 */
 	public function setOrtho(l:Float, r:Float, b:Float, t:Float, n:Float, f:Float):Mat44
 	{
@@ -361,20 +367,15 @@ class Mat44
 	
 	/**
 	 * Defines a parallel projection.<br/>
-	 * Simplied version of <em>setOrtho6()</em> using 4 parameters instead of 6.
-	 * @param w width of field of view
-	 * @param h height of field of view
-	 * @param n near clipping plane
-	 * @param f far clipping plane
+	 * Simplied version of <em>setOrtho6()</em> using 4 parameters instead of 6 for a symmetrical viewing volume.
+	 * @param width width of field of view
+	 * @param height height of field of view
+	 * @param near near clipping plane
+	 * @param far far clipping plane
 	 */
-	public function setOrthoSimple(w:Float, h:Float, n:Float, f:Float):Mat44
+	public function setOrthoSimple(width:Float, height:Float, near:Float, far:Float):Mat44
 	{
-		var d = f - n;
-		m11 = 2 / w; m12 = 0;     m13 = 0;     m14 = 0;
-		m21 = 0;     m22 = 2 / h; m23 = 0;     m24 = 0;
-		m31 = 0;     m32 = 0;     m33 = 1 / d; m34 = -n / d;
-		m41 = 0;     m42 = 0;     m43 = 0;     m44 = 1;
-		return this;
+		return setOrtho(0, width, 0, height, near, far);
 	}
 	
 	/**
@@ -885,7 +886,7 @@ class Mat44
 	}
 	
 	/**
-	 * Copies all 16 matrix elements to the given matrix <code>x</code>.<br/>
+	 * Copies all 16 matrix elements from this matrix to the given matrix <code>x</code>.<br/>
 	 * If <code>x</code> is omitted, a new Matrix3D object is created on the fly.
 	 */
 	public function toMatrix3D(x:flash.geom.Matrix3D = null):flash.geom.Matrix3D
@@ -895,6 +896,21 @@ class Mat44
 			_scratchVector = new flash.Vector<Float>(16, true);
 		x.rawData = toVector(_scratchVector);
 		return x;
+	}
+	
+	/**
+	 * Copies all 16 matrix elements from the given matrix <code>x</code> into this matrix.<br/>
+	 * if <code>x</code> is omitted, a new Matrix3D object is created on the fly.
+	 */
+	public function ofMatrix3D(x:flash.geom.Matrix3D = null):Mat44
+	{
+		if (x == null) x = new flash.geom.Matrix3D();
+		var t = x.rawData;
+		m11 = t[ 0]; m12 = t[ 1]; m13 = t[ 2]; m14 = t[ 3];
+		m21 = t[ 4]; m22 = t[ 5]; m23 = t[ 6]; m24 = t[ 7];
+		m31 = t[ 8]; m32 = t[ 9]; m33 = t[10]; m34 = t[11];
+		m41 = t[12]; m42 = t[13]; m43 = t[14]; m44 = t[15];
+		return this;
 	}
 	
 	/**

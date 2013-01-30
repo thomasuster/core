@@ -50,6 +50,19 @@ If you want to test the latest beta build, you should pull the dev branch and ad
 
 ## Changelog
 
+### 1.02 (released 2013-01-30)
+
+ * modified: change LogMessage.data type to Dynamic
+ * added: ClassUtil class
+ * added: Mathematics.int()
+ * fixed: EntityType + compilation server
+ * modified: Observable.mute -> muteType, unmute -> unmuteType (name clash with Entity)
+ * added: Mat33.setRotateX(), setRotateY()
+ * fixed: Timebase.gameTime
+ * fixed: some minor fixes for -D haxe3
+ * modified: restore draw/tick state when calling Entity.wakeup() after Entity.sleep()
+ * Timebase: use statics instead of singleton pattern
+
 ### 1.01 (released 2012-11-15)
 
 * fixed: Mathematics.floor(), ceil(), fwrap() for neko, don't use Std.int() for cpp

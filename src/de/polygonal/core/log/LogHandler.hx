@@ -250,17 +250,17 @@ class LogHandler implements IObserver
 	{
 		var data = _message.data;
 		
-		if (data.indexOf('\n') != -1)
+		if (Std.is(data, String))
 		{
-			if (data.indexOf('\r') != -1) data = data.split('\r').join('');
-			
-			var tmp = [];
-			for (i in data.split('\n'))
+			var s:String = data;
+			if (s.indexOf('\n') != -1)
 			{
-				if (i != '') tmp.push(i);
+				if (s.indexOf('\r') != -1) s = s.split('\r').join('');
+				var tmp = [];
+				for (i in s.split('\n'))
+					if (i != '') tmp.push(i);
+				data = '\n' + tmp.join('\n');
 			}
-			
-			data = '\n' + tmp.join('\n');
 		}
 		
 		var idFormat = '%s';

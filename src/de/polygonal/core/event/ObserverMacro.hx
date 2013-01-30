@@ -105,7 +105,9 @@ class ObserverMacro
 	static var NUM_EVENT_BITS:Int;
 	
 	static var _groupCounter = 0;
-	@:macro public static function create(e:Expr):Array<Field>
+	
+	#if haxe3 macro #else @:macro #end
+	public static function create(e:Expr):Array<Field>
 	{
 		var numBits = Context.defined('neko') ? 30 : 32;
 		NUM_EVENT_BITS = numBits - NUM_GROUP_BITS;
@@ -154,7 +156,8 @@ class ObserverMacro
 		return fields;
 	}
 	
-	@:macro public static function guid():Array<Field>
+	#if haxe3 macro #else @:macro #end
+	public static function guid():Array<Field>
 	{
 		if (haxe.macro.Context.defined('display')) return null;
 		var c = haxe.macro.Context.getLocalClass().get();

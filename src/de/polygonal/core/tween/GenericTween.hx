@@ -33,6 +33,7 @@ import de.polygonal.core.tween.ease.Ease;
 import de.polygonal.ds.ArrayUtil;
 
 using de.polygonal.ds.BitFlags;
+using Reflect;
 
 /**
  * <p>Supports tweening of any field of any object.</p>
@@ -68,11 +69,21 @@ class GenericTween extends Tween, implements TweenTarget
 	
 	public function set(x:Float):Void
 	{
-		for (field in _fields) Reflect.setField(_object, field, x);
+		for (field in _fields)
+		{
+			if (Reflect.hasField(_object, field))
+				Reflect.setField(_object, field, x);
+			else
+				Reflect.setProperty(_object, field, x);
+		}
 	}
 	
 	public function get():Float
 	{
-		return Reflect.field(_object, _fields[0]);
+		return
+		if (Reflect.hasField(_object, _fields[0]))
+			Reflect.field(_object, _fields[0]);
+		else
+			Reflect.getProperty(_object, _fields[0]);
 	}
 }

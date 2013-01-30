@@ -30,10 +30,7 @@
 package de.polygonal.core;
 
 import de.polygonal.core.fmt.Sprintf;
-import de.polygonal.core.log.Log;
-import de.polygonal.core.log.LogHandler;
 import de.polygonal.core.util.Assert;
-import haxe.PosInfos;
 
 /**
  * <p>The root of an application.</p>
@@ -43,7 +40,9 @@ class Root
 	/**
 	 * The root logger; initialized when calling <em>Root.init()</em>.
 	 */
-	public static var log(default, null):Log = null;
+	#if log
+	public static var log(default, null):de.polygonal.core.log.Log = null;
+	#end
 	
 	/**
 	 * Short for <em>Root.log.debug()</em>.<br/>
@@ -53,12 +52,12 @@ class Root
 	 * "Hello World!".debug();
 	 * </pre>
 	 */
-	inline public static function debug(x:String)
+	inline public static function debug(x:Dynamic):Void
 	{
 		#if log
-		#if debug
-		D.assert(log != null, 'call Root.init() first');
-		#end
+			#if debug
+			D.assert(log != null, 'call Root.initLog() first');
+			#end
 		log.debug(x);
 		#end
 	}
@@ -71,12 +70,12 @@ class Root
 	 * "Hello World!".info();
 	 * </pre>
 	 */
-	inline public static function info(x:String)
+	inline public static function info(x:Dynamic):Void
 	{
 		#if log
-		#if debug
-		D.assert(log != null, 'call Root.init() first');
-		#end
+			#if debug
+			D.assert(log != null, 'call Root.initLog() first');
+			#end
 		log.info(x);
 		#end
 	}
@@ -89,12 +88,12 @@ class Root
 	 * "Hello World!".warn();
 	 * </pre>
 	 */
-	inline public static function warn(x:String)
+	inline public static function warn(x:Dynamic):Void
 	{
 		#if log
-		#if debug
-		D.assert(log != null, 'call Root.init() first');
-		#end
+			#if debug
+			D.assert(log != null, 'call Root.initLog() first');
+			#end
 		log.warn(x);
 		#end
 	}
@@ -107,12 +106,12 @@ class Root
 	 * "Hello World!".error();
 	 * </pre>
 	 */
-	inline public static function error(x:String)
+	inline public static function error(x:Dynamic):Void
 	{
 		#if log
-		#if debug
-		D.assert(log != null, 'call Root.init() first');
-		#end
+			#if debug
+			D.assert(log != null, 'call Root.initLog() first');
+			#end
 		log.error(x);
 		#end
 	}
@@ -147,44 +146,49 @@ class Root
 	 * @param handlers additional log handler objects that get attached to <em>Root.log</em> upon initialization.
 	 * @param keepNativeTrace if true, do not override native trace output. Default is false.
 	 */
-	public static function init(handlers:Array<LogHandler> = null, keepNativeTrace = false)
+	#if log
+	public static function initLog(handlers:Array<de.polygonal.core.log.LogHandler> = null, keepNativeTrace = false)
+	#else
+	public static function initLog(handlers:Array<Dynamic> = null, keepNativeTrace = false)
+	#end
 	{
 		#if !no_traces
-		var nativeTrace = function(v:Dynamic, ?infos:PosInfos) {};
-		if (keepNativeTrace) nativeTrace = haxe.Log.trace;
-		
-		Log.globalHandler = [];
-		#if flash
-		Log.globalHandler.push(new de.polygonal.core.log.handler.TraceHandler());
-		#elseif cpp
-		Log.globalHandler.push(new de.polygonal.core.log.handler.FileHandler('hxcpp_log.txt'));
-		#elseif js
-		Log.globalHandler.push(new de.polygonal.core.log.handler.ConsoleHandler());
-		#end
-		
-		if (handlers != null)
-		{
-			for (handler in handlers)
-				Log.globalHandler.push(handler);
-		}
-		
-		log = Log.getLog(Root);
-		
-		haxe.Log.trace = function(x:Dynamic, ?posInfos:PosInfos)
-		{
-			var s = Std.string(x);
-			if (posInfos.customParams != null)
-			{
-				if (~/%(([+\- #0])*)?((\d+)|(\*))?(\.(\d?|(\*)))?[hlL]?[bcdieEfgGosuxX]/g.match(s))
-					s = Sprintf.format(s, posInfos.customParams);
-				else
-					s += ',' + posInfos.customParams.join(',');
-			}
+			#if log
+			var nativeTrace = function(v:Dynamic, ?infos:haxe.PosInfos) {};
+			if (keepNativeTrace) nativeTrace = haxe.Log.trace;
 			
-			Root.log.debug(s, posInfos);
-			nativeTrace(s, posInfos);
-		}
-		trace('log initialized.');
+			de.polygonal.core.log.Log.globalHandler = [];
+			de.polygonal.core.log.Log.globalHandler.push(
+			#if flash
+			new de.polygonal.core.log.handler.TraceHandler()
+			#elseif cpp
+			new de.polygonal.core.log.handler.FileHandler('hxcpp_log.txt')
+			#elseif js
+			new de.polygonal.core.log.handler.ConsoleHandler()
+			#end
+			);
+			
+			if (handlers != null)
+			{
+				for (handler in handlers)
+					de.polygonal.core.log.Log.globalHandler.push(handler);
+			}
+			log = de.polygonal.core.log.Log.getLog(Root);
+			
+			haxe.Log.trace = function(x:Dynamic, ?posInfos:haxe.PosInfos)
+			{
+				if (posInfos.customParams != null)
+				{
+					if (~/%(([+\- #0])*)?((\d+)|(\*))?(\.(\d?|(\*)))?[hlL]?[bcdieEfgGosuxX]/g.match(x))
+						x = Sprintf.format(Std.string(x), posInfos.customParams);
+					else
+						x = x + ',' + posInfos.customParams.join(',');
+				}
+				Root.log.debug(x, posInfos);
+				nativeTrace(x, posInfos);
+			}
+			trace('log initialized.');
+			#end
 		#end
 	}
 }

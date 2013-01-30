@@ -103,7 +103,9 @@ class Limits
 	 * Equals 31 when targeting neko, otherwise 32.
 	 */
 	inline public static var INT_BITS =
-	#if neko
+	#if (neko && neko_v2)
+	32;
+	#elseif neko
 	31;
 	#else
 	32;

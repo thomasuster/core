@@ -33,8 +33,8 @@ import de.polygonal.core.event.IObservable;
 import de.polygonal.core.event.IObserver;
 import de.polygonal.core.event.Observable;
 import de.polygonal.core.fmt.Sprintf;
-import de.polygonal.core.fmt.StringUtil;
 import de.polygonal.core.math.Limits;
+import de.polygonal.core.util.ClassUtil;
 import de.polygonal.ds.Bits;
 import de.polygonal.ds.Hashable;
 import de.polygonal.ds.HashKey;
@@ -43,6 +43,7 @@ import de.polygonal.ds.TreeNode;
 import de.polygonal.core.util.Assert;
 
 //descendant: ignore ghosts
+//onAddChild, onRemoveChild
 
 @:build(de.polygonal.core.sys.EntityType.gen())
 @:autoBuild(de.polygonal.core.sys.EntityType.gen())
@@ -80,6 +81,8 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	inline static var BIT_REMOVE_DESCENDANT = Bits.BIT_16;
 	inline static var BIT_ADD_SIBLING       = Bits.BIT_17;
 	inline static var BIT_REMOVE_SIBLING    = Bits.BIT_18;
+	inline static var BIT_TICK_BEFORE_SLEEP = Bits.BIT_19;
+	inline static var BIT_DRAW_BEFORE_SLEEP = Bits.BIT_20;
 	
 	inline static var BIT_PENDING = BIT_PENDING_ADD | BIT_PENDING_REMOVE;
 	
@@ -187,9 +190,9 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	
 	public function new(id:String = null)
 	{
-		this.id = id == null ? StringUtil.getUnqualifiedClassName(this) : id;
-		treeNode = new TreeNode<Entity>(this);
+		this.id = id == null ? ClassUtil.getUnqualifiedClassName(this) : id;
 		key = HashKey.next();
+		treeNode = new TreeNode<Entity>(this);
 		priority = Limits.UINT16_MAX;
 		_flags = BIT_TICK | BIT_PROCESS_SUBTREE | UPDATE_ALL;
 		_observable = null;
@@ -211,6 +214,8 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 				s = Type.getSuperClass(s);
 			}
 		}
+		
+		EntityManager.registerEntity(this);
 	}
 	
 	/**
@@ -356,16 +361,17 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 			return;
 		}
 		
-		//early out
+		//nothing changed - early out
 		if (!isDirty())
 		{
 			clrf(BIT_INITIATOR | BIT_RECOMMIT);
 			return;
 		}
 		
-		//lock
+		//lock; this node carries out all changes
 		setf(BIT_INITIATOR);
 		
+		//preorder traversal: for all nodes: replace PENDING bit with PROCESS bit
 		prepareAdditions();
 		registerHi();
 		registerLo();
@@ -415,6 +421,10 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	 */
 	public function add(x:Dynamic, priority = Limits.UINT16_MAX):Entity
 	{
+		#if debug
+		D.assert(x != null, 'x is null');
+		#end
+		
 		var c:Entity =
 		#if flash
 		if (untyped x.hasOwnProperty('prototype'))
@@ -430,6 +440,15 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 			#if verbose
 			Root.warn(Sprintf.format('entity \'%s\' already added to %s', [c.id, id]));
 			#end
+			return c;
+		}
+		
+		if (c.hasf(BIT_PENDING_REMOVE))
+		{
+			//marked for removal, just update flags
+			c.clrf(BIT_PENDING_REMOVE);
+			c.setf(BIT_PENDING_ADD);
+			if (c.priority != priority) c.priority = priority;
 			return c;
 		}
 		
@@ -620,7 +639,7 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	 */
 	public function sibling<T:Entity>(x:Class<T>):T
 	{
-		var a:Int = getClassType(x);
+		var a = getClassType(x);
 		var n = treeNode.getFirstSibling();
 		var m = Entity.typeMap;
 		while (n != null)
@@ -798,7 +817,11 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	 */
 	inline public function is<T>(x:Class<T>):Bool
 	{
+		#if flash
+		return untyped __is__(this, x);
+		#else
 		return Std.is(this, x);
+		#end
 	}
 	
 	/**
@@ -814,20 +837,24 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 		return false;
 	}
 	
-	public function sleep(deep = false)
+	public function sleep(deep = false):Void
 	{
+		clrf(BIT_TICK_BEFORE_SLEEP | BIT_DRAW_BEFORE_SLEEP);
+		if (hasf(BIT_TICK)) setf(BIT_TICK_BEFORE_SLEEP);
+		if (hasf(BIT_DRAW)) setf(BIT_DRAW_BEFORE_SLEEP);
+		
 		if (deep)
 			clrf(BIT_TICK | BIT_DRAW | BIT_PROCESS_SUBTREE);
 		else
 			clrf(BIT_TICK | BIT_DRAW);
 	}
 	
-	public function wakeup(deep = false)
+	public function wakeup(deep = false):Void
 	{
-		if (deep)
-			setf(BIT_TICK | BIT_DRAW | BIT_PROCESS_SUBTREE);
-		else
-			setf(BIT_TICK | BIT_DRAW);
+		if (hasf(BIT_TICK_BEFORE_SLEEP)) setf(BIT_TICK);
+		if (hasf(BIT_DRAW_BEFORE_SLEEP)) setf(BIT_DRAW);
+		
+		if (deep) setf(BIT_PROCESS_SUBTREE);
 	}
 	
 	public function toString():String
@@ -866,6 +893,16 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	}
 	
 	public function update(type:Int, source:IObservable, userData:Dynamic):Void {}
+	
+	public function sendMsg(receiverId:String, msg:String, userData:Dynamic = null):Void
+	{
+		EntityManager.sendMsg(this, receiverId, msg, userData);
+	}
+	
+	/**
+	 * Hook; invoked after <code>sender</code> has sent a message <code>msg</code> to this entity, passing <code>userData</code>.
+	 */
+	public function onMsg(msg:String, sender:Entity, userData:Dynamic):Void {}
 	
 	/**
 	 * Hook; invoked by <em>free()</em> on all children,
@@ -923,11 +960,6 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	 */
 	function onDraw(alpha:Float, parent:Entity):Void {}
 	
-	/**
-	 * Hook; invoked after <code>sender</code> has sent a message <code>msg</code> to this entity, passing <code>userData</code>.
-	 */
-	function onMsg(msg:String, sender:Entity, userData:Dynamic):Void {}
-	
 	function prepareAdditions():Void
 	{
 		//preorder: change BIT_PENDING_ADD to BIT_PROCESS
@@ -969,6 +1001,7 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	
 	function propagateOnAddAncestor(x:Entity):Void
 	{
+		//only for non-pending nodes
 		if (getf(BIT_PENDING | BIT_ADD_ANCESTOR) == BIT_ADD_ANCESTOR)
 		{
 			#if verbose
@@ -978,9 +1011,9 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 			onAddAncestor(x);
 		}
 		
-		//propagate to children?
 		if (hasf(BIT_ADD_ANCESTOR))
 		{
+			//call onAddAncestor() on all descendants
 			var n = treeNode.children;
 			while (n != null)
 			{
@@ -1341,6 +1374,7 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 			{
 				var c = e._c;
 				e.onTick(timeDelta, parent);
+				
 				if (c < e._c)
 					e._c--;
 				else
@@ -1409,6 +1443,7 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 				}
 				e.treeNode = null;
 				e.onFree();
+				EntityManager.unregisterEntity(e);
 				return true;
 			});
 		tmp.free();
@@ -1429,13 +1464,13 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	inline function getClassType<T>(C:Class<T>):Int
 	{
 		#if flash
-		return untyped C.__etype;
+		return untyped C.___type;
 		#else
-		return Reflect.field(C, '__etype');
+		return Reflect.field(C, '___type');
 		#end
 	}
 	
-	inline function isGhost()
+	inline function isGhost():Bool
 	{
 		return hasf(BIT_PENDING | BIT_COMMIT_SUICIDE);
 	}

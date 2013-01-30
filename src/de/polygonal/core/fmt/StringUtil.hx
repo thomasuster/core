@@ -146,55 +146,6 @@ class StringUtil
 	}
 	
 	/**
-	 * Returns the unqualified class name of <code>x</code>.
-	 */
-	public static function getUnqualifiedClassName(x:Dynamic):String
-	{
-		if (Std.is(x, Class))
-		{
-			var s = Type.getClassName(x);
-			return s.substr(s.lastIndexOf('.') + 1);
-		}
-		else
-		if (Type.getClass(x) != null)
-			return getUnqualifiedClassName(Type.getClass(x));
-		else
-			return '';
-	}
-	
-	/**
-	 * Extracts the package name from <code>x</code>.
-	 */
-	public static function getPackageName(x:Dynamic):String
-	{
-		if (Std.is(x, String))
-		{
-			var s:String = x;
-			var i = s.lastIndexOf('.');
-			if (i != -1)
-				return s.substr(0, i);
-			else
-				return '';
-		}
-		else
-		if (Std.is(x, Class))
-		{
-			var s = Type.getClassName(x);
-			var i = s.lastIndexOf('.');
-			if (i != -1)
-				return s.substr(0, i);
-			else
-				return '';
-		}
-		else
-		if (Type.getClass(x) != null)
-			return getPackageName(Type.getClass(x));
-		else
-			throw 'invalid argument';
-	}
-	
-	
-	/**
 	 * Generates a random key of given <code>chars</code> and <code>length</code>.
 	 */
 	public static function generateRandomKey(chars:String, length:Int):String

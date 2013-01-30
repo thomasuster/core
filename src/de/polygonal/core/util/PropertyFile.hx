@@ -29,24 +29,16 @@
  */
 package de.polygonal.core.util;
 
-import de.polygonal.core.fmt.ASCII;
-import haxe.rtti.CType.TypeTree;
-
 #if macro
 import haxe.macro.Context;
 import haxe.macro.Expr;
 #end
 
-typedef Pair =
-{
-	var key:String;
-	var val:Dynamic;
-}
-
 class PropertyFile
 {
 	#if macro
-	@:macro public static function build(url:String, staticFields:Bool):Array<Field>
+	#if haxe3 macro #else @:macro #end
+	public static function build(url:String, staticFields:Bool):Array<Field>
 	{
 		Context.registerModuleDependency(Std.string(Context.getLocalClass()), url);
 		var pos = Context.currentPos();
@@ -54,153 +46,94 @@ class PropertyFile
 		var fields = Context.getBuildFields();
 		var assign = new Array<Expr>();
 		
-		try
+		var access = [APublic];
+		if (staticFields)
 		{
-			var s = neko.io.File.getContent(url);
+			access.push(AStatic);
+			access.push(AInline);
+		}
+		
+		var map = parse(sys.io.File.getContent(url));
+		for (key in map.keys())
+		{
+			var val = map.get(key);
 			
-			var a = [];
-			var b = '';
-			var i = 0;
-			while (i < s.length)
+			var c = null, n:String, p = [];
+			if (val.indexOf(',') != -1)
 			{
-				var c = s.charCodeAt(i);
+				var arrExpr = [];
+				var arrType;
+				var tmp:Array<String> = val.split(',');
 				
-				//skip comment?
-				if (c == ASCII.NUMBERSIGN || c == ASCII.EXCLAM)
+				if (tmp[0].indexOf('.') != -1)
 				{
-					i++;
-					var t = '';
-					while (s.charCodeAt(i) != ASCII.NEWLINE)
-					{
-						t += s.charAt(i);
-						i++;
-					}
-					continue;
-				}
-				
-				//skip whitespace?
-				if (ASCII.isWhite(c))
-				{
-					if (b != '')
-					{
-						a.push(b);
-						b = '';
-					}
-					i++;
-					continue;
-				}
-				
-				if (c == ASCII.COLON || c == ASCII.EQUAL)
-				{
-					if (b != '')
-					{
-						a.push(b);
-						b = '';
-					}
-					i++;
-					continue;
-				}
-				
-				b += s.charAt(i++);
-			}
-			
-			if (b != '')
-				a.push(b);
-			
-			var access = [APublic];
-			if (staticFields)
-			{
-				access.push(AStatic);
-				access.push(AInline);
-			}
-			
-			var next = 0;
-			for (i in 0...a.length >> 1)
-			{
-				var fieldName  = a[next++];
-				var fieldValue = a[next++];
-				
-				var c = null, n:String, p = [];
-				if (fieldValue.indexOf(',') != -1)
-				{
-					var arrExpr = [];
-					var arrType;
-					var tmp = fieldValue.split(',');
-					
-					if (tmp[0].indexOf('.') != -1)
-					{
-						for (i in tmp) arrExpr.push({expr: EConst(CFloat(Std.string(Std.parseFloat(i)))), pos: pos});
-						arrType = 'Float';
-					}
-					else
-					{
-						var int = Std.parseInt(tmp[0]);
-						if (int == null)
-						{
-							for (i in tmp) arrExpr.push({expr: EConst(CString(i)), pos: pos});
-							arrType = 'String';
-						}
-						else
-						{
-							for (i in tmp) arrExpr.push({expr: EConst(CInt(Std.string(Std.parseInt(i)))), pos: pos});
-							arrType = 'Int';
-						}
-					}
-					
-					n = 'Array';
-					c = EArrayDecl(arrExpr);
-					p = [TPType(TPath({sub: null, name: arrType, pack: [], params: []}))];
-				}
-				else
-				if (fieldValue.indexOf('.') != -1)
-				{
-					if (Math.isNaN(Std.parseFloat(fieldValue)))
-					{
-						c = EConst(CString(fieldValue));
-						n = 'String';
-					}
-					else
-					{
-						c = EConst(CFloat(fieldValue));
-						n = 'Float';
-					}
-				}
-				else
-				if (fieldValue == 'true' || fieldValue == 'false')
-				{
-					c = EConst(CIdent(fieldValue));
-					n = 'Bool';
+					for (i in tmp) arrExpr.push({expr: EConst(CFloat(Std.string(Std.parseFloat(i)))), pos: pos});
+					arrType = 'Float';
 				}
 				else
 				{
-					var int = Std.parseInt(fieldValue);
+					var int = Std.parseInt(tmp[0]);
 					if (int == null)
 					{
-						c = EConst(CString(fieldValue));
-						n = 'String';
+						for (i in tmp) arrExpr.push({expr: EConst(CString(i)), pos: pos});
+						arrType = 'String';
 					}
 					else
 					{
-						c = EConst(CInt(fieldValue));
-						n = 'Int';
+						for (i in tmp) arrExpr.push({expr: EConst(CInt(Std.string(Std.parseInt(i)))), pos: pos});
+						arrType = 'Int';
 					}
 				}
 				
-				if (c == null)
-					Context.error('invalid field type', Context.currentPos());
-				
-				if (staticFields)
-					fields.push({name: fieldName, doc: null, meta: [], access: access, kind: FVar(TPath({pack: [], name: n, params: p, sub: null}), {expr: c, pos: pos}), pos: pos});
+				n = 'Array';
+				c = EArrayDecl(arrExpr);
+				p = [TPType(TPath({sub: null, name: arrType, pack: [], params: []}))];
+			}
+			else
+			if (val.indexOf('.') != -1)
+			{
+				if (Math.isNaN(Std.parseFloat(val)))
+				{
+					c = EConst(CString(val));
+					n = 'String';
+				}
 				else
 				{
-					fields.push({name: fieldName, doc: null, meta: [], access: access, kind: FVar(TPath({pack: [], name: n, params: p, sub: null})), pos: pos});
-					assign.push({expr: EBinop(Binop.OpAssign, {expr: EConst(CIdent(fieldName)), pos: pos}, {expr: c, pos: pos}), pos:pos});
+					c = EConst(CFloat(val));
+					n = 'Float';
 				}
 			}
-		}
-		catch (unknown:Dynamic)
-		{
-			Context.error('error parsing file: ' + unknown, Context.currentPos());
+			else
+			if (val == 'true' || val == 'false')
+			{
+				c = EConst(CIdent(val));
+				n = 'Bool';
+			}
+			else
+			{
+				var int = Std.parseInt(val);
+				if (int == null)
+				{
+					c = EConst(CString(val));
+					n = 'String';
+				}
+				else
+				{
+					c = EConst(CInt(val));
+					n = 'Int';
+				}
+			}
+			
+			if (c == null)
+				Context.error('invalid field type', Context.currentPos());
+			
+			if (staticFields)
+				fields.push({name: key, doc: null, meta: [], access: access, kind: FVar(TPath({pack: [], name: n, params: p, sub: null}), {expr: c, pos: pos}), pos: pos});
+			else
+			{
+				fields.push({name: key, doc: null, meta: [], access: access, kind: FVar(TPath({pack: [], name: n, params: p, sub: null})), pos: pos});
+				assign.push({expr: EBinop(Binop.OpAssign, {expr: EConst(CIdent(key)), pos: pos}, {expr: c, pos: pos}), pos:pos});
+			}
 		}
 		
 		if (!staticFields) fields.push({name: 'new', doc: null, meta: [], access: [APublic], kind: FFun({args: [], ret: null, expr: {expr: EBlock(assign), pos:pos}, params: []}), pos: pos});
@@ -208,24 +141,113 @@ class PropertyFile
 	}
 	#end
 	
-	public static function getStaticFields(x:Class<Dynamic>, filter:EReg = null):Array<Pair>
+	/**
+	 * Parses a .properties file according to this <a href='http://en.wikipedia.org/wiki/Java_properties'>format</a>.
+	 * @return a hash with all key/value pairs defined in <code>str</code>.
+	 */
+	public static function parse(str:String):Hash<String>
 	{
-		var pairs = new Array();
+		var pairs = new Hash<String>();
 		
-		for (f in Type.getClassFields(x))
+		var line = '';
+		
+		var i = 0;
+		var k = str.length - 1;
+		while (i < k)
 		{
-			if (f == '__rtti') continue;
+			var c = str.charAt(i++);
+			var peek = str.charAt(i);
 			
-			if (filter == null)
+			if (c == '\r')
 			{
-				pairs.push({key: f, val: Reflect.field(x, f)});
-				continue;
+				if (peek == '\n')
+				{
+					i++;
+					if (str.charAt(i - 3) != '\\')
+					{
+						var pair = parseLine(line);
+						if (pair != null) pairs.set(pair.key, pair.val);
+						line = '';
+					}
+				}
+				else
+				if (str.charAt(i - 2) != '\\')
+				{
+					var pair = parseLine(line);
+					if (pair != null) pairs.set(pair.key, pair.val);
+					line = '';
+				}
 			}
-			
-			if (filter.match(f))
-				pairs.push({key: f, val: Reflect.field(x, f)});
+			else
+			if (c == '\n')
+			{
+				if (str.charAt(i - 2) != '\\')
+				{
+					var pair = parseLine(line);
+					if (pair != null) pairs.set(pair.key, pair.val);
+					line = '';
+				}
+			}
+			else
+			if (c == '\\') {}
+			else
+				line += c;
 		}
 		
+		line += str.charAt(k);
+		
+		var pair = parseLine(line);
+		if (pair != null) pairs.set(pair.key, pair.val);
+		
 		return pairs;
+	}
+	
+	static function parseLine(str:String):{key:String, val:String}
+	{
+		var i = 0;
+		var k = str.length;
+		
+		while (i < k)
+		{
+			var c = str.charAt(i);
+			if (c == ' ' || c == '\t')
+				i++;
+			else
+				break;
+		}
+		
+		var c = str.charAt(i);
+		if (c == '#') return null;
+		if (c == '!') return null;
+		
+		var key = '';
+		while (i < k)
+		{
+			var c = str.charAt(i++);
+			if (c == ' ' || c == '\t' || c == ':' || c == '=') break;
+			key += c;
+		}
+		
+		while (i < k)
+		{
+			var c = str.charAt(i);
+			if (c == ' ' || c == '\t')
+				i++;
+			else
+				break;
+		}
+		
+		var val = '';
+		while (i < k)
+		{
+			var c = str.charAt(i++);
+			val += c;
+		}
+		
+		if (val == '') val = key;
+		
+		if (val == key && val == '') return null;
+		
+		return {key: key, val: val};
 	}
 }

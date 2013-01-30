@@ -34,27 +34,20 @@ import de.polygonal.core.sys.Entity;
 import de.polygonal.core.time.Timebase;
 import de.polygonal.core.time.TimebaseEvent;
 import de.polygonal.core.time.Timeline;
-import haxe.Timer;
 
 class MainLoop extends Entity
 {
-	public var tickTimeSeconds:Float;
-	public var drawTimeSeconds:Float;
-	
 	public var paused:Bool = true;
-	
-	var _tickTime:Float;
-	var _drawTime:Float;
 	
 	public function new()
 	{
 		super();
-		Timebase.get().attach(this);
+		Timebase.attach(this);
 	}
 	
 	override function onFree():Void 
 	{
-		Timebase.get().detach(this);
+		Timebase.detach(this);
 	}
 	
 	override public function update(type:Int, source:IObservable, userData:Dynamic):Void
@@ -62,26 +55,19 @@ class MainLoop extends Entity
 		switch (type)
 		{
 			case TimebaseEvent.TICK:
-				tickTimeSeconds = 0;
-				
 				#if (!no_traces && log)
 				//identify tick step
 				var log = de.polygonal.core.Root.log;
 				if (log != null)
 					for (handler in log.getLogHandler())
-						handler.setPrefix(de.polygonal.core.fmt.Sprintf.format('t%03d', [Timebase.get().processedTicks % 1000]));
+						handler.setPrefix(de.polygonal.core.fmt.Sprintf.format('t%03d', [Timebase.processedTicks % 1000]));
 				#end
 				
 				if (paused) return;
 				
-				tickTimeSeconds = _tickTime;
-				_tickTime = Timer.stamp();
-				
 				Timeline.get().advance();
 				commit();
 				tick(userData);
-				
-				_tickTime = Timer.stamp() - _tickTime;
 				
 				#if verbose
 				var s = Entity.printTopologyStats();
@@ -89,24 +75,17 @@ class MainLoop extends Entity
 				#end
 			
 			case TimebaseEvent.RENDER:
-				drawTimeSeconds = 0;
-				
 				if (paused) return;
-				
-				drawTimeSeconds = _drawTime;
-				_drawTime = Timer.stamp();
 				
 				#if (!no_traces && log)
 				//identify draw step
 				var log = de.polygonal.core.Root.log;
 				if (log != null)
 					for (handler in log.getLogHandler())
-						handler.setPrefix(de.polygonal.core.fmt.Sprintf.format('r%03d', [Timebase.get().processedFrames % 1000]));
+						handler.setPrefix(de.polygonal.core.fmt.Sprintf.format('r%03d', [Timebase.processedFrames % 1000]));
 				#end
 				
 				draw(userData);
-				
-				_drawTime = Timer.stamp() - _drawTime;
 		}
 	}
 }

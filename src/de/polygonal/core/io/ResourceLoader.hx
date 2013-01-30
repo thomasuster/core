@@ -41,6 +41,7 @@ import de.polygonal.ds.Prioritizable;
 import de.polygonal.ds.PriorityQueue;
 import de.polygonal.ds.Set;
 import de.polygonal.ds.HashKey;
+import de.polygonal.core.util.Assert;
 
 private class PrioritizedResource extends HashableItem, implements Prioritizable, implements Cloneable<PrioritizedResource>
 {

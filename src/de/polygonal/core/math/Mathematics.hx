@@ -348,7 +348,7 @@ class Mathematics
 			{
 				var s0 = 1 - t;
 				var s1 = t;
-				return m.atan2(s0 * c1 + s1 * c2, s0 * r1 + s1 * r2) * 2;
+				return m.atan2(s0 * c1 + s1 * c2, s0 * r1 + s1 * r2) * 2.;
 			}
 		}
 	}
@@ -597,5 +597,17 @@ class Mathematics
 	inline public static function ofBool(x:Bool):Int
 	{
 		return (x ? 1 : 0);
+	}
+	
+	/**
+	 * Casts a float to an integer. For cpp, this is faster than Std.int().
+	 */
+	inline public static function int(f:Float):Int
+	{
+		#if cpp
+		return cast f;
+		#else
+		return Std.int(f);
+		#end
 	}
 }

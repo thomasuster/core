@@ -198,7 +198,7 @@ class Tween implements IObservable, implements IObserver, implements TimelineLis
 		if (_activeTweens != null) _activeTweens.remove(this);
 		_timeline.detach(this);
 		_timeline.cancel(_id);
-		if (_interpolate) Timebase.get().detach(this);
+		if (_interpolate) Timebase.detach(this);
 		if (_key != null && _map != null) _map.remove(_key);
 		if (_observable != null) _observable.free();
 		_id         = -1;
@@ -305,7 +305,7 @@ class Tween implements IObservable, implements IObserver, implements TimelineLis
 	{
 		_timeline.cancel(_id);
 		_id = 1;
-		if (_interpolate) Timebase.get().detach(this);
+		if (_interpolate) Timebase.detach(this);
 		return this;
 	}
 	
@@ -338,7 +338,7 @@ class Tween implements IObservable, implements IObserver, implements TimelineLis
 	{
 		if (_activeTweens == null) _activeTweens = new DA();
 		_activeTweens.pushBack(this);
-		if (_interpolate) Timebase.get().attach(this, TimebaseEvent.RENDER);
+		if (_interpolate) Timebase.attach(this, TimebaseEvent.RENDER);
 		_a = _b = _min;
 		if (!_interpolate) _target.set(_b);
 		notify(TweenEvent.START, _min);

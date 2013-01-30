@@ -34,7 +34,8 @@ import haxe.macro.Expr;
 
 class StringConstants
 {
-	@:macro public static function build(e:Expr):Array<Field>
+	#if haxe3 macro #else @:macro #end
+	public static function build(e:Expr):Array<Field>
 	{
 		var pos = Context.currentPos();
 		var fields = Context.getBuildFields();
@@ -49,8 +50,8 @@ class StringConstants
 						case EConst(c):
 							switch (c)
 							{
-								case CType(c), CIdent(c):
-									fields.push({name: c, doc: null, meta: [], access: [AStatic, APublic, AInline], kind: FVar(TPath({pack: [], name: 'String', params: [], sub: null}), {expr: EConst(CString(c)), pos: pos}), pos: pos});
+								case CIdent(s):
+									fields.push({name: s, doc: null, meta: [], access: [AStatic, APublic, AInline], kind: FVar(TPath({pack: [], name: 'String', params: [], sub: null}), {expr: EConst(CString(s)), pos: pos}), pos: pos});
 								default: Context.error('unsupported declaration', pos);
 							}
 						default: Context.error('unsupported declaration', pos);
