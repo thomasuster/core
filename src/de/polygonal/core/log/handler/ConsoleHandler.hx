@@ -61,7 +61,7 @@ class ConsoleHandler extends LogHandler
 		var levelName = LogLevel.getName(M.min(_message.outputLevel, LogLevel.ERROR)).toLowerCase();
 		
 		#if js
-		untyped console[levelName](message);
+		untyped if (console[levelName] != null) console[levelName](message); else console.log(message);
 		#elseif flash
 		if (flash.external.ExternalInterface.available)
 			flash.external.ExternalInterface.call('console.' + levelName, message);
