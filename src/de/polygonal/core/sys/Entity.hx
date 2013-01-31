@@ -133,11 +133,11 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	public var doTick(get_doTick, set_doTick):Bool;
 	function get_doTick():Bool
 	{
-		return hasf(BIT_TICK);
+		return _hasf(BIT_TICK);
 	}
 	function set_doTick(value:Bool):Bool
 	{
-		value ? setf(BIT_TICK) : clrf(BIT_TICK);
+		value ? _setf(BIT_TICK) : _clrf(BIT_TICK);
 		return value;
 	}
 	
@@ -148,11 +148,11 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	public var doDraw(get_doDraw, set_doDraw):Bool;
 	function get_doDraw():Bool
 	{
-		return hasf(BIT_DRAW);
+		return _hasf(BIT_DRAW);
 	}
 	function set_doDraw(value:Bool):Bool
 	{
-		value ? setf(BIT_DRAW) : clrf(BIT_DRAW);
+		value ? _setf(BIT_DRAW) : _clrf(BIT_DRAW);
 		return value;
 	}
 	
@@ -163,11 +163,11 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	public var doChildren(get_doChildren, set_doChildren):Bool;
 	function get_doChildren():Bool
 	{
-		return hasf(BIT_PROCESS_SUBTREE);
+		return _hasf(BIT_PROCESS_SUBTREE);
 	}
 	function set_doChildren(value:Bool):Bool
 	{
-		value ? setf(BIT_PROCESS_SUBTREE) : clrf(BIT_PROCESS_SUBTREE);
+		value ? _setf(BIT_PROCESS_SUBTREE) : _clrf(BIT_PROCESS_SUBTREE);
 		return value;
 	}
 	
@@ -225,7 +225,7 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	 */
 	public function free():Void
 	{
-		if (hasf(BIT_COMMIT_SUICIDE))
+		if (_hasf(BIT_COMMIT_SUICIDE))
 		{
 			#if verbose
 			Root.warn(Sprintf.format('entity \'%s\' already freed', [Std.string(id)]));
@@ -236,7 +236,7 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 		//TODO why only with parents?
 		if (treeNode.hasParent())
 		{
-			setf(BIT_COMMIT_SUICIDE);
+			_setf(BIT_COMMIT_SUICIDE);
 			remove();
 		}
 	}
@@ -252,7 +252,7 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	
 	public function hideUpdate(flags:Int, deep = false, rise = false):Void
 	{
-		clrf(flags);
+		_clrf(flags);
 		
 		if (deep)
 		{
@@ -352,24 +352,24 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 		}
 		
 		//defer update if tree is being processed
-		if (hasf(BIT_INITIATOR))
+		if (_hasf(BIT_INITIATOR))
 		{
 			#if verbose
 			Root.debug('postpone commit() at entity ' + id);
 			#end
-			setf(BIT_RECOMMIT);
+			_setf(BIT_RECOMMIT);
 			return;
 		}
 		
 		//nothing changed - early out
 		if (!isDirty())
 		{
-			clrf(BIT_INITIATOR | BIT_RECOMMIT);
+			_clrf(BIT_INITIATOR | BIT_RECOMMIT);
 			return;
 		}
 		
 		//lock; this node carries out all changes
-		setf(BIT_INITIATOR);
+		_setf(BIT_INITIATOR);
 		
 		//preorder traversal: for all nodes: replace PENDING bit with PROCESS bit
 		prepareAdditions();
@@ -384,15 +384,15 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 		removeNodes();
 		
 		//unlock
-		clrf(BIT_INITIATOR);
+		_clrf(BIT_INITIATOR);
 		
 		//recursive update?
-		if (hasf(BIT_RECOMMIT))
+		if (_hasf(BIT_RECOMMIT))
 		{
 			#if verbose
 			Root.warn('carry out recursive commit() at entity ' + id);
 			#end
-			clrf(BIT_RECOMMIT);
+			_clrf(BIT_RECOMMIT);
 			commit();
 		}
 	}
@@ -435,7 +435,7 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 		else
 			x;
 		
-		if (c.hasf(BIT_PENDING_ADD))
+		if (c._hasf(BIT_PENDING_ADD))
 		{
 			#if verbose
 			Root.warn(Sprintf.format('entity \'%s\' already added to %s', [c.id, id]));
@@ -443,11 +443,11 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 			return c;
 		}
 		
-		if (c.hasf(BIT_PENDING_REMOVE))
+		if (c._hasf(BIT_PENDING_REMOVE))
 		{
 			//marked for removal, just update flags
-			c.clrf(BIT_PENDING_REMOVE);
-			c.setf(BIT_PENDING_ADD);
+			c._clrf(BIT_PENDING_REMOVE);
+			c._setf(BIT_PENDING_ADD);
 			if (c.priority != priority) c.priority = priority;
 			return c;
 		}
@@ -456,7 +456,7 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 		D.assert(!treeNode.contains(c), 'given entity is a child of this entity');
 		#end
 		#if verbose
-		if (treeNode.getRoot().val.hasf(BIT_INITIATOR))
+		if (treeNode.getRoot().val._hasf(BIT_INITIATOR))
 			Root.warn(Sprintf.format('entity \'%s\' added during tree update', [c.id]));
 		#end
 		
@@ -466,8 +466,8 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 		treeNode.appendNode(c.treeNode);
 		
 		//mark as pending addition
-		c.clrf(BIT_PENDING_REMOVE);
-		c.setf(BIT_PENDING_ADD);
+		c._clrf(BIT_PENDING_REMOVE);
+		c._setf(BIT_PENDING_ADD);
 		
 		return c;
 	}
@@ -492,7 +492,7 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 			return;
 		}
 		
-		if (child.hasf(BIT_PENDING_REMOVE | BIT_COMMIT_REMOVAL))
+		if (child._hasf(BIT_PENDING_REMOVE | BIT_COMMIT_REMOVAL))
 		{
 			#if verbose
 			Root.warn(Sprintf.format('entity \'%s\' already removed from \'%s\'', [Std.string(child.id), Std.string(id)]));
@@ -505,24 +505,24 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 		D.assert(treeNode.contains(child), Sprintf.format('given entity (%s) is not a child of this entity (%s).', [Std.string(child.id), Std.string(id)]));
 		#end
 		#if verbose
-		if (treeNode.getRoot().val.hasf(BIT_INITIATOR))
+		if (treeNode.getRoot().val._hasf(BIT_INITIATOR))
 			Root.warn(Sprintf.format('entity \'%s\' removed during tree update', [child.id]));
 		#end
 		
 		//TODO also sleep subtree?
 		//put to sleep
-		child.clrf(BIT_TICK | BIT_DRAW);
+		child._clrf(BIT_TICK | BIT_DRAW);
 		
 		//mark as pending removal
-		child.clrf(BIT_PENDING_ADD);
-		child.setf(BIT_PENDING_REMOVE);
+		child._clrf(BIT_PENDING_ADD);
+		child._setf(BIT_PENDING_REMOVE);
 		
-		if (hasf(BIT_COMMIT_REMOVAL))
+		if (_hasf(BIT_COMMIT_REMOVAL))
 		{
 			//this node was marked for removal, so child can be removed directly
-			child.setf(BIT_COMMIT_REMOVAL);
-			child.clrf(BIT_PENDING_REMOVE);
-			child.clrf(BIT_TICK | BIT_DRAW);
+			child._setf(BIT_COMMIT_REMOVAL);
+			child._clrf(BIT_PENDING_REMOVE);
+			child._clrf(BIT_TICK | BIT_DRAW);
 			child.onRemove(this);
 			#if verbose
 			_stats[INDEX_REMOVE]++;
@@ -839,22 +839,22 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	
 	public function sleep(deep = false):Void
 	{
-		clrf(BIT_TICK_BEFORE_SLEEP | BIT_DRAW_BEFORE_SLEEP);
-		if (hasf(BIT_TICK)) setf(BIT_TICK_BEFORE_SLEEP);
-		if (hasf(BIT_DRAW)) setf(BIT_DRAW_BEFORE_SLEEP);
+		_clrf(BIT_TICK_BEFORE_SLEEP | BIT_DRAW_BEFORE_SLEEP);
+		if (_hasf(BIT_TICK)) _setf(BIT_TICK_BEFORE_SLEEP);
+		if (_hasf(BIT_DRAW)) _setf(BIT_DRAW_BEFORE_SLEEP);
 		
 		if (deep)
-			clrf(BIT_TICK | BIT_DRAW | BIT_PROCESS_SUBTREE);
+			_clrf(BIT_TICK | BIT_DRAW | BIT_PROCESS_SUBTREE);
 		else
-			clrf(BIT_TICK | BIT_DRAW);
+			_clrf(BIT_TICK | BIT_DRAW);
 	}
 	
 	public function wakeup(deep = false):Void
 	{
-		if (hasf(BIT_TICK_BEFORE_SLEEP)) setf(BIT_TICK);
-		if (hasf(BIT_DRAW_BEFORE_SLEEP)) setf(BIT_DRAW);
+		if (_hasf(BIT_TICK_BEFORE_SLEEP)) _setf(BIT_TICK);
+		if (_hasf(BIT_DRAW_BEFORE_SLEEP)) _setf(BIT_DRAW);
 		
-		if (deep) setf(BIT_PROCESS_SUBTREE);
+		if (deep) _setf(BIT_PROCESS_SUBTREE);
 	}
 	
 	public function toString():String
@@ -865,9 +865,9 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 			return Sprintf.format('[id=%s (freed)]', [Std.string(id)]);
 		
 		if (priority != Limits.UINT16_MAX)
-			return Sprintf.format('[id=%s #c=%d, p=%02d%s]', [Std.string(id), treeNode.numChildren(), priority, hasf(BIT_PENDING) ? ' p' : '']);
+			return Sprintf.format('[id=%s #c=%d, p=%02d%s]', [Std.string(id), treeNode.numChildren(), priority, _hasf(BIT_PENDING) ? ' p' : '']);
 		else
-			return Sprintf.format('[id=%s #c=%d%s]', [Std.string(id), treeNode.numChildren(), hasf(BIT_PENDING) ? ' p' : '']);
+			return Sprintf.format('[id=%s #c=%d%s]', [Std.string(id), treeNode.numChildren(), _hasf(BIT_PENDING) ? ' p' : '']);
 	}
 	
 	public function getObservable():Observable
@@ -963,10 +963,10 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	function prepareAdditions():Void
 	{
 		//preorder: change BIT_PENDING_ADD to BIT_PROCESS
-		if (hasf(BIT_PENDING_ADD))
+		if (_hasf(BIT_PENDING_ADD))
 		{
-			clrf(BIT_PENDING_ADD);
-			setf(BIT_PROCESS);
+			_clrf(BIT_PENDING_ADD);
+			_setf(BIT_PROCESS);
 		}
 		var n = treeNode.children;
 		while (n != null)
@@ -989,11 +989,11 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 		var p = treeNode.parent;
 		if (p != null)
 		{
-			if (hasf(BIT_PROCESS))
+			if (_hasf(BIT_PROCESS))
 				propagateOnAddAncestor(p.val);
 			else 
 			{
-				if (getf(BIT_PENDING | BIT_ADD_ANCESTOR) == BIT_ADD_ANCESTOR)
+				if (_getf(BIT_PENDING | BIT_ADD_ANCESTOR) == BIT_ADD_ANCESTOR)
 					propagateOnAddAncestorBackTrack(p.val);
 			}
 		}
@@ -1002,7 +1002,7 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	function propagateOnAddAncestor(x:Entity):Void
 	{
 		//only for non-pending nodes
-		if (getf(BIT_PENDING | BIT_ADD_ANCESTOR) == BIT_ADD_ANCESTOR)
+		if (_getf(BIT_PENDING | BIT_ADD_ANCESTOR) == BIT_ADD_ANCESTOR)
 		{
 			#if verbose
 			_stats[INDEX_ADD_ANCESTOR]++;
@@ -1011,14 +1011,14 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 			onAddAncestor(x);
 		}
 		
-		if (hasf(BIT_ADD_ANCESTOR))
+		if (_hasf(BIT_ADD_ANCESTOR))
 		{
 			//call onAddAncestor() on all descendants
 			var n = treeNode.children;
 			while (n != null)
 			{
 				var e = n.val;
-				if (!e.hasf(BIT_PENDING))
+				if (!e._hasf(BIT_PENDING))
 					e.propagateOnAddAncestor(x);
 				n = n.next;
 			}
@@ -1027,7 +1027,7 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	
 	function propagateOnAddAncestorBackTrack(x:Entity):Void
 	{
-		if (hasf(BIT_PROCESS))
+		if (_hasf(BIT_PROCESS))
 		{
 			propagateOnAddAncestor(x);
 			return;
@@ -1036,7 +1036,7 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 		while (n != null)
 		{
 			var e = n.val;
-			if (e.getf(BIT_PENDING) == 0)
+			if (e._getf(BIT_PENDING) == 0)
 				e.propagateOnAddAncestorBackTrack(x);
 			n = n.next;
 		}
@@ -1054,11 +1054,11 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 		var p = treeNode.parent;
 		if (p != null)
 		{
-			if (getf(BIT_PROCESS | BIT_ADD_DESCENDANT) == (BIT_PROCESS | BIT_ADD_DESCENDANT))
+			if (_getf(BIT_PROCESS | BIT_ADD_DESCENDANT) == (BIT_PROCESS | BIT_ADD_DESCENDANT))
 				propagateOnAddDescendant(p.val);
 			else
 			{
-				if (getf(BIT_PENDING | BIT_ADD_DESCENDANT) == BIT_ADD_DESCENDANT)
+				if (_getf(BIT_PENDING | BIT_ADD_DESCENDANT) == BIT_ADD_DESCENDANT)
 					propagateOnAddDescendantBackTrack(p.val);
 			}
 		}
@@ -1066,7 +1066,7 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	
 	function propagateOnAddDescendant(x:Entity):Void
 	{
-		if (x.getf(BIT_PENDING | BIT_ADD_DESCENDANT) == BIT_ADD_DESCENDANT)
+		if (x._getf(BIT_PENDING | BIT_ADD_DESCENDANT) == BIT_ADD_DESCENDANT)
 		{
 			#if verbose
 			_stats[INDEX_ADD_DESCENDANT]++;
@@ -1075,13 +1075,13 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 			x.onAddDescendant(this);
 		}
 		
-		if (hasf(BIT_ADD_DESCENDANT))
+		if (_hasf(BIT_ADD_DESCENDANT))
 		{
 			var n = treeNode.children;
 			while (n != null)
 			{
 				var e = n.val;
-				if (e.getf(BIT_PENDING | BIT_ADD_DESCENDANT) == BIT_ADD_DESCENDANT)
+				if (e._getf(BIT_PENDING | BIT_ADD_DESCENDANT) == BIT_ADD_DESCENDANT)
 					e.propagateOnAddDescendant(x);
 				n = n.next;
 			}
@@ -1090,7 +1090,7 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	
 	function propagateOnAddDescendantBackTrack(x:Entity):Void
 	{
-		if (hasf(BIT_PROCESS))
+		if (_hasf(BIT_PROCESS))
 		{
 			propagateOnAddDescendant(x);
 			return;
@@ -1099,7 +1099,7 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 		while (n != null)
 		{
 			var e = n.val;
-			if (e.getf(BIT_PENDING | BIT_ADD_DESCENDANT) == BIT_ADD_DESCENDANT)
+			if (e._getf(BIT_PENDING | BIT_ADD_DESCENDANT) == BIT_ADD_DESCENDANT)
 				e.propagateOnAddDescendantBackTrack(x);
 			n = n.next;
 		}
@@ -1114,11 +1114,11 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 			n.val.register();
 			n = n.next;
 		}
-		if (hasf(BIT_PROCESS))
+		if (_hasf(BIT_PROCESS))
 		{
 			var p = treeNode.parent.val;
 			
-			if (hasf(BIT_ADD_SIBLING))
+			if (_hasf(BIT_ADD_SIBLING))
 				p.propagateOnAddSibling(this);
 			
 			onAdd(p);
@@ -1127,17 +1127,17 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 			_stats[INDEX_SUM]++;
 			#end
 		}
-		clrf(BIT_PROCESS);
+		_clrf(BIT_PROCESS);
 	}
 	
 	function propagateOnAddSibling(child:Entity):Void
 	{
-		child.setf(BIT_ADDED);
+		child._setf(BIT_ADDED);
 		var n = treeNode.children;
 		while (n != null)
 		{
 			var e = n.val;
-			if (!e.hasf(BIT_ADDED))
+			if (!e._hasf(BIT_ADDED))
 			{
 				e.onAddSibling(child);
 				child.onAddSibling(e);
@@ -1153,10 +1153,10 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	
 	function prepareRemovals():Void
 	{
-		if (hasf(BIT_PENDING_REMOVE))
+		if (_hasf(BIT_PENDING_REMOVE))
 		{
-			clrf(BIT_PENDING_REMOVE);
-			setf(BIT_PROCESS);
+			_clrf(BIT_PENDING_REMOVE);
+			_setf(BIT_PROCESS);
 		}
 		var n = treeNode.children;
 		while (n != null)
@@ -1177,25 +1177,25 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 		
 		if (treeNode.parent == null) return;
 		
-		if (hasf(BIT_PROCESS))
+		if (_hasf(BIT_PROCESS))
 		{
-			setf(BIT_COMMIT_REMOVAL);
+			_setf(BIT_COMMIT_REMOVAL);
 			var p = treeNode.parent.val;
 			onRemove(p);
 			
-			if (hasf(BIT_REMOVE_SIBLING))
+			if (_hasf(BIT_REMOVE_SIBLING))
 				p.propagateOnRemoveSibling(this);
 		}
 	}
 	
 	function propagateOnRemoveSibling(child:Entity):Void
 	{
-		child.setf(BIT_REMOVED);
+		child._setf(BIT_REMOVED);
 		var n = treeNode.children;
 		while (n != null)
 		{
 			var e = n.val;
-			if (!e.hasf(BIT_REMOVED))
+			if (!e._hasf(BIT_REMOVED))
 			{
 				e.onRemoveSibling(child);
 				child.onRemoveSibling(e);
@@ -1218,12 +1218,12 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 			n = n.next;
 		}
 		var p = treeNode.parent;
-		if (hasf(BIT_PROCESS))
+		if (_hasf(BIT_PROCESS))
 			propagateOnRemoveAncestor(p.val);
 		else
 		{
 			if (p == null) return;
-			if (hasf(BIT_PENDING)) return;
+			if (_hasf(BIT_PENDING)) return;
 			if (treeNode.children == null) return;
 			propagateOnRemoveAncestorBackTrack(p.val);
 		}
@@ -1231,7 +1231,7 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	
 	function propagateOnRemoveAncestor(x:Entity):Void
 	{
-		if (getf(BIT_PENDING | BIT_REMOVE_ANCESTOR) == BIT_REMOVE_ANCESTOR)
+		if (_getf(BIT_PENDING | BIT_REMOVE_ANCESTOR) == BIT_REMOVE_ANCESTOR)
 		{
 			onRemoveAncestor(x);
 			#if verbose
@@ -1241,13 +1241,13 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 		}
 		
 		//propagate to children?
-		if (hasf(BIT_REMOVE_ANCESTOR))
+		if (_hasf(BIT_REMOVE_ANCESTOR))
 		{
 			var n = treeNode.children;
 			while (n != null)
 			{
 				var e = n.val;
-				if (!e.hasf(BIT_PENDING))
+				if (!e._hasf(BIT_PENDING))
 					e.propagateOnRemoveAncestor(x);
 				n = n.next;
 			}
@@ -1256,7 +1256,7 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	
 	function propagateOnRemoveAncestorBackTrack(x:Entity):Void
 	{
-		if (hasf(BIT_PROCESS))
+		if (_hasf(BIT_PROCESS))
 		{
 			propagateOnRemoveAncestor(x);
 			return;
@@ -1265,7 +1265,7 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 		while (n != null)
 		{
 			var e = n.val;
-			if (e.getf(BIT_PENDING) == 0)
+			if (e._getf(BIT_PENDING) == 0)
 				e.propagateOnRemoveAncestorBackTrack(x);
 			n = n.next;
 		}
@@ -1280,12 +1280,12 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 			n = n.next;
 		}
 		var p = treeNode.parent;
-		if (getf(BIT_PROCESS | BIT_REMOVE_DESCENDANT) == (BIT_PROCESS | BIT_REMOVE_DESCENDANT))
+		if (_getf(BIT_PROCESS | BIT_REMOVE_DESCENDANT) == (BIT_PROCESS | BIT_REMOVE_DESCENDANT))
 			propagateOnRemoveDescendant(p.val);
 		else
 		{
 			if (p == null) return;
-			if (getf(BIT_PENDING | BIT_REMOVE_DESCENDANT) == BIT_PENDING) return;
+			if (_getf(BIT_PENDING | BIT_REMOVE_DESCENDANT) == BIT_PENDING) return;
 			if (treeNode.children == null) return;
 			propagateOnRemoveDescendantBackTrack(p.val);
 		}
@@ -1293,7 +1293,7 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	
 	function propagateOnRemoveDescendant(x:Entity):Void
 	{
-		if (x.getf(BIT_PENDING | BIT_REMOVE_DESCENDANT) == BIT_REMOVE_DESCENDANT)
+		if (x._getf(BIT_PENDING | BIT_REMOVE_DESCENDANT) == BIT_REMOVE_DESCENDANT)
 		{
 			x.onRemoveDescendant(this);
 			#if verbose
@@ -1302,13 +1302,13 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 			#end
 		}
 		
-		if (hasf(BIT_REMOVE_DESCENDANT))
+		if (_hasf(BIT_REMOVE_DESCENDANT))
 		{
 			var n = treeNode.children;
 			while (n != null)
 			{
 				var e = n.val;
-				if (e.getf(BIT_PENDING | BIT_REMOVE_DESCENDANT) == BIT_REMOVE_DESCENDANT)
+				if (e._getf(BIT_PENDING | BIT_REMOVE_DESCENDANT) == BIT_REMOVE_DESCENDANT)
 					e.propagateOnRemoveDescendant(x);
 				n = n.next;
 			}
@@ -1317,7 +1317,7 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	
 	function propagateOnRemoveDescendantBackTrack(x:Entity):Void
 	{
-		if (getf(BIT_PROCESS | BIT_REMOVE_DESCENDANT) == (BIT_PROCESS | BIT_REMOVE_DESCENDANT))
+		if (_getf(BIT_PROCESS | BIT_REMOVE_DESCENDANT) == (BIT_PROCESS | BIT_REMOVE_DESCENDANT))
 		{
 			propagateOnRemoveDescendant(x);
 			return;
@@ -1326,7 +1326,7 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 		while (n != null)
 		{
 			var e = n.val;
-			if (e.getf(BIT_PENDING | BIT_REMOVE_DESCENDANT) == BIT_REMOVE_DESCENDANT)
+			if (e._getf(BIT_PENDING | BIT_REMOVE_DESCENDANT) == BIT_REMOVE_DESCENDANT)
 				e.propagateOnRemoveDescendantBackTrack(x);
 			n = n.next;
 		}
@@ -1344,14 +1344,14 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 		
 		sortChildren();
 		
-		if (hasf(BIT_COMMIT_REMOVAL))
+		if (_hasf(BIT_COMMIT_REMOVAL))
 		{
 			treeNode.unlink();
 			//recursively destroy subtree rooted at this node?
-			if (hasf(BIT_COMMIT_SUICIDE)) propagateFree();
+			if (_hasf(BIT_COMMIT_SUICIDE)) propagateFree();
 		}
 		
-		clrf(BIT_PROCESS | BIT_COMMIT_REMOVAL | BIT_ADDED | BIT_REMOVED);
+		_clrf(BIT_PROCESS | BIT_COMMIT_REMOVAL | BIT_ADDED | BIT_REMOVED);
 	}
 	
 	function propagateTick(timeDelta:Float, parent:Entity):Void
@@ -1370,7 +1370,7 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 				continue;
 			}
 			
-			if (e.hasf(BIT_TICK))
+			if (e._hasf(BIT_TICK))
 			{
 				var c = e._c;
 				e.onTick(timeDelta, parent);
@@ -1378,11 +1378,11 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 				if (c < e._c)
 					e._c--;
 				else
-				if (e.hasf(BIT_PROCESS_SUBTREE))
+				if (e._hasf(BIT_PROCESS_SUBTREE))
 					e.propagateTick(timeDelta, e);
 			}
 			else
-			if (e.hasf(BIT_PROCESS_SUBTREE))
+			if (e._hasf(BIT_PROCESS_SUBTREE))
 				e.propagateTick(timeDelta, e);
 			
 			n = n.next;
@@ -1405,18 +1405,18 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 				continue;
 			}
 			
-			if (e.hasf(BIT_DRAW))
+			if (e._hasf(BIT_DRAW))
 			{
 				var c = e._c;
 				e.onDraw(alpha, parent);
 				if (c < e._c)
 					e._c--;
 				else
-				if (e.hasf(BIT_PROCESS_SUBTREE))
+				if (e._hasf(BIT_PROCESS_SUBTREE))
 					e.propagateDraw(alpha, e);
 			}
 			else
-			if (e.hasf(BIT_PROCESS_SUBTREE))
+			if (e._hasf(BIT_PROCESS_SUBTREE))
 				e.propagateDraw(alpha, e);
 			
 			n = n.next;
@@ -1451,7 +1451,7 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	
 	function isDirty():Bool
 	{
-		if (hasf(BIT_PENDING)) return true;
+		if (_hasf(BIT_PENDING)) return true;
 		var n = treeNode.children;
 		while (n != null)
 		{
@@ -1472,25 +1472,25 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	
 	inline function isGhost():Bool
 	{
-		return hasf(BIT_PENDING | BIT_COMMIT_SUICIDE);
+		return _hasf(BIT_PENDING | BIT_COMMIT_SUICIDE);
 	}
 	
-	inline function getf(mask:Int):Int
+	inline function _getf(mask:Int):Int
 	{
 		return _flags & mask;
 	}
 	
-	inline function hasf(mask:Int):Bool
+	inline function _hasf(mask:Int):Bool
 	{
 		return _flags & mask > 0;
 	}
 	
-	inline function setf(mask:Int):Void
+	inline function _setf(mask:Int):Void
 	{
 		_flags |= mask;
 	}
 	
-	inline function clrf(mask:Int):Void
+	inline function _clrf(mask:Int):Void
 	{
 		_flags &= ~mask;
 	}
