@@ -47,7 +47,7 @@ import de.polygonal.core.util.Assert;
 
 @:build(de.polygonal.core.sys.EntityType.gen())
 @:autoBuild(de.polygonal.core.sys.EntityType.gen())
-class Entity implements IObserver, implements IObservable, implements Hashable
+class Entity implements IObserver implements IObservable implements Hashable
 {
 	inline public static var UPDATE_ANCESTOR_ADD      = BIT_ADD_ANCESTOR;
 	inline public static var UPDATE_ANCESTOR_REMOVE   = BIT_REMOVE_ANCESTOR;
@@ -130,12 +130,12 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	 * If false, <em>onTick()</em> is not called on this entity.<br/>
 	 * Default ist true.
 	 */
-	public var doTick(get_doTick, set_doTick):Bool;
-	function get_doTick():Bool
+	public var tick(get_tick, set_tick):Bool;
+	function get_tick():Bool
 	{
 		return _hasf(BIT_TICK);
 	}
-	function set_doTick(value:Bool):Bool
+	function set_tick(value:Bool):Bool
 	{
 		value ? _setf(BIT_TICK) : _clrf(BIT_TICK);
 		return value;
@@ -145,12 +145,12 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	 * If false, <em>onDraw()</em> is not called on this entity.<br/>
 	 * Default ist false.
 	 */
-	public var doDraw(get_doDraw, set_doDraw):Bool;
-	function get_doDraw():Bool
+	public var draw(get_draw, set_draw):Bool;
+	function get_draw():Bool
 	{
 		return _hasf(BIT_DRAW);
 	}
-	function set_doDraw(value:Bool):Bool
+	function set_draw(value:Bool):Bool
 	{
 		value ? _setf(BIT_DRAW) : _clrf(BIT_DRAW);
 		return value;
@@ -160,12 +160,12 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 	 * If false, all descendants of this node are neither updated nor rendered.<br/>
 	 * Default is true.
 	 */
-	public var doChildren(get_doChildren, set_doChildren):Bool;
-	function get_doChildren():Bool
+	public var processChildren(get_processChildren, set_processChildren):Bool;
+	function get_processChildren():Bool
 	{
 		return _hasf(BIT_PROCESS_SUBTREE);
 	}
-	function set_doChildren(value:Bool):Bool
+	function set_processChildren(value:Bool):Bool
 	{
 		value ? _setf(BIT_PROCESS_SUBTREE) : _clrf(BIT_PROCESS_SUBTREE);
 		return value;
@@ -397,24 +397,6 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 		}
 	}
 
-	/**
-	 * Updates all entities in the subtree rooted at this node (excluding this node) by calling <em>onTick()</em> on all descendants.
-	 * @param timeDelta the time step passed to each descendant.
-	 */
-	public function tick(timeDelta:Float, parent:Entity = null):Void
-	{
-		propagateTick(timeDelta, parent == null ? this : parent);
-	}
-	
-	/**
-	 * Renders all entities in the subtree rooted at this node (excluding this node) by calling <em>onRender()</em> on all descendants.
-	 * @param alpha a blending factor in the range <arg>&#091;0, 1&#093;</arg> between the previous and current state.
-	 */
-	public function draw(alpha:Float, parent:Entity = null):Void
-	{
-		propagateDraw(alpha, parent == null ? this : parent);
-	}
-	
 	/**
 	 * Adds a child entity to this entity.
 	 * @param x an object inheriting from Entity or a reference to an Entity class.
@@ -822,6 +804,14 @@ class Entity implements IObserver, implements IObservable, implements Hashable
 		#else
 		return Std.is(this, x);
 		#end
+	}
+	
+	/**
+	 * Convenience method for casting this Entity to the type <code>x</code>.
+	 */
+	inline public function as<T:Entity>(x:Class<T>):T
+	{
+		return cast this;
 	}
 	
 	/**
