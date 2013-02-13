@@ -32,7 +32,6 @@ package de.polygonal.core.tween;
 import de.polygonal.core.event.IObservable;
 import de.polygonal.core.event.IObserver;
 import de.polygonal.core.event.Observable;
-import de.polygonal.core.util.Assert;
 import de.polygonal.core.math.interpolation.Interpolation;
 import de.polygonal.core.math.interpolation.Mapping;
 import de.polygonal.core.math.Mathematics;
@@ -42,15 +41,17 @@ import de.polygonal.core.time.Timeline;
 import de.polygonal.core.time.TimelineListener;
 import de.polygonal.core.tween.ease.Ease;
 import de.polygonal.core.tween.ease.EaseFactory;
+import de.polygonal.core.util.Assert;
 import de.polygonal.ds.DA;
+import haxe.ds.StringMap;
 
 /**
  * <p>Interpolates between two states by using an easing equation.</p>
  */
-class Tween implements IObservable, implements IObserver, implements TimelineListener
+class Tween implements IObservable implements IObserver implements TimelineListener
 {
 	static var _activeTweens:DA<Tween>;
-	static var _map:Hash<Tween>;
+	static var _map:StringMap<Tween>;
 	
 	/**
 	 * Stops and destroys all running tweens.
@@ -233,7 +234,7 @@ class Tween implements IObservable, implements IObserver, implements TimelineLis
 	{
 		if (_key != null)
 		{
-			if (_map == null) _map = new Hash();
+			if (_map == null) _map = new StringMap();
 			if (_map.exists(_key))
 			{
 				//cancel if running
@@ -303,6 +304,7 @@ class Tween implements IObservable, implements IObserver, implements TimelineLis
 	
 	public function cancel():Tween
 	{
+		if (_timeline == null) return this;
 		_timeline.cancel(_id);
 		_id = 1;
 		if (_interpolate) Timebase.detach(this);

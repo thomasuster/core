@@ -49,7 +49,7 @@ import de.polygonal.ds.pooling.ObjectPool;
 /**
  * A service that can schedule events to run after a given delay for a given amount of time, or periodically.
  */
-class Timeline extends Observable, implements IObserver
+class Timeline extends Observable implements IObserver
 {
 	public static var POOL_SIZE = 4096;
 	
@@ -460,7 +460,7 @@ class Timeline extends Observable, implements IObserver
 	}
 }
 
-private class TimeInterval implements Heapable<TimeInterval>, implements Cloneable<TimeInterval>, implements TimelineListener
+private class TimeInterval implements Heapable<TimeInterval> implements Cloneable<TimeInterval> implements TimelineListener
 {
 	public var id:Int;
 	public var poolId = -1;

@@ -38,7 +38,7 @@ using Reflect;
 /**
  * <p>Supports tweening of any field of any object.</p>
  */
-class GenericTween extends Tween, implements TweenTarget
+class GenericTween extends Tween implements TweenTarget
 {
 	var _object:Dynamic;
 	var _fields:Array<String>;

@@ -238,7 +238,7 @@ class ConfigXML
 	}
 	#end
 	
-	@:macro public static function build(url:String, staticFields:Bool):Array<Field>
+	macro public static function build(url:String, staticFields:Bool):Array<Field>
 	{
 		Context.registerModuleDependency(Std.string(Context.getLocalClass()), url);
 		

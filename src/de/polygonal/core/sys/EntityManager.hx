@@ -1,23 +1,25 @@
 package de.polygonal.core.sys;
 
 import de.polygonal.core.util.Assert;
+import haxe.ds.StringMap;
+import haxe.ds.IntMap;
 
 class EntityManager
 {
 	static var _initialized = false;
-	static var _keyLookup:Hash<Int> = null;
+	static var _keyLookup:StringMap<Int> = null;
 	static var _nextKey = 0;
 	static var _scratchArr:Array<Entity> = null;
 	
-	static var _entitiesById:IntHash<Array<Entity>> = null;
+	static var _entitiesById:IntMap<Array<Entity>> = null;
 	
 	public static function registerEntity(e:Entity):Void
 	{
 		if (!_initialized)
 		{
 			_initialized = true;
-			_entitiesById = new IntHash();
-			_keyLookup = new Hash();
+			_entitiesById = new IntMap();
+			_keyLookup = new StringMap();
 			_scratchArr = [];
 		}
 		
