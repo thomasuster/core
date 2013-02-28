@@ -1,25 +1,28 @@
 package de.polygonal.core.sys;
 
 import de.polygonal.core.util.Assert;
-import haxe.ds.StringMap;
-import haxe.ds.IntMap;
+
+#if haxe3
+import haxe.ds.StringMap in Hash;
+import haxe.ds.IntMap in IntHash;
+#end
 
 class EntityManager
 {
 	static var _initialized = false;
-	static var _keyLookup:StringMap<Int> = null;
+	static var _keyLookup:Hash<Int> = null;
 	static var _nextKey = 0;
 	static var _scratchArr:Array<Entity> = null;
 	
-	static var _entitiesById:IntMap<Array<Entity>> = null;
+	static var _entitiesById:IntHash<Array<Entity>> = null;
 	
 	public static function registerEntity(e:Entity):Void
 	{
 		if (!_initialized)
 		{
 			_initialized = true;
-			_entitiesById = new IntMap();
-			_keyLookup = new StringMap();
+			_entitiesById = new IntHash();
+			_keyLookup = new Hash();
 			_scratchArr = [];
 		}
 		
@@ -45,6 +48,12 @@ class EntityManager
 		var a = _entitiesById.get(key);
 		var success = a.remove(e);
 		if (!success) throw 'error unregistering entity';
+	}
+	
+	public static function resolveEntity(id:String):Entity
+	{
+		var key = _keyLookup.get(id);
+		return _entitiesById.get(key)[0];
 	}
 	
 	public static function sendMsg(sender:Entity, receiverId:String, msg:String, userData:Dynamic):Void

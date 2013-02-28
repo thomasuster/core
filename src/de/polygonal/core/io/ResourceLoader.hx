@@ -43,7 +43,11 @@ import de.polygonal.ds.Set;
 import de.polygonal.ds.HashKey;
 import de.polygonal.core.util.Assert;
 
+#if haxe3
 private class PrioritizedResource extends HashableItem implements Prioritizable implements Cloneable<PrioritizedResource>
+#else
+private class PrioritizedResource extends HashableItem, implements Prioritizable, implements Cloneable<PrioritizedResource>
+#end
 {
 	public var res:Resource;
 	
@@ -72,7 +76,11 @@ private class PrioritizedResource extends HashableItem implements Prioritizable 
 /**
  * <p>A prioritized loading queue.</p>
  */
+#if haxe3
 class ResourceLoader extends Observable implements IObserver
+#else
+class ResourceLoader extends Observable, implements IObserver
+#end
 {
 	var _pq:PriorityQueue<PrioritizedResource>;
 	

@@ -35,7 +35,10 @@ import de.polygonal.core.fmt.StringUtil;
 import de.polygonal.core.log.LogEvent;
 import de.polygonal.core.util.Assert;
 import haxe.PosInfos;
-import haxe.ds.StringMap;
+
+#if haxe3
+import haxe.ds.StringMap in Hash;
+#end
 
 using de.polygonal.core.fmt.StringUtil;
 using de.polygonal.ds.Bits;
@@ -53,7 +56,7 @@ class Log
 {
 	public static var globalHandler:Array<LogHandler> = null;
 	
-	static var _logger:StringMap<Log> = null;
+	static var _logger:Hash<Log> = null;
 	static var _counter = 0;
 	
 	/**
@@ -79,7 +82,7 @@ class Log
 	 */
 	public static function getLog(x:Dynamic):Log
 	{
-		if (_logger == null) _logger = new StringMap<Log>();
+		if (_logger == null) _logger = new Hash<Log>();
 		
 		var name:String = null;
 		if (Std.is(x, Class))

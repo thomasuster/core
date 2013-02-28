@@ -39,7 +39,11 @@ using de.polygonal.ds.BitFlags;
  * <p>Tweens properties of a <em>flash.display.DisplayObject</em>.</p>
  * <p>Faster than <em>GenericTween</em> because no reflection is used.</p>
  */
+#if haxe3
 class DisplayObjectTween extends Tween implements TweenTarget
+#else
+class DisplayObjectTween extends Tween, implements TweenTarget
+#end
 {
 	inline public static var X        = Bits.BIT_01;
 	inline public static var Y        = Bits.BIT_02;
