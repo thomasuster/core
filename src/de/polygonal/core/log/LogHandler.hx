@@ -315,7 +315,7 @@ class LogHandler implements IObserver
 		var lineFormat = '%s';
 		
 		if (hasf(LINE))
-			line = Sprintf.format('l.%04d ', [_message.posInfos.lineNumber]);
+			line = Sprintf.format('l%04d ', [_message.posInfos.lineNumber]);
 		
 		var classMethod = '';
 		var classMethodFormat = '%s';

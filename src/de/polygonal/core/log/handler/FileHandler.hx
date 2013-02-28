@@ -72,7 +72,7 @@ class FileHandler extends LogHandler
 		if (!_success) return;
 		
 		var fout = sys.io.File.append(_fileName, false);
-		fout.writeString(message + '\r\n');
+		fout.writeString(message + '\n');
 		fout.close();
 	}
 }
