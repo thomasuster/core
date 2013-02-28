@@ -233,7 +233,9 @@ class Sprintf
 				var min = Context.getPosInfos(_passedArgs[0].pos).min;
 				var max = Context.getPosInfos(_passedArgs[_passedArgs.length - 1].pos).max;
 				var file = Context.getPosInfos(Context.currentPos()).file;
-				_args = { expr:EArrayDecl(_passedArgs), pos:Context.makePosition( { min:min, max:max, file:file } ) };
+				var pos = Context.makePosition( { min:min, max:max, file:file } );
+				var dynArrayType:ComplexType = macro : Array<Dynamic>;
+				_args = { expr: ECheckType({ expr:EArrayDecl(_passedArgs), pos:pos }, dynArrayType), pos: pos };
 			}
 			else
 				_args = _passedArgs[0];
@@ -305,7 +307,7 @@ class Sprintf
 		{
 			switch(token)
 			{
-			case Unknown(str, pos):
+			case Unknown(_, pos):
 				var min = Context.getPosInfos(_fmt.pos).min + pos;
 				var max = min + 1;
 				var file = Context.getPosInfos(Context.currentPos()).file;
@@ -357,7 +359,7 @@ class Sprintf
 						{
 						case CInt(value):
 							args.width = Std.parseInt(value);
-						case CIdent(value):
+						case CIdent(_):
 							switch(Context.typeof(widthExpr))
 							{
 							case TInst(type, _):
@@ -398,7 +400,7 @@ class Sprintf
 						{
 						case CInt(value):
 							args.precision = Std.parseInt(value);
-						case CIdent(value):
+						case CIdent(_):
 							switch(Context.typeof(precisionExpr))
 							{
 							case TInst(type, _):
@@ -771,7 +773,7 @@ class Sprintf
 		{
 			switch(token)
 			{
-			case Unknown(str, pos):
+			case Unknown(_, _):
 				throw "invalid format specifier";
 			case BareString(str):
 				output += str;
