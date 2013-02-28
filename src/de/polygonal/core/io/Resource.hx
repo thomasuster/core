@@ -49,6 +49,10 @@ import flash.system.ApplicationDomain;
 import flash.system.LoaderContext;
 import de.polygonal.core.util.Assert;
 
+#if (!flash)
+'The Resource class is only available for flash'
+#end
+
 /**
  * <p>A resource provides a unified interface for loading different types of external data into an application.</p>
  * <p>Example:</p>
