@@ -65,51 +65,24 @@ class Limits
 	inline public static var UINT16_MAX = 0xFFFF;
 	
 	/**
-	 * Min value, signed integer.<br/>
-	 * Equals 0xc0000000 when targeting neko, otherwise 0x80000000.
+	 * Min value, signed integer.
 	 */
-	inline public static var INT32_MIN =
-	#if neko
-	0xc0000000;
-	#else
-	0x80000000;
-	#end
+	inline public static var INT32_MIN = 0x80000000;
 	
 	/**
-	 * Max value, signed integer.<br/>
-	 * Equals 0x3fffffff when targeting neko, otherwise 0x7fffffff.
+	 * Max value, signed integer.
 	 */
-	inline public static var INT32_MAX =
-	#if neko
-	0x3fffffff;
-	#else
-	0x7fffffff;
-	#end
+	inline public static var INT32_MAX = 0x7fffffff;
 	
 	/**
-	 * Max value, unsigned integer.<br/>
-	 * Equals 0x7fffffff when targeting neko, otherwise 0x3fffffff.
-	 *
+	 * Max value, unsigned integer.
 	 */
-	inline public static var UINT32_MAX =
-	#if neko
-	0x3fffffff;
-	#else
-	0xffffffff;
-	#end
+	inline public static var UINT32_MAX = 0xffffffff;
 	
 	/**
-	 * Number of bits using for representing integers.<br/>
-	 * Equals 31 when targeting neko, otherwise 32.
+	 * Number of bits using for representing integers.
 	 */
-	inline public static var INT_BITS =
-	#if (neko && neko_v2)
-	32;
-	#elseif neko
-	31;
-	#else
-	32;
-	#end
+	inline public static var INT_BITS =	32;
 	
 	/**
 	 * The largest representable number (single-precision IEEE-754).
