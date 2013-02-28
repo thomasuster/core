@@ -31,6 +31,7 @@ package de.polygonal.core;
 
 import de.polygonal.core.fmt.Sprintf;
 import de.polygonal.core.util.Assert;
+import haxe.PosInfos;
 
 /**
  * <p>The root of an application.</p>
@@ -70,13 +71,13 @@ class Root
 	 * "Hello World!".info();
 	 * </pre>
 	 */
-	inline public static function info(x:Dynamic):Void
+	inline public static function info(x:Dynamic, ?posInfos:PosInfos):Void
 	{
 		#if log
 			#if debug
 			D.assert(log != null, 'call Root.initLog() first');
 			#end
-		log.info(x);
+		log.info(x, posInfos);
 		#end
 	}
 	
@@ -106,13 +107,13 @@ class Root
 	 * "Hello World!".error();
 	 * </pre>
 	 */
-	inline public static function error(x:Dynamic):Void
+	inline public static function error(x:Dynamic, ?posInfos:PosInfos):Void
 	{
 		#if log
 			#if debug
 			D.assert(log != null, 'call Root.initLog() first');
 			#end
-		log.error(x);
+		log.error(x, posInfos);
 		#end
 	}
 	
