@@ -30,6 +30,7 @@
 package de.polygonal.core.util;
 
 import haxe.rtti.CType.TypeTree;
+import haxe.ds.StringMap;
 
 #if macro
 import haxe.macro.Context;
@@ -45,7 +46,7 @@ typedef Param =
 class ConfigXML
 {
 	#if !macro
-	static var _rttiCache:Hash<TypeTree>;
+	static var _rttiCache:StringMap<TypeTree>;
 	
 	public static function getStaticFields(x:Class<Dynamic>, filter:EReg = null):Array<Param>
 	{
@@ -70,7 +71,7 @@ class ConfigXML
 	
 	public static function getFieldsByName(x:haxe.rtti.Infos, filter:EReg = null):Array<Param>
 	{
-		if (_rttiCache == null) _rttiCache = new Hash();
+		if (_rttiCache == null) _rttiCache = new StringMap();
 		
 		var name = Type.getClassName(Type.getClass(x));
 		

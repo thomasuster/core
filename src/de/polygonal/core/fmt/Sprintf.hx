@@ -31,6 +31,7 @@
 package de.polygonal.core.fmt;
 
 import haxe.EnumFlags;
+import haxe.ds.IntMap;
 
 #if macro
 import haxe.macro.Expr;
@@ -40,7 +41,6 @@ import haxe.macro.Type;
 
 using de.polygonal.core.math.Mathematics;
 using de.polygonal.core.fmt.ASCII;
-using haxe.Int32;
 
 /**
  * <p>A C sprintf implementation.</p>
@@ -103,13 +103,13 @@ using haxe.Int32;
  */
 class Sprintf
 {
-	var formatHash:IntHash< Dynamic >;
+	var formatHash:IntMap< Dynamic >;
 	
-	static var dataTypeHash:IntHash<FormatDataType> = makeDataTypeHash();
+	static var dataTypeHash:IntMap<FormatDataType> = makeDataTypeHash();
 	
 	private static function makeDataTypeHash()
 	{
-		var hash:IntHash<FormatDataType> = new IntHash();
+		var hash:IntMap<FormatDataType> = new IntMap();
 		hash.set("i".code, FmtInteger(ISignedDecimal));
 		hash.set("d".code, FmtInteger(ISignedDecimal));
 		hash.set("u".code, FmtInteger(IUnsignedDecimal));
@@ -135,20 +135,20 @@ class Sprintf
 	
 	static var _instance:Sprintf = null;
 	
-	var formatIntFuncHash:IntHash < Int->FormatArgs->String >;
-	var formatFloatFuncHash:IntHash < Float->FormatArgs->String >;
-	var formatStringFuncHash:IntHash < String->FormatArgs->String >;
+	var formatIntFuncHash:IntMap < Int->FormatArgs->String >;
+	var formatFloatFuncHash:IntMap < Float->FormatArgs->String >;
+	var formatStringFuncHash:IntMap < String->FormatArgs->String >;
 	
 	#if macro
-	var formatIntFuncNameHash:IntHash < String>;
-	var formatFloatFuncNameHash:IntHash < String >;
-	var formatStringFuncNameHash:IntHash < String > ;
+	var formatIntFuncNameHash:IntMap < String>;
+	var formatFloatFuncNameHash:IntMap < String >;
+	var formatStringFuncNameHash:IntMap < String > ;
 	
 	function makeNameHashes()
 	{
-		formatIntFuncNameHash = new IntHash();
-		formatFloatFuncNameHash = new IntHash();
-		formatStringFuncNameHash = new IntHash();
+		formatIntFuncNameHash = new IntMap();
+		formatFloatFuncNameHash = new IntMap();
+		formatStringFuncNameHash = new IntMap();
 		
 		formatIntFuncNameHash.set(std.Type.enumIndex(ISignedDecimal), "formatSignedDecimal");
 		formatIntFuncNameHash.set(std.Type.enumIndex(IUnsignedDecimal), "formatUnsignedDecimal");
@@ -167,9 +167,9 @@ class Sprintf
 	
 	function new()
 	{
-		formatIntFuncHash = new IntHash();
-		formatFloatFuncHash = new IntHash();
-		formatStringFuncHash = new IntHash();
+		formatIntFuncHash = new IntMap();
+		formatFloatFuncHash = new IntMap();
+		formatStringFuncHash = new IntMap();
 		
 		formatIntFuncHash.set(std.Type.enumIndex(ISignedDecimal), formatSignedDecimal);
 		formatIntFuncHash.set(std.Type.enumIndex(IUnsignedDecimal), formatUnsignedDecimal);
@@ -233,7 +233,9 @@ class Sprintf
 				var min = Context.getPosInfos(_passedArgs[0].pos).min;
 				var max = Context.getPosInfos(_passedArgs[_passedArgs.length - 1].pos).max;
 				var file = Context.getPosInfos(Context.currentPos()).file;
-				_args = { expr:EArrayDecl(_passedArgs), pos:Context.makePosition( { min:min, max:max, file:file } ) };
+				var pos = Context.makePosition( { min:min, max:max, file:file } );
+				var dynArrayType:ComplexType = macro : Array<Dynamic>;
+				_args = { expr: ECheckType({ expr:EArrayDecl(_passedArgs), pos:pos }, dynArrayType), pos: pos };
 			}
 			else
 				_args = _passedArgs[0];
@@ -305,7 +307,7 @@ class Sprintf
 		{
 			switch(token)
 			{
-			case Unknown(str, pos):
+			case Unknown(_, pos):
 				var min = Context.getPosInfos(_fmt.pos).min + pos;
 				var max = min + 1;
 				var file = Context.getPosInfos(Context.currentPos()).file;
@@ -357,7 +359,7 @@ class Sprintf
 						{
 						case CInt(value):
 							args.width = Std.parseInt(value);
-						case CIdent(value):
+						case CIdent(_):
 							switch(Context.typeof(widthExpr))
 							{
 							case TInst(type, _):
@@ -398,7 +400,7 @@ class Sprintf
 						{
 						case CInt(value):
 							args.precision = Std.parseInt(value);
-						case CIdent(value):
+						case CIdent(_):
 							switch(Context.typeof(precisionExpr))
 							{
 							case TInst(type, _):
@@ -771,7 +773,7 @@ class Sprintf
 		{
 			switch(token)
 			{
-			case Unknown(str, pos):
+			case Unknown(_, _):
 				throw "invalid format specifier";
 			case BareString(str):
 				output += str;
@@ -819,7 +821,6 @@ class Sprintf
 				value &= 0xffff;
 			
 			//toBin()
-			#if haxe3
 			var i = value;
 			do
 			{
@@ -827,15 +828,6 @@ class Sprintf
 				i >>>= 1;
 			}
 			while (i > 0);
-			#else
-			var i = value.ofInt();
-			do
-			{
-				output = ((i.and(1.ofInt()).compare(0.ofInt()) > 0) ? '1' : '0') + output;
-				i = haxe.Int32.ushr(i, 1);
-			}
-			while (i.compare(0.ofInt()) > 0);
-			#end
 			
 			if (args.precision > 1)
 			{
@@ -925,12 +917,7 @@ class Sprintf
 			output = formatSignedDecimal(value, args);
 		else
 		{
-			var x =
-			#if haxe3
-			haxe.Int64.make(0, value);
-			#else
-			haxe.Int64.make(haxe.Int32.ofInt(0), haxe.Int32.ofInt(value));
-			#end
+			var x = haxe.Int64.make(0, value);
 			
 			output = haxe.Int64.toStr(x);
 			
