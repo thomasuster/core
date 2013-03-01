@@ -43,7 +43,7 @@ typedef Param =
 	var value:Dynamic;
 }
 
-class ConfigXML
+class ConfigXml
 {
 	#if !macro
 	static var _rttiCache:StringMap<TypeTree>;
