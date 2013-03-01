@@ -48,39 +48,31 @@ class ConfigXML
 	#if !macro
 	static var _rttiCache:StringMap<TypeTree>;
 	
-	public static function getStaticFields(x:Class<Dynamic>, filter:EReg = null):Array<Param>
+	public static function getStaticFields(x:Class<Dynamic>, include:EReg = null):Array<Param>
 	{
 		var fields = new Array();
-		
-		for (f in Type.getClassFields(x))
+		for (f in Reflect.fields(x))
 		{
-			if (f == '__rtti') continue;
-			
-			if (filter == null)
-			{
-				fields.push({name: f, value: Reflect.field(x, f)});
-				continue;
-			}
-			
-			if (filter.match(f))
+			if (include == null || include.match(f))
 				fields.push({name: f, value: Reflect.field(x, f)});
 		}
 		
 		return fields;
 	}
 	
-	public static function getFieldsByName(x:haxe.rtti.Infos, filter:EReg = null):Array<Param>
+	public static function getFields(x:Dynamic, include:EReg = null):Array<Param>
 	{
 		if (_rttiCache == null) _rttiCache = new StringMap();
 		
-		var name = Type.getClassName(Type.getClass(x));
+		var cl = Type.getClass(x);
+		var name = Type.getClassName(cl);
 		
 		var typeInfo:TypeTree;
 		if (_rttiCache.exists(name))
 			typeInfo = _rttiCache.get(name);
 		else
 		{
-			var rtti:String = Reflect.field(Type.getClass(x), '__rtti');
+			var rtti = getRtti(cl);
 			var xml = Xml.parse(rtti).firstElement();
 			typeInfo = new haxe.rtti.XmlParser().processElement(xml);
 			_rttiCache.set(name, typeInfo);
@@ -92,13 +84,8 @@ class ConfigXML
 			case TClassdecl(cl):
 				for (f in cl.fields)
 				{
-					if (filter == null)
-					{
-						fields.push({name: f.name, value: Reflect.field(x, f.name)});
-						continue;
-					}
-					
-					if (filter.match(f.name))
+					if (f.name == 'new') continue;
+					if (include == null || include.match(f.name))
 						fields.push({name: f.name, value: Reflect.field(x, f.name)});
 				}
 			default:
@@ -109,10 +96,8 @@ class ConfigXML
 	
 	public static function toXML(source:Dynamic):String
 	{
-		if (!Std.is(source, haxe.rtti.Infos)) throw 'source is not of type haxe.rtti.Infos';
-		
-		var C:Class<Dynamic> = Type.getClass(source);
-		var rtti:String = untyped C.__rtti;
+		var cl:Class<Dynamic> = Type.getClass(source);
+		var rtti = getRtti(cl);
 		var x = Xml.parse(rtti).firstElement();
 		var f = new haxe.xml.Fast(x);
 		
@@ -237,6 +222,24 @@ class ConfigXML
 		
 		scan(Xml.parse(xmlString).firstElement(), scan);
 	}
+	
+	static function getRtti(x:Class<Dynamic>):String
+	{
+		return
+		try
+		{
+			#if (java || cs)
+			Reflect.field(x, "__rtti");
+			#else
+			untyped x.__rtti;
+			#end
+		}
+		catch(error:Dynamic)
+		{
+			throw 'please add @:rtti metadata';
+			return null;
+		}
+	}
 	#end
 	
 	macro public static function build(url:String, staticFields:Bool):Array<Field>
@@ -250,7 +253,7 @@ class ConfigXML
 		
 		try
 		{
-			var s = neko.io.File.getContent(url);
+			var s = sys.io.File.getContent(url);
 			
 			var names = [], values = [];
 			var scan = function(node:Xml, f:Xml->Dynamic->Void)
@@ -367,7 +370,7 @@ class ConfigXML
 		}
 		catch (unknown:Dynamic)
 		{
-			Context.error('error parsing xml', Context.currentPos());
+			Context.error('error parsing xml (' + unknown + ')', Context.currentPos());
 		}
 		
 		if (!staticFields) fields.push({name: 'new', doc: null, meta: [], access: [APublic], kind: FFun({args: [], ret: null, expr: {expr: EBlock(assign), pos:pos}, params: []}), pos: pos});
