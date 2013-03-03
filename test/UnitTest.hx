@@ -19,6 +19,7 @@ class UnitTest extends haxe.unit.TestRunner
 		haxe.unit.TestRunner.print = function(v:Dynamic):Dynamic { output += Std.string(v); }
 		
 		add(new TestSprintf());
+		add(new TestRLE());
 		
 		run();
 		
