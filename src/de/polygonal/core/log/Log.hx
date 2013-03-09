@@ -29,24 +29,9 @@
  */
 package de.polygonal.core.log;
 
-import de.polygonal.core.event.IObserver;
 import de.polygonal.core.event.Observable;
-import de.polygonal.core.fmt.StringUtil;
-import de.polygonal.core.log.LogEvent;
-import de.polygonal.core.util.Assert;
-import haxe.PosInfos;
 
-#if haxe3
-import haxe.ds.StringMap in Hash;
-#end
-
-using de.polygonal.core.fmt.StringUtil;
 using de.polygonal.ds.Bits;
-
-private typedef LogFriend = 
-{
-	private var _observable:Observable;
-}
 
 /**
  * <p>A lightweight log.</p>
@@ -54,68 +39,21 @@ private typedef LogFriend =
  */
 class Log
 {
-	public static var globalHandler:Array<LogHandler> = null;
-	
-	static var _logger:Hash<Log> = null;
 	static var _counter = 0;
 	
-	/**
-	 * Creates a new log or returns an existing one.<br/>
-	 * Example:<br/><br/>
-	 * <pre class="prettyprint">
-	 * package a.b.c;
-	 * class Foo 
-	 * {
-	 *     public function new() {
-	 *         var log = de.polygonal.core.log.Log.getLog(a.b.c.Foo);
-	 *         log.info("Hello from a.b.c.Foo constructor");
-	 *     }
-	 * }
-	 * ...
-	 * class Main 
-	 * {
-	 *     static function main() {
-	 *         new Foo();
-	 *     }
-	 * }</pre>
-	 * @param x the name of the log or a class object.
-	 */
-	public static function getLog(x:Dynamic):Log
-	{
-		if (_logger == null) _logger = new Hash<Log>();
-		
-		var name:String = null;
-		if (Std.is(x, Class))
-			name = Type.getClassName(x);
-		else
-			name = Std.string(x);
-		
-		if (_logger.exists(name))
-			return _logger.get(name);
-		else
-		{
-			var log = new Log(name);
-			if (globalHandler != null)
-			{
-				for (i in globalHandler)
-					log.attach(cast i);
-			}
-			return log;
-		}
-	}
+	public var name(default, null):String;
 	
 	var _observable:Observable;
 	var _mask:Int;
-	var _name:String;
 	var _level:Int;
 	var _logMessage:LogMessage;
 	
-	function new(name:String)
+	public function new(name:String)
 	{
+		this.name = name;
+		
 		_mask = 0;
 		_level = 0;
-		_name = name;
-		_logger.set(name, this);
 		_observable = new Observable();
 		_logMessage = new LogMessage();
 		setLevel(LogLevel.DEBUG);
@@ -125,7 +63,7 @@ class Log
 	 * Adds the handler <code>x</code> to this log.<br/>
 	 * Once registered, <code>x</code> receives logging messages.
 	 */
-	public function attach(x:LogHandler):Void
+	public function addHandler(x:LogHandler):Void
 	{
 		#if log
 		for (observer in _observable)
@@ -137,7 +75,7 @@ class Log
 	/**
 	 * Removes the handler <code>x</code> from this log.
 	 */
-	public function detach(x:LogHandler):Void
+	public function removeHandler(x:LogHandler):Void
 	{
 		#if log
 		_observable.detach(x);
@@ -147,28 +85,20 @@ class Log
 	/**
 	 * Removes all handlers  from this log.
 	 */
-	public function detachAll():Void
+	public function removeAllHandlers():Void
 	{
 		#if log
 		for (handler in _observable.getObserverList())
-			detach(cast handler);
+			removeHandler(cast handler);
 		#end
 	}
 	
 	/**
 	 * A list of all registered log handlers.
 	 */
-	public function getLogHandler():Array<LogHandler>
+	public function getLogHandlers():Array<LogHandler>
 	{
 		return cast _observable.getObserverList();
-	}
-	
-	/**
-	 * Returns the name of this log.
-	 */
-	public function getName():String
-	{
-		return _name;
 	}
 	
 	/**
@@ -262,7 +192,7 @@ class Log
 	 * @param x the log message.
 	 */
 	#if !log inline #end
-	public function debug(x:Dynamic, ?posInfos:PosInfos):Void
+	public function debug(x:Dynamic, ?posInfos:haxe.PosInfos):Void
 	{
 		#if log
 		if (_observable.size() > 0)
@@ -275,7 +205,7 @@ class Log
 	 * @param x the log message.
 	 */
 	#if !log inline #end
-	public function info(x:Dynamic, ?posInfos:PosInfos):Void
+	public function info(x:Dynamic, ?posInfos:haxe.PosInfos):Void
 	{
 		#if log
 		if (_observable.size() > 0)
@@ -288,7 +218,7 @@ class Log
 	 * @param x the log message.
 	 */
 	#if !log inline #end
-	public function warn(x:Dynamic, ?posInfos:PosInfos):Void
+	public function warn(x:Dynamic, ?posInfos:haxe.PosInfos):Void
 	{
 		#if log
 		if (_observable.size() > 0)
@@ -301,7 +231,7 @@ class Log
 	 * @param x the log message.
 	 */
 	#if !log inline #end
-	public function error(x:Dynamic, ?posInfos:PosInfos):Void
+	public function error(x:Dynamic, ?posInfos:haxe.PosInfos):Void
 	{
 		#if log
 		if (_observable.size() > 0)
@@ -309,7 +239,7 @@ class Log
 		#end
 	}
 
-	inline function output(level:Int, x:Dynamic, ?posInfos:PosInfos):Void
+	inline function output(level:Int, x:Dynamic, ?posInfos:haxe.PosInfos):Void
 	{
 		_counter++; if (_counter == 1000) _counter = 0;
 		
