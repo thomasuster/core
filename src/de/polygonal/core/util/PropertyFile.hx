@@ -29,9 +29,7 @@
  */
 package de.polygonal.core.util;
 
-#if haxe3
-import haxe.ds.StringMap in Hash;
-#end
+import haxe.ds.StringMap;
 
 #if macro
 import haxe.macro.Context;
@@ -41,8 +39,7 @@ import haxe.macro.Expr;
 class PropertyFile
 {
 	#if macro
-	#if haxe3 macro #else @:macro #end
-	public static function build(url:String, staticFields:Bool):Array<Field>
+	macro public static function build(url:String, staticFields:Bool):Array<Field>
 	{
 		Context.registerModuleDependency(Std.string(Context.getLocalClass()), url);
 		var pos = Context.currentPos();
@@ -149,9 +146,9 @@ class PropertyFile
 	 * Parses a .properties file according to this <a href='http://en.wikipedia.org/wiki/Java_properties'>format</a>.
 	 * @return a hash with all key/value pairs defined in <code>str</code>.
 	 */
-	public static function parse(str:String):Hash<String>
+	public static function parse(str:String):StringMap<String>
 	{
-		var pairs = new Hash<String>();
+		var pairs = new StringMap<String>();
 		
 		var line = '';
 		

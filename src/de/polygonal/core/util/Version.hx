@@ -34,8 +34,7 @@ import haxe.macro.Expr;
 
 class Version
 {
-	#if haxe3 macro #else @:macro #end
-	public static function build(url:String):Array<Field>
+	macro public static function build(url:String):Array<Field>
 	{
 		Context.registerModuleDependency(Std.string(Context.getLocalClass()), url);
 		

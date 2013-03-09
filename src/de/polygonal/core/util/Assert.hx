@@ -38,29 +38,18 @@ typedef D = de.polygonal.core.util.Assert;
 
 class Assert
 {
-	#if haxe3 macro #else @:macro #end
-	public static function assert(predicate:Expr, ?info:Expr):Expr
+	macro public static function assert(predicate:Expr, ?info:Expr):Expr
 	{
 		if (!Context.defined('debug')) return {expr: EConst(CInt('0')), pos: Context.currentPos()};
 		
 		var error = false;
 		
-		#if haxe3
 		switch (Context.typeof(predicate))
 		{
 			case TAbstract(_, _):
 			default:
 				error = true;
 		}
-		#else
-		switch (Context.typeof(predicate))
-		{
-			case TEnum(t, _):
-				error = t.get().name != 'Bool';
-			default:
-				error = true;
-		}
-		#end
 		
 		if (error) Context.error('predicate should be a boolean', predicate.pos);
 		

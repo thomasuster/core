@@ -49,17 +49,12 @@ class ObserverMacro
 	/**
 	 * The number of bits used for encoding the update type (group & event).
 	 */
-	inline public static var NUM_BITS =
-	#if neko
-	30;
-	#else
-	32;
-	#end
+	inline public static var NUM_BITS = 32;
 	
 	/**
 	 * The number of bits reserved for encoding event ids.
 	 */
-	inline public static var NUM_EVENT_BITS = NUM_BITS - NUM_GROUP_BITS;
+	inline public static var NUM_EVENT_BITS = 32 - NUM_GROUP_BITS;
 	
 	/**
 	 * A bit mask of all possible event bits.
@@ -106,8 +101,7 @@ class ObserverMacro
 	
 	static var _groupCounter = 0;
 	
-	#if haxe3 macro #else @:macro #end
-	public static function create(e:Expr):Array<Field>
+	macro public static function create(e:Expr):Array<Field>
 	{
 		var numBits = Context.defined('neko') ? 30 : 32;
 		NUM_EVENT_BITS = numBits - NUM_GROUP_BITS;
@@ -156,8 +150,7 @@ class ObserverMacro
 		return fields;
 	}
 	
-	#if haxe3 macro #else @:macro #end
-	public static function guid():Array<Field>
+	macro public static function guid():Array<Field>
 	{
 		if (haxe.macro.Context.defined('display')) return null;
 		var c = haxe.macro.Context.getLocalClass().get();

@@ -38,11 +38,7 @@ using Reflect;
 /**
  * <p>Supports tweening of any field of any object.</p>
  */
-#if haxe3
 class GenericTween extends Tween implements TweenTarget
-#else
-class GenericTween extends Tween, implements TweenTarget
-#end
 {
 	var _object:Dynamic;
 	var _fields:Array<String>;

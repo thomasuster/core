@@ -34,8 +34,7 @@ import haxe.macro.Expr;
 
 class StringConstants
 {
-	#if haxe3 macro #else @:macro #end
-	public static function build(e:Expr):Array<Field>
+	macro public static function build(e:Expr):Array<Field>
 	{
 		var pos = Context.currentPos();
 		var fields = Context.getBuildFields();

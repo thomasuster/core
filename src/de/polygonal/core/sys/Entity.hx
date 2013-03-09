@@ -47,11 +47,7 @@ import de.polygonal.core.util.Assert;
 
 @:build(de.polygonal.core.sys.EntityType.gen())
 @:autoBuild(de.polygonal.core.sys.EntityType.gen())
-#if haxe3
 class Entity implements IObserver implements IObservable implements Hashable
-#else
-class Entity implements IObserver, implements IObservable, implements Hashable
-#end
 {
 	inline public static var UPDATE_ANCESTOR_ADD      = BIT_ADD_ANCESTOR;
 	inline public static var UPDATE_ANCESTOR_REMOVE   = BIT_REMOVE_ANCESTOR;

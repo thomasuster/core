@@ -43,22 +43,15 @@ import de.polygonal.core.tween.ease.Ease;
 import de.polygonal.core.tween.ease.EaseFactory;
 import de.polygonal.core.util.Assert;
 import de.polygonal.ds.DA;
-
-#if haxe3
-import haxe.ds.StringMap in Hash;
-#end
+import haxe.ds.StringMap;
 
 /**
  * <p>Interpolates between two states by using an easing equation.</p>
  */
-#if haxe3
 class Tween implements IObservable implements IObserver implements TimelineListener
-#else
-class Tween implements IObservable, implements IObserver, implements TimelineListener
-#end
 {
 	static var _activeTweens:DA<Tween>;
-	static var _map:Hash<Tween>;
+	static var _map:StringMap<Tween>;
 	
 	/**
 	 * Stops and destroys all running tweens.
@@ -241,7 +234,7 @@ class Tween implements IObservable, implements IObserver, implements TimelineLis
 	{
 		if (_key != null)
 		{
-			if (_map == null) _map = new Hash();
+			if (_map == null) _map = new StringMap();
 			if (_map.exists(_key))
 			{
 				//cancel if running

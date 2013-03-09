@@ -32,11 +32,7 @@ package de.polygonal.core.sys;
 #if macro
 import haxe.macro.Context;
 import haxe.macro.Expr;
-
-#if haxe3
-import haxe.ds.StringMap in Hash;
-#end
-
+import haxe.ds.StringMap;
 import haxe.macro.Type;
 #end
 
@@ -49,13 +45,12 @@ class EntityType
 	inline static var CACHE_PATH = 'tmp_entity_type_cache';
 	
 	static var callbackRegistered = false;
-	static var types:Hash<Int> = null;
+	static var types:StringMap<Int> = null;
 	static var cache:String = null;
 	static var next = -1;
 	static var changed = false;
 	
-	#if haxe3 macro #else @:macro #end
-	public static function gen():Array<Field>
+	macro public static function gen():Array<Field>
 	{
 		if (Context.defined('display')) return null;
 		
@@ -84,7 +79,7 @@ class EntityType
 			if (types == null)
 			{
 				//parse cache file and store in types map
-				types = new Hash<Int>();
+				types = new StringMap<Int>();
 				next = -1;
 				for (i in cache.split(';'))
 				{
