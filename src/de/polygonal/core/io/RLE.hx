@@ -30,8 +30,11 @@
 package de.polygonal.core.io;
 
 import de.polygonal.core.math.Limits;
-import de.polygonal.core.math.Mathematics;
-import flash.utils.ByteArray;
+import haxe.io.Bytes;
+import haxe.io.BytesInput;
+import haxe.io.BytesOutput;
+import haxe.io.Eof;
+import haxe.io.Input;
 
 /**
  * <p>Run-length encoder/decoder (RLE).</p>
@@ -39,99 +42,138 @@ import flash.utils.ByteArray;
 class RLE 
 {
 	/**
-	 * Encodes <code>uncoded</code> into a new byte array.
+	 * Encodes <code>uncoded</code> into a new set of bytes
 	 */
-	public static function encode(uncoded:ByteArray):ByteArray
+	public static function encode(uncoded:Input):Bytes
 	{
-		uncoded.position = 0;
-		
-		var encoded = new ByteArray();
+		var encoded = new BytesOutput();
 		var curr, prev = Limits.INT32_MAX;
 		var count = 0;
-		var pos = 0;
-		var len:Int = cast uncoded.length;
 		
-		while (pos < len)
+		try
 		{
-			pos++;
-			curr = uncoded.readByte();
-			encoded.writeByte(curr);
-			
-			if (curr == prev)
+			curr = prev = uncoded.readByte();
+			while (true)
 			{
-				count = 0;
-				while (pos < len)
+				if (curr == prev)
+					count++;
+				else
 				{
-					pos++;
-					curr = uncoded.readByte();
-					if (curr == prev)
+					encoded.writeByte(prev);
+					if (count > 1)
 					{
-						count++;
-						if (count == Limits.UINT8_MAX)
+						encoded.writeByte(prev);
+						count -= 2;
+						while (count >= Limits.UINT8_MAX)
 						{
-							encoded.writeByte(count);
-							prev = Limits.INT32_MAX;
-							break;
+							encoded.writeByte(Limits.UINT8_MAX);
+							count -= Limits.UINT8_MAX;
 						}
-					}
-					else
-					{
 						encoded.writeByte(count);
-						encoded.writeByte(curr);
-						prev = curr;
-						break;
 					}
+					count = 1;
+				}
+				prev = curr;
+				
+				curr = uncoded.readByte();
+			}
+		}
+		catch (end:Eof)
+		{
+			// This is to prevent errors when given an input of zero length
+			if (count > 0)
+			{
+				encoded.writeByte(prev);
+				if (count > 1)
+				{
+					encoded.writeByte(prev);
+					count -= 2;
+					while (count >= Limits.UINT8_MAX)
+					{
+						encoded.writeByte(Limits.UINT8_MAX);
+						count -= Limits.UINT8_MAX;
+					}
+					encoded.writeByte(count);
 				}
 			}
-			else
-				prev = curr;
 		}
 		
-		return encoded;
+		return encoded.getBytes();
 	}
 	
 	/**
-	 * Decodes <code>encoded</code> into a new byte array.
+	 * Decodes <code>encoded</code> into a new set of bytes
 	 */
-	public static function decode(encoded:ByteArray):ByteArray
+	public static function decode(encoded:Input):Bytes
 	{
-		encoded.position = 0;
-		
-		var uncoded = new ByteArray();
+		var uncoded = new BytesOutput();
 		var curr, prev = Limits.INT32_MAX;
 		var count = 0;
-		var pos = 0;
-		var len = Std.int(encoded.length);
 		
-		while (pos < len)
+		try
 		{
-			pos++;
 			curr = encoded.readByte();
-			
-			uncoded.writeByte(curr);
-			
-			if (curr == prev)
+			while (true)
 			{
-				if (pos < len)
+				uncoded.writeByte(curr);
+				if (curr == prev)
 				{
-					pos++;
-					count = encoded.readByte();
+					do
+					{
+						var nCount = count = encoded.readByte();
+						while (nCount > 0)
+						{
+							uncoded.writeByte(curr);
+							nCount--;
+						}
+					}
+					while (count == Limits.UINT8_MAX);
+					curr = Limits.INT32_MAX;
 				}
-				else
-					count = -1;
 				
-				while (count > 0)
-				{
-					uncoded.writeByte(curr);
-					count--;
-				}
-				
-				prev = Limits.INT32_MAX;
-			}
-			else
 				prev = curr;
+				curr = encoded.readByte();
+			}
 		}
-		
-		return uncoded;
+		catch (end:Eof)
+		{
+			
+		}
+		return uncoded.getBytes();
 	}
+	
+	/**
+	 * Encodes <code>uncoded</code> into a string.</br>
+	 * Returns Bytes, instead of string because some platforms(flash) can't handle null characters in strings
+	 */
+	public static inline function encodeString(uncoded:String):Bytes
+	{
+		return encodeBytes(Bytes.ofString(uncoded));
+	}
+	
+	/**
+	 * Decodes <code>encoded</code> into a string.</br>
+	 * Takes Bytes, instead of string because some platforms(flash) can't handle null characters in strings
+	 */
+	public static inline function decodeString(encoded:Bytes):String
+	{
+		return decodeBytes(Bytes.ofString(encoded)).toString();
+	}
+	
+	/**
+	 * Encodes <code>uncoded</code> into a a new set of bytes.
+	 */
+	public static inline function encodeBytes(uncoded:Bytes):Bytes
+	{
+		return encode(new BytesInput(uncoded));
+	}
+	
+	/**
+	 * Decodes <code>encoded</code> into a new set of bytes.
+	 */
+	public static inline function decodeBytes(encoded:Bytes):Bytes
+	{
+		return decode(new BytesInput(encoded));
+	}
+	
 }
