@@ -29,6 +29,7 @@
  */
 package de.polygonal.core.io;
 
+import haxe.ds.Vector;
 import haxe.io.Bytes;
 import haxe.io.BytesData;
 import haxe.io.BytesInput;
@@ -52,13 +53,8 @@ class Base64
 	
 	var BASE64_CHARS:String;
 	
-	#if flash10
-	var BASE64_ENCODE:flash.Vector<Int>;
-	var BASE64_DECODE:flash.Vector<Int>;
-	#else
-	var BASE64_ENCODE:Array<Int>;
-	var BASE64_DECODE:Array<Int>;
-	#end
+	var BASE64_ENCODE:Vector<Int>;
+	var BASE64_DECODE:Vector<Int>;
 	
 	var _buffer:BytesData;
 	var _tmp:BytesData;
@@ -71,13 +67,8 @@ class Base64
 		
 		BASE64_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
 		
-		#if flash10
-		BASE64_ENCODE = new flash.Vector<Int>(BASE64_CHARS.length, true);
-		BASE64_DECODE = new flash.Vector<Int>(127, true);
-		#else
-		BASE64_ENCODE = ArrayUtil.alloc(BASE64_CHARS.length);
-		BASE64_DECODE = ArrayUtil.alloc(127);
-		#end
+		BASE64_ENCODE = new Vector<Int>(BASE64_CHARS.length);
+		BASE64_DECODE = new Vector<Int>(127);
 		for (i in 0...BASE64_CHARS.length)
 		{
 			BASE64_ENCODE[i] = BASE64_CHARS.charCodeAt(i);
