@@ -28,6 +28,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package de.polygonal.core.math.random;
+import haxe.ds.Vector;
 
 /**
  * <p>Mersenne Twister random number generator.</p>
@@ -51,17 +52,12 @@ class Mersenne extends RNG
 	inline static var kUpperMask = 0xffffffff << kR;
 	inline static var kTwistMask = 0x00000001;
 	
-	#if flash10
-		#if alchemy
-		var _stateVector:de.polygonal.ds.mem.IntMemory;
-		var _kMag01:de.polygonal.ds.mem.IntMemory;
-		#else
-		var _stateVector:flash.Vector<Int>;
-		var _kMag01:flash.Vector<Int>;
-		#end
+	#if (flash10 && alchemy)
+	var _stateVector:de.polygonal.ds.mem.IntMemory;
+	var _kMag01:de.polygonal.ds.mem.IntMemory;
 	#else
-	var _stateVector:Array<Int>;
-	var _kMag01:Array<Int>;
+	var _stateVector:Vector<Int>;
+	var _kMag01:Vector<Int>;
 	#end
 	
 	var _currentEntry:Int;
@@ -74,32 +70,20 @@ class Mersenne extends RNG
 		super();
 		
 		_stateVector =
-		#if flash10
-			#if alchemy
-			new de.polygonal.ds.mem.IntMemory(kN);
-			#else
-			new flash.Vector<Int>(kN, true);
-			#end
+		#if (flash10 && alchemy)
+		new de.polygonal.ds.mem.IntMemory(kN);
 		#else
-		new Array<Int>();
+		new Vector<Int>(kN);
 		#end
 		
 		_kMag01 =
-		#if flash10
-			#if alchemy
-			new de.polygonal.ds.mem.IntMemory(2);
-			_kMag01.set(0, 0);
-			_kMag01.set(1, kA);
-			#else
-			new flash.Vector<Int>(2, true);
-			_kMag01[0] = 0;
-			_kMag01[1] = kA;
-			#end
+		#if (flash10 && alchemy)
+		new de.polygonal.ds.mem.IntMemory(2);
 		#else
-		new Array<Int>();
-		_kMag01[0] = 0;
-		_kMag01[1] = kA;
+		new Vector<Int>(2);
 		#end
+		_kMag01.set(0, 0);
+		_kMag01.set(1, kA);
 		
 		setSeed(seed);
 	}
@@ -258,29 +242,17 @@ class Mersenne extends RNG
 	
 	inline function _getMag01(i:Int)
 	{
-		#if (flash10 && alchemy)
 		return _kMag01.get(i);
-		#else
-		return _kMag01[i];
-		#end
 	}
 	
 	inline function _getState(i:Int)
 	{
-		#if (flash10 && alchemy)
 		return _stateVector.get(i);
-		#else
-		return _stateVector[i];
-		#end
 	}
 	
 	inline function _setState(i:Int, x:Int)
 	{
-		#if (flash10 && alchemy)
 		_stateVector.set(i, x);
-		#else
-		_stateVector[i] = x;
-		#end
 	}
 	
 	#if js
