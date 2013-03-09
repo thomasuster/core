@@ -38,6 +38,7 @@ import de.polygonal.ds.Bits;
 import de.polygonal.ds.HashableItem;
 import de.polygonal.ds.ListSet;
 import de.polygonal.ds.pooling.DynamicObjectPool;
+import haxe.ds.Vector;
 
 #if haxe3
 import haxe.ds.IntMap in IntHash;
@@ -676,11 +677,7 @@ class ObserverNode
 	
 	public var all:Bool;
 	
-	#if flash10
-	public var mask:flash.Vector<Int>;
-	#else
-	public var mask:Array<Int>;
-	#end
+	public var mask:Vector<Int>;
 	
 	public function new()
 	{
@@ -690,12 +687,9 @@ class ObserverNode
 		groupBits = 0;
 		all = false;
 		var k = 1 << ObserverMacro.NUM_GROUP_BITS;
-		#if flash10
-		mask = new flash.Vector<Int>(k, true);
-		#else
-		mask = de.polygonal.ds.ArrayUtil.alloc(k);
+		
+		mask = new Vector<Int>(k);
 		for (i in 0...k) mask[i] = 0;
-		#end
 	}
 }
 
