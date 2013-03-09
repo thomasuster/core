@@ -67,7 +67,13 @@ class Limits
 	/**
 	 * Min value, signed integer.
 	 */
-	inline public static var INT32_MIN = 0x80000000;
+	inline public static var INT32_MIN =
+	#if cpp
+	//warning: this decimal constant is unsigned only in ISO C90
+	-0x7fffffff;
+	#else
+	0x80000000;
+	#end
 	
 	/**
 	 * Max value, signed integer.
