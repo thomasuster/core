@@ -158,13 +158,13 @@ class EaseFactory
 			case CircularOut:   return _circularEaseOut;
 			case CircularInOut: return _circularEaseInOut;
 			
-			case BackIn(overshoot):    return overshoot == null ? _backEaseIn    : new BackEaseIn(overshoot);
-			case BackOut(overshoot):   return overshoot == null ? _backEaseOut   : new BackEaseOut(overshoot);
-			case BackInOut(overshoot): return overshoot == null ? _backEaseInOut : new BackEaseInOut(overshoot);
+			case BackIn(overshoot):    return overshoot == .1 ? _backEaseIn    : new BackEaseIn(overshoot);
+			case BackOut(overshoot):   return overshoot == .1 ? _backEaseOut   : new BackEaseOut(overshoot);
+			case BackInOut(overshoot): return overshoot == .1 ? _backEaseInOut : new BackEaseInOut(overshoot);
 			
-			case ElasticIn(period, amplitude):    return (period == null && amplitude == null) ? _elasticEaseIn    : new ElasticEaseIn(amplitude, period);
-			case ElasticOut(period, amplitude):   return (period == null && amplitude == null) ? _elasticEaseOut   : new ElasticEaseOut(amplitude, period);
-			case ElasticInOut(period, amplitude): return (period == null && amplitude == null) ? _elasticEaseInOut : new ElasticEaseInOut(amplitude, period);
+			case ElasticIn(period, amplitude):    return (period == .0 && amplitude == .3) ? _elasticEaseIn    : new ElasticEaseIn(amplitude, period);
+			case ElasticOut(period, amplitude):   return (period == .0 && amplitude == .3) ? _elasticEaseOut   : new ElasticEaseOut(amplitude, period);
+			case ElasticInOut(period, amplitude): return (period == .0 && amplitude == .3) ? _elasticEaseInOut : new ElasticEaseInOut(amplitude, period);
 			
 			case BounceIn:    return _bounceEaseIn;
 			case BounceOut:   return _bounceEaseOut;

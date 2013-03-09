@@ -48,12 +48,12 @@ enum Ease
 	CircularIn;
 	CircularOut;
 	CircularInOut;
-	BackIn(?overshoot:Float);
-	BackOut(?overshoot:Float);
-	BackInOut(?overshoot:Float);
-	ElasticIn(?period:Float, ?amplitude:Float);
-	ElasticOut(?period:Float, ?amplitude:Float);
-	ElasticInOut(?period:Float, ?amplitude:Float);
+	BackIn(overshoot:Float);
+	BackOut(overshoot:Float);
+	BackInOut(overshoot:Float);
+	ElasticIn(period:Float, amplitude:Float);
+	ElasticOut(period:Float, amplitude:Float);
+	ElasticInOut(period:Float, amplitude:Float);
 	BounceIn;
 	BounceOut;
 	BounceInOut;
