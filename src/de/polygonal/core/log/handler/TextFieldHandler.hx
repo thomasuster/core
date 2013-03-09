@@ -57,7 +57,7 @@ class TextFieldHandler extends LogHandler
 		else
 		{
 			_tf = new TextField();
-			_tf.defaultTextFormat = new TextFormat('Consolas', 12);
+			_tf.defaultTextFormat = new TextFormat('Arial', 10);
 			_tf.autoSize = TextFieldAutoSize.LEFT;
 			Lib.current.addChild(_tf);
 		}
