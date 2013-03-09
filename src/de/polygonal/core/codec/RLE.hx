@@ -27,7 +27,7 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package de.polygonal.core.io;
+package de.polygonal.core.codec;
 
 import de.polygonal.core.math.Limits;
 import haxe.io.Bytes;
@@ -157,7 +157,7 @@ class RLE
 	 */
 	public static inline function decodeString(encoded:Bytes):String
 	{
-		return decodeBytes(Bytes.ofString(encoded)).toString();
+		return decodeBytes(Bytes.ofString(encoded.toString())).toString();
 	}
 	
 	/**
