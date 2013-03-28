@@ -226,6 +226,45 @@ class PropertyFile
 		return pairs;
 	}
 	
+	#if !macro
+	public static function ofFile(str:String, obj:Dynamic):Void
+	{
+		var rtti = Reflect.field(obj, '__rtti');
+		var x = Xml.parse(rtti).firstElement();
+		
+		var pairs = parse(str);
+		for (key in pairs.keys())
+		{
+			//resolve type from rtti
+			var e = x.elementsNamed(key).next();
+			var type = e.firstChild().get('path');
+			var param = null;
+			if (type == 'Array') param = e.firstChild().firstChild().get('path');
+			
+			//convert string to real type
+			var value:Dynamic = pairs.get(key);
+			switch (type)
+			{
+				case 'Int':   value = Std.parseInt(value);
+				case 'Float': value = Std.parseFloat(value);
+				case 'Bool':  value = value == 'true';
+				case 'Array': value = value.split(',');
+					switch (param)
+					{
+						case 'Int':   for (i in 0...value.length) value[i] = Std.parseInt(value[i]);
+						case 'Float': for (i in 0...value.length) value[i] = Std.parseFloat(value[i]);
+						case 'Bool' : for (i in 0...value.length) value[i] = value[i] == 'true';
+						case _:
+					}
+				case _:
+			}
+			
+			//trace('value s ' + value);
+			Reflect.setField(obj, key, value);
+		}
+	}
+	#end
+	
 	static function parseLine(str:String):{key:String, val:String}
 	{
 		var i = 0;
