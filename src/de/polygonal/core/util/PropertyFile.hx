@@ -41,7 +41,7 @@ class PropertyFile
 	#if macro
 	static var _url:String;
 	
-	macro public static function build(url:String, staticFields:Bool):Array<Field>
+	macro public static function build(url:String, useStaticFields:Bool, useInline:Bool):Array<Field>
 	{
 		_url = url;
 		
@@ -52,11 +52,11 @@ class PropertyFile
 		var assign = new Array<Expr>();
 		
 		var access = [APublic];
-		if (staticFields)
-		{
+		if (useStaticFields)
 			access.push(AStatic);
+
+		if (useInline)
 			access.push(AInline);
-		}
 		
 		var map = parse(sys.io.File.getContent(url));
 		for (key in map.keys())
@@ -132,7 +132,7 @@ class PropertyFile
 			if (c == null)
 				Context.error('invalid field type', Context.currentPos());
 			
-			if (staticFields)
+			if (useStaticFields)
 				fields.push({name: key, doc: null, meta: [], access: access, kind: FVar(TPath({pack: [], name: n, params: p, sub: null}), {expr: c, pos: pos}), pos: pos});
 			else
 			{
@@ -141,7 +141,7 @@ class PropertyFile
 			}
 		}
 		
-		if (!staticFields) fields.push({name: 'new', doc: null, meta: [], access: [APublic], kind: FFun({args: [], ret: null, expr: {expr: EBlock(assign), pos:pos}, params: []}), pos: pos});
+		if (!useStaticFields) fields.push({name: 'new', doc: null, meta: [], access: [APublic], kind: FFun({args: [], ret: null, expr: {expr: EBlock(assign), pos:pos}, params: []}), pos: pos});
 		return fields;
 	}
 	#end
