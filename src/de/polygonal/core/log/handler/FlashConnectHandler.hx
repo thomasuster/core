@@ -70,7 +70,7 @@ class FlashConnectHandler extends LogHandler
 		super.init();
 		
 		_socket = new XMLSocket();
-		_socket.addEventListener(Event.CONNECT, _onConnect);
+		_socket.addEventListener(Event.CONNECT, onConnect);
 		_socket.addEventListener(DataEvent.DATA, function (e:DataEvent) {});
 		_socket.addEventListener(IOErrorEvent.IO_ERROR, function (e:IOErrorEvent) {});
 		_socket.addEventListener(SecurityErrorEvent.SECURITY_ERROR, function (e:SecurityErrorEvent) {});
@@ -79,16 +79,15 @@ class FlashConnectHandler extends LogHandler
 		_buffer = new ArrayedQueue(MESSAGE_LIMIT);
 	}
 	
-	override public function update(type:Int, source:IObservable, userData:Dynamic):Void 
+	override public function update(type:Int, source:IObservable, userData:Dynamic):Void
 	{
 		super.update(type, source, userData);
-		
 		if (type == TimebaseEvent.TICK)
 		{
 			if (Lib.getTimer() - _time > 50)
 			{
 				_time = Lib.getTimer();
-				_dispatch();
+				dispatch();
 			}
 		}
 	}
@@ -111,10 +110,10 @@ class FlashConnectHandler extends LogHandler
 		
 		if (_buffer.size() == MESSAGE_LIMIT)
 			_buffer.dequeue();
-		_buffer.enqueue(_getMessage(message, flashConnectLevel));
+		_buffer.enqueue(getMessage(message, flashConnectLevel));
 	}
 	
-	function _dispatch():Void
+	function dispatch():Void
 	{
 		if (_buffer.isEmpty()) return;
 		
@@ -125,8 +124,8 @@ class FlashConnectHandler extends LogHandler
 			i++;
 			if (i > MESSAGE_LIMIT)
 			{
-				Timebase.get().detach(this);
-				s += _getMessage('FlashConnect aborted. You have reached the limit of maximum messages.', 3);
+				Timebase.detach(this);
+				s += getMessage('FlashConnect aborted. You have reached the limit of maximum messages.', 3);
 			}
 			s += _buffer.dequeue();
 		}
@@ -134,16 +133,16 @@ class FlashConnectHandler extends LogHandler
 		_socket.send(s);
 	}
 	
-	function _getMessage(message:String, level:Int):String
+	function getMessage(message:String, level:Int):String
 	{
 		return '<message cmd=\'trace\' state=\'' + level + '\'>' + untyped __global__['encodeURI'](message) + '</message>';
 	}
 	
-	function _onConnect(event:Event)
+	function onConnect(event:Event)
 	{
 		_isConnected = true;
-		_dispatch();
-		Timebase.get().attach(this, TimebaseEvent.TICK);
+		dispatch();
+		Timebase.attach(this, TimebaseEvent.TICK);
 		_time = Lib.getTimer();
 	}
 }

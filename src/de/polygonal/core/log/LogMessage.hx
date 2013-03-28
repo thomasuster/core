@@ -37,7 +37,8 @@ class LogMessage
 	public function new() {}
 	
 	public var id:Int;
-	public var data:Dynamic;
+	public var msg:String;
+	public var tag:String;
 	public var outputLevel:Int;
 	public var posInfos:haxe.PosInfos;
 	public var log:Log;

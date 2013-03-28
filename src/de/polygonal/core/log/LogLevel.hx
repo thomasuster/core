@@ -31,15 +31,11 @@ package de.polygonal.core.log;
 
 import de.polygonal.ds.Bits;
 
-using de.polygonal.ds.Bits;
-
 /**
  * <p>A set of standard logging levels that can be used to constrain logging output.</p>
  */
 class LogLevel
 {
-	static var _names = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'OFF'];
-	
 	/**
 	 * A message level providing tracing information.<br/>
 	 * Value 0x01.
@@ -81,6 +77,29 @@ class LogLevel
 	 */
 	inline static public function getName(level:Int):String
 	{
-		return _names[level.ntz()];
+		return
+		switch (Bits.ntz(level))
+		{
+			case 0: 'DEBUG';
+			case 1: 'INFO';
+			case 2: 'WARN';
+			case 3: 'ERROR';
+			case 4: 'OFF';
+			case _: '?';
+		}
+	}
+	
+	inline static public function getShortName(level:Int):String
+	{
+		return
+		switch (Bits.ntz(level))
+		{
+			case 0: 'D';
+			case 1: 'I';
+			case 2: 'W';
+			case 3: 'E';
+			case 4: 'O';
+			case _: '?';
+		}
 	}
 }

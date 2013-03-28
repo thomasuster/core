@@ -30,47 +30,57 @@
 package de.polygonal.core.log.handler;
 
 import de.polygonal.core.log.LogHandler;
+import flash.display.DisplayObjectContainer;
+import flash.events.Event;
 import flash.Lib;
 import flash.text.TextField;
 import flash.text.TextFieldAutoSize;
 import flash.text.TextFormat;
 
+using de.polygonal.ds.BitFlags;
+
 #if !flash
 'The TextFieldHandler class is only available for flash'
 #end
 
-using de.polygonal.ds.BitFlags;
-
-/**
- * <p>Writes logging messages to flashlog.txt using the native flash trace() method.</p>
- */
 class TextFieldHandler extends LogHandler
 {
-	var _tf:TextField;
+	public var tf(default, null):TextField;
 	
-	public function new(tf:TextField = null)
+	public function new(?tf:TextField, ?parent:DisplayObjectContainer)
 	{
 		super();
 		
 		if (tf != null)
-			_tf = tf;
+			this.tf = tf;
 		else
 		{
-			_tf = new TextField();
-			_tf.defaultTextFormat = new TextFormat('Arial', 10);
-			_tf.autoSize = TextFieldAutoSize.LEFT;
-			Lib.current.addChild(_tf);
+			this.tf = tf = new TextField();
+			tf.defaultTextFormat = new TextFormat('Arial', 10);
+			tf.autoSize = TextFieldAutoSize.LEFT;
+			flash.Lib.current.addChild(tf);
 		}
-	}
-	
-	override function init():Void
-	{
-		setf(0);
+		
+		tf.name = 'loghandler';
+		flash.Lib.current.addEventListener(Event.ADDED, onAdded);
 	}
 	
 	override function output(message:String):Void
 	{
-		_tf.appendText(message + '\n');
-		_tf.scrollV = _tf.maxScrollV;
+		tf.appendText(message + '\n');
+		tf.scrollV = tf.maxScrollV;
+	}
+	
+	function onAdded(e:Event):Void
+	{
+		if (tf.parent != null)
+		{
+			if (tf.parent.numChildren > 1)
+			{
+				var topmost = tf.parent.getChildAt(tf.parent.numChildren - 1);
+				if (tf.parent.getChildIndex(tf) < tf.parent.getChildIndex(topmost))
+					tf.parent.swapChildren(tf, topmost);
+			}
+		}
 	}
 }

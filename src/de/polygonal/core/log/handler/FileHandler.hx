@@ -62,11 +62,6 @@ class FileHandler extends LogHandler
 		}
 	}
 	
-	override function init():Void
-	{
-		setf(LogHandler.ID | LogHandler.TIME | LogHandler.LEVEL | LogHandler.LINE | LogHandler.CLASS | LogHandler.CLASS_SHORT | LogHandler.NAME_SHORT | LogHandler.METHOD);
-	}
-	
 	override function output(message:String):Void
 	{
 		if (!_success) return;

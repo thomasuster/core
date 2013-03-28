@@ -30,6 +30,7 @@
 package de.polygonal.core.log;
 
 import de.polygonal.core.event.Observable;
+import de.polygonal.core.util.Assert;
 
 using de.polygonal.ds.Bits;
 
@@ -189,62 +190,115 @@ class Log
 	
 	/**
 	 * Logs a <em>LogLevel.DEBUG</em> message.
-	 * @param x the log message.
+	 * @param msg the log message.
 	 */
 	#if !log inline #end
-	public function debug(x:Dynamic, ?posInfos:haxe.PosInfos):Void
+	public function d(msg:String, ?tag:String, ?posInfos:haxe.PosInfos):Void
 	{
 		#if log
 		if (_observable.size() > 0)
-			if (_mask.hasBits(LogLevel.DEBUG)) output(LogLevel.DEBUG, x, posInfos);
+			if (_mask.hasBits(LogLevel.DEBUG)) output(LogLevel.DEBUG, msg, tag, posInfos);
+		#end
+	}
+	
+	/**
+	 * Logs a <em>LogLevel.DEBUG</em> message.
+	 * @param msg the log message.
+	 */
+	#if !log inline #end
+	public function debug(msg:String, ?tag:String, ?posInfos:haxe.PosInfos):Void
+	{
+		#if log
+		if (_observable.size() > 0)
+			if (_mask.hasBits(LogLevel.DEBUG)) output(LogLevel.DEBUG, msg, tag, posInfos);
 		#end
 	}
 	
 	/**
 	 * Logs a <em>LogLevel.INFO</em> message.
-	 * @param x the log message.
+	 * @param msg the log message.
 	 */
 	#if !log inline #end
-	public function info(x:Dynamic, ?posInfos:haxe.PosInfos):Void
+	public function i(msg:String, ?tag:String, ?posInfos:haxe.PosInfos):Void
 	{
 		#if log
 		if (_observable.size() > 0)
-			if (_mask.hasBits(LogLevel.INFO)) output(LogLevel.INFO, x, posInfos);
+			if (_mask.hasBits(LogLevel.INFO)) output(LogLevel.INFO, msg, tag, posInfos);
+		#end
+	}
+	
+	/**
+	 * Logs a <em>LogLevel.INFO</em> message.
+	 * @param msg the log message.
+	 */
+	#if !log inline #end
+	public function info(msg:String, ?tag:String, ?posInfos:haxe.PosInfos):Void
+	{
+		#if log
+		if (_observable.size() > 0)
+			if (_mask.hasBits(LogLevel.INFO)) output(LogLevel.INFO, msg, tag, posInfos);
 		#end
 	}
 	
 	/**
 	 * Logs a <em>LogLevel.WARN</em> message.
-	 * @param x the log message.
+	 * @param msg the log message.
 	 */
 	#if !log inline #end
-	public function warn(x:Dynamic, ?posInfos:haxe.PosInfos):Void
+	public function w(msg:String, ?tag:String, ?posInfos:haxe.PosInfos):Void
 	{
 		#if log
 		if (_observable.size() > 0)
-			if (_mask.hasBits(LogLevel.WARN)) output(LogLevel.WARN, x, posInfos);
+			if (_mask.hasBits(LogLevel.WARN)) output(LogLevel.WARN, msg, tag, posInfos);
+		#end
+	}
+	
+	/**
+	 * Logs a <em>LogLevel.WARN</em> message.
+	 * @param msg the log message.
+	 */
+	#if !log inline #end
+	public function warn(msg:String, ?tag:String, ?posInfos:haxe.PosInfos):Void
+	{
+		#if log
+		if (_observable.size() > 0)
+			if (_mask.hasBits(LogLevel.WARN)) output(LogLevel.WARN, msg, tag, posInfos);
 		#end
 	}
 	
 	/**
 	 * Logs a <em>LogLevel.ERROR</em> message.
-	 * @param x the log message.
+	 * @param msg the log message.
 	 */
 	#if !log inline #end
-	public function error(x:Dynamic, ?posInfos:haxe.PosInfos):Void
+	public function e(msg:String, ?tag:String, ?posInfos:haxe.PosInfos):Void
 	{
 		#if log
 		if (_observable.size() > 0)
-			if (_mask.hasBits(LogLevel.ERROR)) output(LogLevel.ERROR, x, posInfos);
+			if (_mask.hasBits(LogLevel.ERROR)) output(LogLevel.ERROR, msg, tag, posInfos);
+		#end
+	}
+	
+	/**
+	 * Logs a <em>LogLevel.ERROR</em> message.
+	 * @param msg the log message.
+	 */
+	#if !log inline #end
+	public function error(msg:String, ?tag:String, ?posInfos:haxe.PosInfos):Void
+	{
+		#if log
+		if (_observable.size() > 0)
+			if (_mask.hasBits(LogLevel.ERROR)) output(LogLevel.ERROR, msg, tag, posInfos);
 		#end
 	}
 
-	inline function output(level:Int, x:Dynamic, ?posInfos:haxe.PosInfos):Void
+	inline function output(level:Int, msg:String, tag:String, ?posInfos:haxe.PosInfos):Void
 	{
 		_counter++; if (_counter == 1000) _counter = 0;
 		
 		_logMessage.id          = _counter;
-		_logMessage.data        = x;
+		_logMessage.msg         = msg;
+		_logMessage.tag         = tag;
 		_logMessage.log         = this;
 		_logMessage.outputLevel = level;
 		_logMessage.posInfos    = posInfos;

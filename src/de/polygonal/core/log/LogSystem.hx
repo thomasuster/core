@@ -35,13 +35,14 @@ import haxe.ds.StringMap;
 
 class LogSystem
 {
-	public static var config = {
-			redirectDebugLevelToTrace: true,
-			keepDefaultTrace: true,
-			addDefaultHandler: true,
-			globalHandlers: new Array<LogHandler>(),
-			logFileName: 'out.log'
-		};
+	public static var config =
+	{
+		redirectDebugLevelToTrace: true,
+		keepDefaultTrace: false,
+		addDefaultHandler: true,
+		globalHandlers: new Array<LogHandler>(),
+		logFileName: 'out.log'
+	};
 	
 	public static var log:Log = null;
 	
@@ -50,19 +51,24 @@ class LogSystem
 	
 	public static function init():Void
 	{
-		#if log
 		if (log != null) return;
 		
-		log = createLog('', false);
+		log = createLog('global', false);
 		
 		if (config.addDefaultHandler)
 		{
-			config.globalHandlers.push(createDefaultHandler());
-			
 			var handler = createDefaultHandler();
 			handler.setFormat(handler.getFormat() & ~de.polygonal.core.log.LogHandler.NAME);
+			
 			log.addHandler(handler);
 			for (i in config.globalHandlers) log.addHandler(i);
+			
+			config.globalHandlers.push(createDefaultHandler());
+		}
+		else
+		{
+			for (i in config.globalHandlers)
+				log.addHandler(i);
 		}
 		
 		#if !no_traces
@@ -82,8 +88,7 @@ class LogSystem
 						x = x + ',' + posInfos.customParams.join(',');
 				}
 				
-				for (i in 0..._logList.size())
-					_logList.get(i).debug(x, posInfos);
+				log.debug(x, posInfos);
 				
 				if (keepDefaultTrace) defaultTrace(x, posInfos);
 			}
@@ -93,7 +98,6 @@ class LogSystem
 			if (!config.keepDefaultTrace)
 				haxe.Log.trace = function(x:Dynamic, ?posInfos:haxe.PosInfos):Void {};
 		}
-		#end
 		#end
 	}
 	

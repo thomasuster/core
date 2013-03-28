@@ -31,13 +31,10 @@ package de.polygonal.core.log;
 
 import de.polygonal.core.event.IObservable;
 import de.polygonal.core.event.IObserver;
-import de.polygonal.core.event.Observable;
 import de.polygonal.core.fmt.Sprintf;
 import de.polygonal.core.fmt.StringUtil;
 import de.polygonal.core.log.LogLevel;
 import de.polygonal.core.log.LogMessage;
-import de.polygonal.core.util.Assert;
-import de.polygonal.ds.Bits;
 
 using de.polygonal.ds.BitFlags;
 using de.polygonal.ds.Bits;
@@ -45,82 +42,36 @@ using de.polygonal.ds.Bits;
 /**
  * <p>A log handler receives log messages from a log and exports them to various output devices.</p>
  */
+@:build(de.polygonal.core.util.IntEnum.build(
+[
+	DATE,
+	TIME,
+	LEVEL,
+	NAME,
+	TAG,
+	CLASS,
+	CLASS_SHORT,
+	METHOD,
+	LINE
+], true))
 class LogHandler implements IObserver
 {
-	/**
-	 * Adds the message id.<br/>
-	 * This is a bit flag to be used with <em>setFormat()</em>.
-	 */
-	inline public static var ID = Bits.BIT_01;
+	inline public static var FORMAT_RAW         = 0;
+	inline public static var FORMAT_BRIEF       =               LEVEL | NAME | TAG;
+	inline public static var FORMAT_BRIEF_INFOS =               LEVEL | NAME | TAG | LINE | CLASS | CLASS_SHORT | METHOD;
+	inline public static var FORMAT_FULL        = DATE | TIME | LEVEL | NAME | TAG | LINE | CLASS | CLASS_SHORT | METHOD;
 	
-	/**
-	 * Adds a prefix string to the logging message.<br/>
-	 * This is a bit flag to be used with <em>setFormat()</em>.
-	 */
-	inline public static var PREFIX = Bits.BIT_02;
-	
-	/**
-	 * Adds a time stamp to the logging message.<br/>
-	 * This is a bit flag to be used with <em>setFormat()</em>.
-	 */
-	inline public static var TIME = Bits.BIT_03;
-	
-	/**
-	 * Adds the name of the log level to the logging message.<br/>
-	 * This is a bit flag to be used with <em>setFormat()</em>.
-	 */
-	inline public static var LEVEL = Bits.BIT_04;
-	
-	/**
-	 * Adds the fully qualified log name to the logging message.<br/>
-	 * This is a bit flag to be used with <em>setFormat()</em>.
-	 */
-	inline public static var NAME = Bits.BIT_05;
-	
-	/**
-	 * Adds the short log name to the logging message.<br/>
-	 * This is a bit flag to be used with <em>setFormat()</em>.
-	 */
-	inline public static var NAME_SHORT = Bits.BIT_06;
-	
-	/**
-	 * Adds the line number that contains the log statement to the logging message.<br/>
-	 * This is a bit flag to be used with <em>setFormat()</em>.
-	 */
-	inline public static var LINE = Bits.BIT_07;
-	
-	/**
-	 * Adds the fully qualified class name of the class containing the log statement to the logging message.<br/>
-	 * This is a bit flag to be used with <em>setFormat()</em>.
-	 */
-	inline public static var CLASS = Bits.BIT_08;
-	
-	/**
-	 * Adds the short name of the class containing the log statement to the logging message.<br/>
-	 * This is a bit flag to be used with <em>setFormat()</em>.
-	 */
-	inline public static var CLASS_SHORT = Bits.BIT_09;
-	
-	/**
-	 * Adds the name of the method containing the log statement to the logging message.<br/>
-	 * This is a bit flag to be used with <em>setFormat()</em>.
-	 */
-	inline public static var METHOD = Bits.BIT_10;
+	public static var DEFAULT_FORMAT = FORMAT_BRIEF_INFOS;
 	
 	var _level:Int;
 	var _mask:Int;
-	var _prefix:String;
-	var _separator:String;
 	var _message:LogMessage;
-
 	var _bits:Int;
-
+	
 	function new()
 	{
 		_level     = 0;
 		_mask      = 0;
-		_prefix    = '';
-		_separator = '';
 		_message   = null;
 		_bits      = 0;
 		
@@ -205,16 +156,6 @@ class LogHandler implements IObserver
 	}
 	
 	/**
-	 * Defines a prefix string that is included in every log message.<br/>
-	 * Only used if the <em>LogHandler.PREFIX</em> flag is set.
-	 */
-	public function setPrefix(x:String):Void
-	{
-		_prefix = x;
-		setf(PREFIX);
-	}
-	
-	/**
 	 * The current logging format encoded as a bitfield.
 	 */
 	public function getFormat():Int
@@ -232,8 +173,7 @@ class LogHandler implements IObserver
 	 * {
 	 *     static function main() {
 	 *         var handler = new TraceHandler();
-	 *         //add a time stamp and log name to a logging message, separated by a single SPACE character.
-	 *         handler.setFormat(LogHandler.TIME | LogHandler.NAME, " ");</pre>
+	 *         handler.setFormat(LogHandler.TIME | LogHandler.NAME);</pre>
 	 *     }
 	 * }</pre>
 	 */
@@ -241,7 +181,6 @@ class LogHandler implements IObserver
 	{
 		if (flags == 0) nulf();
 		_bits = flags;
-		_separator = sep;
 	}
 	
 	public function update(type:Int, source:IObservable, userData:Dynamic):Void
@@ -253,108 +192,144 @@ class LogHandler implements IObserver
 				output(format());
 		}
 	}
-
+	
 	function format():String
 	{
-		var data = _message.data;
+		var args:Array<String> = [];
+		var vals:Array<Dynamic> = [];
 		
-		if (Std.is(data, String))
+		var fmt, val;
+		
+		//date & time
+		fmt = '%s';
+		val = '';
+		if (hasf(DATE | TIME))
 		{
-			var s:String = data;
-			if (s.indexOf('\n') != -1)
-			{
-				if (s.indexOf('\r') != -1) s = s.split('\r').join('');
-				var tmp = [];
-				for (i in s.split('\n'))
-					if (i != '') tmp.push(i);
-				data = '\n' + tmp.join('\n');
-			}
+			var date = Date.now().toString();
+			if (getf(DATE | TIME) == DATE | TIME)
+				val = date.substr(5); //mm-dd hh:mm:ss
+			else
+			if (hasf(TIME))
+				val = date.substr(11); //hh:mm:ss
+			else
+				val = date.substr(5, 5); //mm-dd
 		}
+		args.push(fmt);
+		vals.push(val);
 		
-		var idFormat = '%s';
-		var id = '';
-		if (hasf(ID)) id = Sprintf.format('%03d ', [_message.id]);
-		
-		var prefix = '';
-		var prefixFormat = '%s';
-		
-		if (hasf(PREFIX))
-		{
-			prefix = _prefix;
-			prefixFormat = '%s ';
-		}
-		
-		var time = '';
-		var timeFormat = '%s';
-		
-		if (hasf(TIME))
-		{
-			time = Date.now().toString();
-			time = time.substr(time.lastIndexOf(' ') + 1);
-			timeFormat = '%s ';
-		}
-		
-		var level = '';
-		var levelFormat = '%s';
-		
+		//level
+		fmt = '%s';
+		val = '';
 		if (hasf(LEVEL))
 		{
-			level = LogLevel.getName(_message.outputLevel);
-			levelFormat = '%-5s ';
+			val = LogLevel.getShortName(_message.outputLevel);
+			if (hasf(DATE | TIME)) fmt = ' %s';
 		}
+		args.push(fmt);
+		vals.push(val);
 		
-		var name = '';
-		var nameFormat = '%s';
-		
+		//log name
+		fmt = '%s';
+		val = '';
 		if (hasf(NAME))
 		{
-			name = _message.log.name;
-			nameFormat = '%-20s ';
-			if (hasf(NAME_SHORT))
-			{
-				var i = name.lastIndexOf('.');
-				if (i != -1) name = name.substr(i + 1);
-			}
-			if (name.length > 20)
-				name = StringUtil.ellipsis(name, 20, true);
+			if (hasf(LEVEL)) fmt = '/%s';
+			val = _message.log.name;
 		}
+		args.push(fmt);
+		vals.push(val);
 		
-		var line = '';
-		var lineFormat = '%s';
-		
-		if (hasf(LINE))
-			line = Sprintf.format('l%04d ', [_message.posInfos.lineNumber]);
-		
-		var classMethod = '';
-		var classMethodFormat = '%s';
-		
-		if (hasf(CLASS | METHOD))
+		//message tag
+		fmt = '%s';
+		val = '';
+		if (hasf(TAG))
 		{
-			classMethodFormat = '%-30s';
-			classMethod = _message.posInfos.className;
-			if (hasf(CLASS_SHORT))
-				classMethod = classMethod.substr(classMethod.lastIndexOf('.') + 1);
+			if (_message.tag != null)
+			{
+				val = _message.tag;
+				fmt = '/%s';
+			}
+		}
+		args.push(fmt);
+		vals.push(val);
+		
+		//position infos
+		fmt = '%s';
+		if (hasf(CLASS | METHOD | LINE))
+		{
+			fmt = '(';
 			
-			if (incf(CLASS | METHOD))
-				classMethod = classMethod + '.' + _message.posInfos.methodName + '() ';
-			else
 			if (hasf(CLASS))
-				classMethod = classMethod + ' ';
-			else
-				classMethod = _message.posInfos.methodName + '() ';
+			{
+				var className = _message.posInfos.className;
+				if (hasf(CLASS_SHORT))
+					className = className.substr(className.lastIndexOf('.') + 1);
+				if (className.length > 30)
+					className = StringUtil.ellipsis(className, 30, true);
 				
-			if (classMethod.length > 30)
-				classMethod = StringUtil.ellipsis(classMethod, 30, true);
+				fmt += '%s';
+				vals.push(className);
+			}
+			
+			if (hasf(METHOD))
+			{
+				var methodName = _message.posInfos.methodName;
+				if (methodName.length > 30) methodName = StringUtil.ellipsis(methodName, 30, true);
+				
+				fmt += hasf(CLASS) ? '.%s' : '%s';
+				vals.push(methodName);
+			}
+			
+			if (hasf(LINE))
+			{
+				fmt += hasf(CLASS | METHOD) ? ' %04d' : '%04d';
+				vals.push(_message.posInfos.lineNumber);
+			}
+			
+			fmt += ')';
+		}
+		else
+			vals.push('');
+		args.push(fmt);
+		
+		//message
+		fmt = _bits == 0 ? '%s' : ': %s';
+		val = _message.msg;
+		var s = val;
+		if (s.indexOf('\n') != -1)
+		{
+			var pre = '';
+			if (hasf(LEVEL))
+				pre = LogLevel.getShortName(_message.outputLevel);
+			if (hasf(NAME))
+			{
+				if (hasf(LEVEL))
+					pre += '/';
+				pre += _message.log.name;
+			}
+			if (hasf(TAG))
+				if (_message.tag != null)
+					pre += '/' + _message.tag;
+			
+			if (s.indexOf('\r') != -1)
+				s = s.split('\r').join('');
+			var tmp = [];
+			for (i in s.split('\n'))
+				if (i != '') tmp.push(i);
+			
+			val = '\n' + pre + ': ' + tmp.join('\n' + pre + ': ');
 		}
 		
-		var format = Sprintf.format('%s%s%s%s%s%s%s%%s', [idFormat, prefixFormat, timeFormat, levelFormat, nameFormat, lineFormat, classMethodFormat]);
-		return Sprintf.format(format, [id, prefix, time, level, name, line, classMethod, data]);
+		args.push(fmt);
+		vals.push(val);
+		
+		return Sprintf.format(args.join(''), vals);
 	}
 	
-	function output(data:String):Void {}
+	function output(msg:String):Void {}
 	
 	function init():Void
 	{
-		setf(LogHandler.NAME | LogHandler.LEVEL | LogHandler.LINE | LogHandler.CLASS | LogHandler.CLASS_SHORT | LogHandler.NAME_SHORT | LogHandler.METHOD);
+		_bits = DEFAULT_FORMAT;
 	}
 }
