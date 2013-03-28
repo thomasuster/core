@@ -323,7 +323,7 @@ class Timebase
 			if (_accumulator > _accumulatorLimit)
 			{
 				#if verbose
-				Root.warn(Sprintf.format('accumulator clamped from %.2f to %.2f seconds', [_accumulator, _accumulatorLimit]));
+				L.d(Sprintf.format('accumulator clamped from %.2f to %.2f seconds', [_accumulator, _accumulatorLimit]), 'core');
 				#end
 				observable.notify(TimebaseEvent.CLAMP, _accumulator);
 				_accumulator = _accumulatorLimit;
@@ -348,7 +348,9 @@ class Timebase
 			gameTimeDelta = dt * timeScale;
 			gameTime += gameTimeDelta;
 			observable.notify(TimebaseEvent.TICK, gameTimeDelta);
+			processedTicks++;
 			observable.notify(TimebaseEvent.RENDER, 1.);
+			processedFrames++;
 		}
 	}
 	
