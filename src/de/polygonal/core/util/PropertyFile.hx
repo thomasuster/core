@@ -64,7 +64,7 @@ class PropertyFile
 			{
 				var arrExpr = [];
 				var arrType;
-				var tmp:Array<String> = val.split(',');
+				var tmp = val.split(',');
 				
 				if (tmp[0].indexOf('.') != -1)
 				{
@@ -100,7 +100,7 @@ class PropertyFile
 				}
 				else
 				{
-					c = EConst(CFloat(val));
+					c = EConst(CFloat(StringTools.trim(val)));
 					n = 'Float';
 				}
 			}
@@ -120,7 +120,7 @@ class PropertyFile
 				}
 				else
 				{
-					c = EConst(CInt(val));
+					c = EConst(CInt(StringTools.trim(val)));
 					n = 'Int';
 				}
 			}
