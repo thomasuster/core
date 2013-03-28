@@ -29,6 +29,8 @@
  */
 package de.polygonal.core.util;
 
+import haxe.CallStack;
+
 class AssertError 
 {
 	public var message:String;
@@ -37,7 +39,8 @@ class AssertError
 	{
 		this.message = message;
 		throw 'Assertation ' + (message == null ? '' : message + ' ') + 'failed in file ' +
-			info.fileName + 'line ' + info.lineNumber + ', ' + info.className + '::' + info.methodName;
+			info.fileName + 'line ' + info.lineNumber + ', ' + info.className + '::' + info.methodName + '\nCall stack:' +
+			CallStack.toString(CallStack.callStack());
 	}
 	
 	public function toString():String
