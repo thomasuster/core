@@ -53,10 +53,11 @@ class PropertyFile
 		
 		var access = [APublic];
 		if (useStaticFields)
+		{
 			access.push(AStatic);
-
-		if (useInline)
-			access.push(AInline);
+			if (useInline)
+				access.push(AInline);
+		}
 		
 		var map = parse(sys.io.File.getContent(url));
 		for (key in map.keys())
@@ -229,14 +230,19 @@ class PropertyFile
 	#if !macro
 	public static function ofFile(str:String, obj:Dynamic):Void
 	{
-		var rtti = Reflect.field(obj, '__rtti');
-		var x = Xml.parse(rtti).firstElement();
+		var isInst = Type.getClass(obj) != null;
+		
+		var rtti = Reflect.field(isInst ? Type.getClass(obj) : obj, '__rtti');
+		if (rtti == null)
+			throw '@:rtti metadata required';
+		
+		var xml = Xml.parse(rtti).firstElement();
 		
 		var pairs = parse(str);
 		for (key in pairs.keys())
 		{
 			//resolve type from rtti
-			var e = x.elementsNamed(key).next();
+			var e = xml.elementsNamed(key).next();
 			var type = e.firstChild().get('path');
 			var param = null;
 			if (type == 'Array') param = e.firstChild().firstChild().get('path');
@@ -259,7 +265,6 @@ class PropertyFile
 				case _:
 			}
 			
-			//trace('value s ' + value);
 			Reflect.setField(obj, key, value);
 		}
 	}
