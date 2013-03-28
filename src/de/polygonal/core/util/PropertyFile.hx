@@ -39,8 +39,12 @@ import haxe.macro.Expr;
 class PropertyFile
 {
 	#if macro
+	static var _url:String;
+	
 	macro public static function build(url:String, staticFields:Bool):Array<Field>
 	{
+		_url = url;
+		
 		Context.registerModuleDependency(Std.string(Context.getLocalClass()), url);
 		var pos = Context.currentPos();
 		
@@ -150,8 +154,26 @@ class PropertyFile
 	{
 		var pairs = new StringMap<String>();
 		
-		var line = '';
+		function add(pair)
+		{
+			if (pair != null)
+			{
+				if (pairs.exists(pair.key))
+				{
+					var msg = 'found duplicate key: ' + pair.key;
+					#if macro
+					var min = str.indexOf(pair.key, str.indexOf(pair.key) + 1);
+					var max = min + pair.key.length;
+					Context.error(msg, Context.makePosition({min: min, max: max, file: _url}));
+					#else
+					throw msg;
+					#end
+				}
+				pairs.set(pair.key, pair.val);
+			}
+		}
 		
+		var line = '';
 		var i = 0;
 		var k = str.length - 1;
 		while (i < k)
@@ -166,16 +188,14 @@ class PropertyFile
 					i++;
 					if (str.charAt(i - 3) != '\\')
 					{
-						var pair = parseLine(line);
-						if (pair != null) pairs.set(pair.key, pair.val);
+						add(parseLine(line));
 						line = '';
 					}
 				}
 				else
 				if (str.charAt(i - 2) != '\\')
 				{
-					var pair = parseLine(line);
-					if (pair != null) pairs.set(pair.key, pair.val);
+					add(parseLine(line));
 					line = '';
 				}
 			}
@@ -184,8 +204,7 @@ class PropertyFile
 			{
 				if (str.charAt(i - 2) != '\\')
 				{
-					var pair = parseLine(line);
-					if (pair != null) pairs.set(pair.key, pair.val);
+					add(parseLine(line));
 					line = '';
 				}
 			}
@@ -196,9 +215,7 @@ class PropertyFile
 		}
 		
 		line += str.charAt(k);
-		
-		var pair = parseLine(line);
-		if (pair != null) pairs.set(pair.key, pair.val);
+		add(parseLine(line));
 		
 		return pairs;
 	}
