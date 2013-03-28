@@ -76,6 +76,12 @@ class PropertyFile
 					arrType = 'Float';
 				}
 				else
+				if (tmp[0] == 'false' || tmp[0] == 'true')
+				{
+					for (i in tmp) arrExpr.push({expr: EConst(CIdent(Std.string(i))), pos: pos});
+					arrType = 'Bool';
+				}
+				else
 				{
 					var int = Std.parseInt(tmp[0]);
 					if (int == null)
