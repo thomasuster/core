@@ -199,7 +199,7 @@ class Sprintf
 	 * The argument array length should match the number of %-tags that expect a value.
 	 * @return the formatted string.
 	 */
-	@:macro public static function format(_fmt:ExprOf<String>, _passedArgs:Array<Expr>):ExprOf<String>
+	macro public static function format(_fmt:ExprOf<String>, _passedArgs:Array<Expr>):ExprOf<String>
 	{
 		var error = false;
 		switch(Context.typeof(_fmt))
