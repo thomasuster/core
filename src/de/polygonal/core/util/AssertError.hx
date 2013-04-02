@@ -38,7 +38,7 @@ class AssertError
 	public function new(?message:String, ?info:haxe.PosInfos)
 	{
 		this.message = message;
-		throw 'Assertation ' + (message == null ? '' : message + ' ') + 'failed in file ' +
+		throw 'Assertation ' + (message == null ? '' : '"' + message + '" ') + 'failed in file ' +
 			info.fileName + 'line ' + info.lineNumber + ', ' + info.className + '::' + info.methodName + '\nCall stack:' +
 			CallStack.toString(CallStack.callStack());
 	}
