@@ -46,7 +46,7 @@ class ElasticEaseIn implements Interpolation<Float>
 	 * @param amplitude wave amplitude. Default value equals zero.
 	 * @param period wave period. Default value equals 0.3.
 	 */
-	public function new(amplitude = .0, period = .3)
+	public function new(amplitude = 0., period = .3)
 	{
 		_amplitude = amplitude;
 		_period    = period;

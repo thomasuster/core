@@ -296,6 +296,8 @@ class Log
 	{
 		_counter++; if (_counter == 1000) _counter = 0;
 		
+		if (msg == null) msg = 'null';
+		
 		_logMessage.id          = _counter;
 		_logMessage.msg         = msg;
 		_logMessage.tag         = tag;

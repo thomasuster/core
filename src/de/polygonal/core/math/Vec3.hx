@@ -90,7 +90,7 @@ class Vec3 implements Cloneable<Vec3>
 	 */
 	public var w:Float;
 	
-	public function new(x = .0, y = .0, z = .0, w = 1.)
+	public function new(x = 0., y = 0., z = 0., w = 1.)
 	{
 		this.x = x;
 		this.y = y;

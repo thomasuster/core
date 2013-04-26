@@ -416,23 +416,23 @@ private class TimeInterval implements Heapable<TimeInterval> implements Cloneabl
 	var position:Int;
 	var observable:Observable;
 	
-	public function new()
+	function new()
 	{
 		observable = Timeline.observable;
 		poolId = -1;
 	}
 	
-	inline public function getRatio():Float
+	inline function getRatio():Float
 	{
 		return (ageTicks - spawnTicks) / getLife();
 	}
 	
-	inline public function getLife():Int
+	inline function getLife():Int
 	{
 		return (dieTicks - spawnTicks);
 	}
 	
-	inline public function rise():Void
+	inline function rise():Void
 	{
 		var delayTicks = getLife() + ticks;
 		spawnTicks += delayTicks;
@@ -446,27 +446,27 @@ private class TimeInterval implements Heapable<TimeInterval> implements Cloneabl
 		}
 	}
 	
-	inline public function cancel():Void
+	inline function cancel():Void
 	{
 		ageTicks = -1;
 	}
 	
-	inline public function isCancelled():Bool
+	inline function isCancelled():Bool
 	{
 		return ageTicks == -1;
 	}
 	
-	inline public function doRepeat():Bool
+	inline function doRepeat():Bool
 	{
 		return iterations != 0;
 	}
 	
-	inline public function reuse():Void
+	inline function reuse():Void
 	{
 		if (poolId != -1) Timeline._intervalPool.put(poolId);
 	}
 	
-	inline public function onBlip():Void 
+	inline function onBlip():Void 
 	{
 		setCurrentInterval();
 		if (listener != null)
@@ -475,7 +475,7 @@ private class TimeInterval implements Heapable<TimeInterval> implements Cloneabl
 			observable.notify(TimelineEvent.BLIP, id);
 	}
 	
-	inline public function onStart():Void 
+	inline function onStart():Void 
 	{
 		setCurrentInterval();
 		if (listener != null)
@@ -484,7 +484,7 @@ private class TimeInterval implements Heapable<TimeInterval> implements Cloneabl
 			observable.notify(TimelineEvent.INTERVAL_START, id);
 	}
 	
-	inline public function onProgress(alpha:Float):Void
+	inline function onProgress(alpha:Float):Void
 	{
 		setCurrentInterval();
 		if (listener != null)
@@ -493,7 +493,7 @@ private class TimeInterval implements Heapable<TimeInterval> implements Cloneabl
 			observable.notify(TimelineEvent.INTERVAL_PROGRESS, id);
 	}
 	
-	inline public function onEnd():Void 
+	inline function onEnd():Void 
 	{
 		setCurrentInterval();
 		if (listener != null)
@@ -502,7 +502,7 @@ private class TimeInterval implements Heapable<TimeInterval> implements Cloneabl
 			observable.notify(TimelineEvent.INTERVAL_END, id);
 	}
 	
-	inline public function onCancel():Void 
+	inline function onCancel():Void 
 	{
 		setCurrentInterval();
 		if (listener != null)
@@ -511,13 +511,13 @@ private class TimeInterval implements Heapable<TimeInterval> implements Cloneabl
 			observable.notify(TimelineEvent.CANCEL, id);
 	}
 	
-	public function compare(other:TimeInterval):Int
+	function compare(other:TimeInterval):Int
 	{
 		var dt = other.ageTicks - ageTicks;
 		return dt == 0 ? (other.subTicks - subTicks) : dt;
 	}
 	
-	public function clone():TimeInterval
+	function clone():TimeInterval
 	{
 		var interval = new TimeInterval();
 		interval.id = id;
@@ -530,7 +530,7 @@ private class TimeInterval implements Heapable<TimeInterval> implements Cloneabl
 		return interval;
 	}
 	
-	public function toString():String
+	function toString():String
 	{
 		var s = '';
 		if (iterations == -1)

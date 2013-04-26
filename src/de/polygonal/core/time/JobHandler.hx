@@ -38,7 +38,7 @@ class JobHandler implements IObserver
 	var _id:Int;
 	var _job:Job;
 	
-	public function new(job:Job, duration:Float, delay = .0)
+	public function new(job:Job, duration:Float, delay = 0.)
 	{
 		_timeline = Timeline.get();
 		_timeline.attach(this);

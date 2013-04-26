@@ -43,7 +43,7 @@ class RWA
 	public function new(bias:Float)
 	{
 		_bias = bias;
-		_value = .0;
+		_value = 0.;
 	}
 	
 	/**

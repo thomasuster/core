@@ -43,12 +43,12 @@ class Delay implements TimelineListener
 	public function new(f:Void->Void, delaySeconds:Float)
 	{
 		_f = f;
-		_id = Timeline.get().schedule(this, 0, delaySeconds);
+		_id = Timeline.schedule(this, 0, delaySeconds);
 	}
 	
 	public function cancel():Void
 	{
-		Timeline.get().cancel(_id);
+		Timeline.cancel(_id);
 		_f = null;
 	}
 	

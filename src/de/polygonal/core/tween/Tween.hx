@@ -158,9 +158,7 @@ class Tween implements IObservable implements IObserver implements TimelineListe
 	var _yoyo:Bool;
 	var _repeat:Int;
 	var _onComplete:Void->Void;
-	
 	var _observable:Observable;
-	var _timeline:Timeline;
 	
 	/**
 	 * @param key assigning a key makes it possible to reuse this <em>Tween</em> object later on by calling <em>Tween</em>.getKey(<code>key</code>).<br/>
@@ -188,28 +186,25 @@ class Tween implements IObservable implements IObserver implements TimelineListe
 		_delay       = 0;
 		_interpolate = interpolateState;
 		_observable  = null;
-		_timeline    = Timeline.get();
 		_yoyo        = false;
 		_repeat      = 0;
 	}
 	
 	public function free():Void
 	{
-		if (_timeline == null) return;
+		if (_observable == null) return;
 		if (_activeTweens != null) _activeTweens.remove(this);
-		_timeline.detach(this);
-		_timeline.cancel(_id);
+		Timeline.detach(this);
+		Timeline.cancel(_id);
 		if (_interpolate) Timebase.detach(this);
 		if (_key != null && _map != null) _map.remove(_key);
 		if (_observable != null) _observable.free();
 		_id         = -1;
 		_key        = null;
 		_target     = null;
-		_timeline   = null;
 		_ease       = null;
 		_onComplete = null;
 		_observable = null;
-		_timeline   = null;
 	}
 	
 	/**
@@ -249,7 +244,7 @@ class Tween implements IObservable implements IObserver implements TimelineListe
 		if (onComplete != null)
 			_onComplete = onComplete;
 		
-		_id = _timeline.schedule(this, _duration, _delay);
+		_id = Timeline.schedule(this, _duration, _delay);
 		return this;
 	}
 	
@@ -304,8 +299,8 @@ class Tween implements IObservable implements IObserver implements TimelineListe
 	
 	public function cancel():Tween
 	{
-		if (_timeline == null) return this;
-		_timeline.cancel(_id);
+		if (_observable == null) return this;
+		Timeline.cancel(_id);
 		_id = 1;
 		if (_interpolate) Timebase.detach(this);
 		return this;
@@ -338,7 +333,7 @@ class Tween implements IObservable implements IObserver implements TimelineListe
 	
 	function onStart():Void
 	{
-		if (_activeTweens == null) _activeTweens = new DA();
+		if (_activeTweens == null) _activeTweens = new DA<Tween>();
 		_activeTweens.pushBack(this);
 		if (_interpolate) Timebase.attach(this, TimebaseEvent.RENDER);
 		_a = _b = _min;

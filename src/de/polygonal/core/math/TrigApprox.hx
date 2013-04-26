@@ -148,16 +148,16 @@ class TrigApprox
 		#end
 		
 		var t = M.fabs(y);
-		if (x >= .0)
+		if (x >= 0.)
 		{
-			if (y < .0)
+			if (y < 0.)
 				return-(M.PI_OVER_4 - M.PI_OVER_4 * ((x - t) / (x + t)));
 			else
 				return (M.PI_OVER_4 - M.PI_OVER_4 * ((x - t) / (x + t)));
 		}
 		else
 		{
-			if (y < .0)
+			if (y < 0.)
 				return-((3. * M.PI_OVER_4) - M.PI_OVER_4 * ((x + t) / (t - x)));
 			else
 				return ((3. * M.PI_OVER_4) - M.PI_OVER_4 * ((x + t) / (t - x)));

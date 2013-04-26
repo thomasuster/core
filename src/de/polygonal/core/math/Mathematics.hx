@@ -42,7 +42,7 @@ class Mathematics
 	#if !flash
 	public static var NaN = Math.NaN;
 	#else
-	inline public static var NaN = .0 / .0;
+	inline public static var NaN = 0. / 0.;
 	#end
 	/**
 	 * IEEE 754 positive infinity.
@@ -50,7 +50,7 @@ class Mathematics
 	#if !flash
 	public static var POSITIVE_INFINITY = Math.POSITIVE_INFINITY;
 	#else
-	inline public static var POSITIVE_INFINITY = 1. / .0;
+	inline public static var POSITIVE_INFINITY = 1. / 0.;
 	#end
 	/**
 	 * IEEE 754 negative infinity.
@@ -58,7 +58,7 @@ class Mathematics
 	#if !flash
 	public static var NEGATIVE_INFINITY = Math.NEGATIVE_INFINITY;
 	#else
-	inline public static var NEGATIVE_INFINITY = -1. / .0;
+	inline public static var NEGATIVE_INFINITY = -1. / 0.;
 	#end
 	
 	/**
