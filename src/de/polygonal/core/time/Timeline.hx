@@ -288,50 +288,6 @@ class Timeline
 	}
 	
 	/**
-	 * Binds a function <code>f</code> to an interval; <code>f</code> is invoked while the interval is running.
-	 * @param f the first parameter stores the interpolation parameter in the interval <arg>&#091;0, 1&#093;</arg>.
-	 * @param id the interval id returned by <em>Timeline.get().schedule()</em>.
-	 */
-	public static function bind(f:Float->Bool, id:Int):Void
-	{
-		if (!_initialized) init();
-		
-		var o = Observable.delegate
-		(
-			function(type, source, userData)
-			{
-				if (id == userData)
-					if (type == TimelineEvent.CANCEL || !f(Timeline.progress)) return false;
-				return true;
-			}
-		);
-		
-		observable.attach(o);
-	}
-	
-	/**
-	 * Binds a function <code>f</code> to an interval; <code>f</code> is invoked when the interval completes.
-	 * @param id the interval id returned by <em>Timeline.get().schedule()</em>.
-	 */
-	public static function onComplete(f:Void->Void, id:Int):Void
-	{
-		if (!_initialized) init();
-		
-		var o = Observable.delegate(
-			function(type, source, userData)
-			{
-				if (id == userData)
-				{
-					f();
-					return false;
-				}
-				return true;
-			});
-		
-		observable.attach(o, TimelineEvent.CANCEL | TimelineEvent.INTERVAL_END);
-	}
-	
-	/**
 	 * Updates the timeline.
 	 */
 	public static function advance():Void
