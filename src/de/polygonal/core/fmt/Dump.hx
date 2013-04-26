@@ -35,27 +35,6 @@ package de.polygonal.core.fmt;
 class Dump
 {
 	/**
-	 * Dumps the flash stack.
-	 */
-	#if flash
-	public static function stack():String
-	{
-		var s = '';
-		try
-		{
-			throw new flash.errors.Error();
-		}
-		catch (e:flash.errors.Error)
-		{
-			var frames = e.getStackTrace().split('\n\tat ').slice(2);
-			for (i in 0...frames.length) frames[i] = '+ ' + frames[i];
-			s = 'STACK\n' + frames.join('\n');
-		}
-		return s;
-	}
-	#end
-	
-	/**
 	 * Returns a human-readable representation of the object <code>o</code>.
 	 */
 	public static function object(o:Dynamic):String
