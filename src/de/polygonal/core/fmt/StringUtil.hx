@@ -202,4 +202,15 @@ class StringUtil
 			s += chars.charAt(Random.randRange(0, chars.length - 1));
 		return s;
 	}
+	
+	/**
+	 * Returns true if <code>x</code> is latin script only.
+	 */
+	public static function isLatin(x:String):Bool
+	{
+		for (i in 0...x.length)
+			if (x.charCodeAt(i) > 0x036F)
+				return false;
+		return true;
+	}
 }
