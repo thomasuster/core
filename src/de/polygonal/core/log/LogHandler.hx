@@ -35,6 +35,7 @@ import de.polygonal.core.fmt.Sprintf;
 import de.polygonal.core.fmt.StringUtil;
 import de.polygonal.core.log.LogLevel;
 import de.polygonal.core.log.LogMessage;
+import de.polygonal.core.util.Assert;
 
 using de.polygonal.ds.BitFlags;
 using de.polygonal.ds.Bits;

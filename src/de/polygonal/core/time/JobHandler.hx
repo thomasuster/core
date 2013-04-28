@@ -29,51 +29,50 @@
  */
 package de.polygonal.core.time;
 
-import de.polygonal.core.event.IObservable;
-import de.polygonal.core.event.IObserver;
-
-class JobHandler implements IObserver
+class JobHandler implements TimelineListener
 {
-	var _timeline:Timeline;
-	var _id:Int;
+	var _jobId:Int;
 	var _job:Job;
 	
 	public function new(job:Job, duration:Float, delay = 0.)
 	{
-		_timeline = Timeline.get();
-		_timeline.attach(this);
-		_id = _timeline.schedule(duration, delay);
+		_jobId = Timeline.schedule(this, duration, delay);
 	}
 	
 	public function free():Void
 	{
-		if (_job != null) _timeline.cancel(_id);
+		if (_job != null) Timeline.cancel(_jobId);
 	}
 	
-	public function update(type:Int, source:IObservable, userData:Dynamic):Void
+	function onBlip():Void
 	{
-		if (_job == null) return;
-		if( _timeline.id != _id) return;
-		
-		switch (type)
+	}
+	
+	function onStart():Void
+	{
+		_job.onStart();
+	}
+	
+	function onProgress(alpha:Float):Void
+	{
+		_job.onProgress(alpha);
+	}
+	
+	function onEnd():Void
+	{
+		if (_job != null)
 		{
-			case TimelineEvent.INTERVAL_START:
-				_job.onStart();
-			
-			case TimelineEvent.INTERVAL_PROGRESS:
-				_job.onProgress(_timeline.progress);
-			
-			case TimelineEvent.INTERVAL_END:
-				source.detach(this);
-				_job.onComplete();
-				_job = null;
-				_timeline = null;
-			
-			case TimelineEvent.CANCEL:
-				source.detach(this);
-				_job.onAbort();
-				_job = null;
-				_timeline = null;
+			_job.onComplete();
+			_job = null;
+		}
+	}
+	
+	function onCancel():Void
+	{
+		if (_job != null)
+		{
+			_job.onAbort();
+			_job = null;
 		}
 	}
 }

@@ -32,6 +32,7 @@ package de.polygonal.core.time;
 import de.polygonal.core.event.IObserver;
 import de.polygonal.core.event.Observable;
 import de.polygonal.core.fmt.Sprintf;
+import de.polygonal.core.math.Mathematics;
 import de.polygonal.core.util.Assert;
 import de.polygonal.ds.ArrayedQueue;
 import de.polygonal.ds.Cloneable;

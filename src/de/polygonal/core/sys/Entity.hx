@@ -45,8 +45,8 @@ import de.polygonal.core.util.Assert;
 //descendant: ignore ghosts
 //onAddChild, onRemoveChild
 
-@:build(de.polygonal.core.sys.EntityType.gen())
-@:autoBuild(de.polygonal.core.sys.EntityType.gen())
+@:build(de.polygonal.core.sys.EntityType.build())
+@:autoBuild(de.polygonal.core.sys.EntityType.build())
 class Entity implements IObserver implements IObservable implements Hashable
 {
 	inline public static var UPDATE_ANCESTOR_ADD      = BIT_ADD_ANCESTOR;

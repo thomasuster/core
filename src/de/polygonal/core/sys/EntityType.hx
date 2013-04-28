@@ -50,7 +50,7 @@ class EntityType
 	static var next = -1;
 	static var changed = false;
 	
-	macro public static function gen():Array<Field>
+	macro public static function build():Array<Field>
 	{
 		if (Context.defined('display')) return null;
 		
