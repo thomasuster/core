@@ -235,9 +235,9 @@ class PropertyFile
 		var rtti = Reflect.field(isInst ? Type.getClass(obj) : obj, '__rtti');
 		if (rtti == null)
 			throw '@:rtti metadata required';
-		
+
 		var xml = Xml.parse(rtti).firstElement();
-		
+
 		var pairs = parse(str);
 		for (key in pairs.keys())
 		{
@@ -272,6 +272,8 @@ class PropertyFile
 	
 	static function parseLine(str:String):{key:String, val:String}
 	{
+		if (!~/\S/.match(str)) return null;
+		
 		var i = 0;
 		var k = str.length;
 		
