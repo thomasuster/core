@@ -94,7 +94,7 @@ class ConfigXml
 		return fields;
 	}
 	
-	public static function toXML(source:Dynamic):String
+	public static function toXml(source:Dynamic):String
 	{
 		var cl:Class<Dynamic> = Type.getClass(source);
 		var rtti = getRtti(cl);
@@ -162,62 +162,63 @@ class ConfigXml
 		return xml;
 	}
 	
-	public static function ofXML(xmlString:String, target:Dynamic):Void
+	public static function ofXml(xmlString:String, target:Dynamic):Void
 	{
 		var fast = new haxe.xml.Fast(Xml.parse(xmlString).firstElement());
 		var names = [], values = [];
 		var scan = function(node:Xml, f:Xml->Dynamic->Void)
 		{
-			if (node.nodeType == Xml.Element)
+			if (node.nodeName == 'param')
 			{
-				if (node.nodeName == 'param')
+				if (!node.exists('value'))
+					throw '\'value\' attribute required';
+				if (!node.exists('name'))
+					throw '\'name\' attribute required';
+				
+				var x = node.get('value');
+				var n = node.get('name');
+				
+				if (x.indexOf(',') != -1)
 				{
-					if (!node.exists('value'))
-						throw '\'value\' attribute required';
-					if (!node.exists('name'))
-						throw '\'name\' attribute required';
-					
-					var x = node.get('value');
-					var n = node.get('name');
-					
-					if (x.indexOf(',') != -1)
+					var t = x.split(',');
+					if (t[0].indexOf('.') != -1)
 					{
-						var t = x.split(',');
-						if (t[0].indexOf('.') != -1)
-						{
-							var a = new Array<Float>();
-							for (i in t) a.push(Std.parseFloat(i));
-							Reflect.setField(target, n, a);
-						}
-						else
-						if (Std.parseInt(t[0]) != null)
-						{
-							var a = new Array<Int>();
-							for (i in t) a.push(Std.parseInt(i));
-							Reflect.setField(target, n, a);
-						}
-						else
-							Reflect.setField(target, n, t);
+						var a = new Array<Float>();
+						for (i in t) a.push(Std.parseFloat(i));
+						Reflect.setField(target, n, a);
 					}
 					else
-					if (x.indexOf('.') != -1)
-						Reflect.setField(target, n, Std.parseFloat(x));
+					if (Std.parseInt(t[0]) != null)
+					{
+						var a = new Array<Int>();
+						for (i in t) a.push(Std.parseInt(i));
+						Reflect.setField(target, n, a);
+					}
+					else
+						Reflect.setField(target, n, t);
+				}
+				else
+				if (x.indexOf('.') != -1)
+					Reflect.setField(target, n, Std.parseFloat(x));
+				else
+				{
+					if (Std.parseInt(x) != null)
+						Reflect.setField(target, n, Std.parseInt(x));
 					else
 					{
-						if (Std.parseInt(x) != null)
-							Reflect.setField(target, n, Std.parseInt(x));
+						if (x == 'true' || x == 'false')
+							Reflect.setField(target, n, x == 'true' ? true : false);
 						else
-						{
-							if (x == 'true' || x == 'false')
-								Reflect.setField(target, n, x == 'true' ? true : false);
-							else
-								Reflect.setField(target, n, x);
-						}
+							Reflect.setField(target, n, x);
 					}
 				}
 			}
 			
-			for (e in node) f(e, f);
+			for (e in node)
+			{
+				if (e.nodeType == Xml.Element)
+					f(e, f);
+			}
 		}
 		
 		scan(Xml.parse(xmlString).firstElement(), scan);
