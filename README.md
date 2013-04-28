@@ -50,6 +50,20 @@ If you want to test the latest beta build, you should pull the dev branch and ad
 
 ## Changelog
 
+### 1.03 (dev-branch)
+_supports Haxe 3.0.0 r6415_
+
+ * modified: support Haxe 3 only (Haxe 2.x and Neko 1.x are no longer supported)
+ * fixed: ie10 console.debug
+ * fixed: several fixes for Haxe 3
+ * modified: refactor/simplify log system, improve log output similar to logcat default format
+ * modified: removed Root class (replaced with de.polygonal.core.log.LogSystem)
+ * modified: improve StringUtil.ellipsis
+ * modified: Timeline: use statics instead of singleton pattern
+ * modified: print call stack on assertion
+ * modified: enable RLE (run length encoder) for all targets
+ * modified: move resource loader to separate flash library
+
 ### 1.02 (released 2013-01-30)
 
  * modified: change LogMessage.data type to Dynamic
