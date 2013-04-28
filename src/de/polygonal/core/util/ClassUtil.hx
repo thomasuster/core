@@ -80,45 +80,4 @@ class ClassUtil
 		else
 			throw 'invalid argument';
 	}
-	
-	/**
-	 * Returns all class fields of the class <code>x</code>.
-	 * @param include if defined, only returns fields that match the given regular expression.
-	 * @param excludeFunctions if true, excludes functions.
-	 */
-	public static function getClassFields(x:Class<Dynamic>, include:EReg = null, excludeFunctions = true):Array<{name:String, value:Dynamic}>
-	{
-		var typeInfo:TypeTree;
-		var rtti:String = Reflect.field(x, '__rtti');
-		var xml = Xml.parse(rtti).firstElement();
-		typeInfo = new haxe.rtti.XmlParser().processElement(xml);
-		var fields = [];
-		switch (typeInfo)
-		{
-			case TClassdecl(cl):
-				for (f in cl.statics)
-				{
-					if (excludeFunctions)
-					{
-						switch (f.type)
-						{
-							case CFunction(_, _):
-								continue;
-							default:
-						}
-					}
-					
-					if (include != null)
-					{
-						if (include.match(f.name))
-							fields.push({name: f.name, value: Reflect.field(x, f.name)});
-					}
-					else
-						fields.push({name: f.name, value: Reflect.field(x, f.name)});
-				}
-			default:
-				throw 'not a class';
-		}
-		return fields;
-	}
 }
