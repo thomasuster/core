@@ -58,24 +58,71 @@ class StringUtil
 	}
 	
 	/**
-	 * Appends (or prepends if <code>inverse</code> is true) an ellipsis (...) to <code>x</code> if <code>x</code>.length > <code>maxCharCount</code>.
+	 * Trims the string <code>str</code> to <code>maxLength</code> by replacing surplus characters with the ellipsis character (U+2026).
+	 * @param useThreeDots if true, uses three dots (...) instead of the ellipsis character.
+	 * @param <code>mode</code>=0: prepend ellipsis, <code>mode</code>=1: append ellipsis, <code>mode</code>=2: center ellipsis.
 	 */
-	public static function ellipsis(x:String, maxCharCount:Int, inverse:Bool):String
+	public static function ellipsis(str:String, maxLength:Int, mode:Int, useThreeDots = false):String
 	{
+		var l = str.length;
+		
 		#if debug
-		D.assert(maxCharCount > 2, 'maxCharCount > 2');
+		D.assert(maxLength > 0, 'maxLength > 0');
 		#end
 		
-		var k = x.length;
-		if (k > maxCharCount)
+		if (useThreeDots)
+			if (maxLength < 4) return '...';
+		
+		switch (mode)
 		{
-			if (inverse)
-				return '...' + x.substr(k + 3 - maxCharCount);
-			else
-				return x.substr(0, maxCharCount - 3) + '...';
+			case 0:
+				if (l > maxLength)
+				{
+					var ellipsisCharacter = useThreeDots ? '...' : '…';
+					return ellipsisCharacter + str.substr(l + ellipsisCharacter.length - maxLength);
+				}
+				else
+					return str;
+			
+			case 1:
+				if (l > maxLength)
+				{
+					var ellipsisCharacter = useThreeDots ? '...' : '…';
+					return str.substr(0, maxLength - ellipsisCharacter.length) + ellipsisCharacter;
+				}
+				else
+					return str;
+			
+			case 2:
+				var l = str.length;
+				var a = str.split('');
+				if (useThreeDots)
+				{
+					a[(l >> 1) - 1] = '.';
+					a[(l >> 1)    ] = '.';
+					a[(l >> 1) + 1] = '.';
+					var side = 1;
+					while (l > maxLength)
+					{
+						side *= -1;
+						a.splice((l >> 1) + side, 1);
+						a[(l >> 1) + side] = '.';
+						l--;
+					}
+				}
+				else
+				{
+					while (l > maxLength)
+					{
+						a.splice(l >> 1, 1);
+						l--;
+					}
+					a[l >> 1] = '…';
+				}
+				return a.join('');
 		}
-		else
-			return x;
+		
+		return null;
 	}
 	
 	/**
