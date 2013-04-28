@@ -30,48 +30,58 @@
 package de.polygonal.core.log.handler;
 
 import de.polygonal.core.log.LogHandler;
-import flash.display.DisplayObjectContainer;
-import flash.events.Event;
-import flash.Lib;
-import flash.text.TextField;
-import flash.text.TextFieldAutoSize;
-import flash.text.TextFormat;
+import de.polygonal.ds.ArrayedQueue;
 
 using de.polygonal.ds.BitFlags;
 
-#if !flash
-'The TextFieldHandler class is only available for flash'
+#if (nme && cpp)
+#elseif flash
+#else
+'The TextFieldHandler class is only available for flash or nme/cpp'
 #end
 
 class TextFieldHandler extends LogHandler
 {
-	public var tf(default, null):TextField;
+	public var tf(default, null):flash.text.TextField;
 	
-	public function new(?tf:TextField, ?parent:DisplayObjectContainer)
+	var _buffer:ArrayedQueue<String>;
+	var _counter:Int;
+	var _numLines:Int;
+	
+	public function new(numLines = 32, ?tf:flash.text.TextField, ?parent:flash.display.DisplayObjectContainer)
 	{
 		super();
 		
+		_numLines = numLines;
 		if (tf != null)
 			this.tf = tf;
 		else
 		{
-			this.tf = tf = new TextField();
-			tf.defaultTextFormat = new TextFormat('Arial', 10);
-			tf.autoSize = TextFieldAutoSize.LEFT;
+			this.tf = tf = new flash.text.TextField();
+			tf.defaultTextFormat = new flash.text.TextFormat('Arial');
+			tf.autoSize = flash.text.TextFieldAutoSize.LEFT;
 			flash.Lib.current.addChild(tf);
 		}
 		
 		tf.name = 'loghandler';
-		flash.Lib.current.addEventListener(Event.ADDED, onAdded);
+		tf.selectable = false;
+		flash.Lib.current.addEventListener(flash.events.Event.ADDED, onAdded);
+		_buffer = new ArrayedQueue<String>(_numLines, false);
 	}
 	
 	override function output(message:String):Void
 	{
-		tf.appendText(message + '\n');
+		_buffer.enqueue(_counter + message);
+		_counter++;
+		if (_buffer.size() > _numLines)
+			_buffer.dequeue();
+		tf.text = '';
+		for (i in 0..._buffer.size())
+			tf.appendText(_buffer.get(i) + '\n');
 		tf.scrollV = tf.maxScrollV;
 	}
 	
-	function onAdded(e:Event):Void
+	function onAdded(_):Void
 	{
 		if (tf.parent != null)
 		{
