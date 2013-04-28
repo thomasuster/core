@@ -265,7 +265,7 @@ class LogHandler implements IObserver
 				if (hasf(CLASS_SHORT))
 					className = className.substr(className.lastIndexOf('.') + 1);
 				if (className.length > 30)
-					className = StringUtil.ellipsis(className, 30, true);
+					className = StringUtil.ellipsis(className, 30, 0);
 				
 				fmt += '%s';
 				vals.push(className);
@@ -274,7 +274,7 @@ class LogHandler implements IObserver
 			if (hasf(METHOD))
 			{
 				var methodName = _message.posInfos.methodName;
-				if (methodName.length > 30) methodName = StringUtil.ellipsis(methodName, 30, true);
+				if (methodName.length > 30) methodName = StringUtil.ellipsis(methodName, 30, 0);
 				
 				fmt += hasf(CLASS) ? '.%s' : '%s';
 				vals.push(methodName);
@@ -317,7 +317,8 @@ class LogHandler implements IObserver
 			for (i in s.split('\n'))
 				if (i != '') tmp.push(i);
 			
-			val = '\n' + pre + ': ' + tmp.join('\n' + pre + ': ');
+			if (_bits != FORMAT_RAW)
+				val = '\n' + pre + ': ' + tmp.join('\n' + pre + ': ');
 		}
 		
 		args.push(fmt);
