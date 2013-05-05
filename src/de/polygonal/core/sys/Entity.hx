@@ -451,7 +451,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 		c._clrf(BIT_PENDING_REMOVE);
 		c._setf(BIT_PENDING_ADD);
 		
-		return c;
+		return this;
 	}
 	
 	/**
