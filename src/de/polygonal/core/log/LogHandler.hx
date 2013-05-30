@@ -297,7 +297,7 @@ class LogHandler implements IObserver
 		fmt = _bits == 0 ? '%s' : ': %s';
 		val = _message.msg;
 		var s = val;
-		if (s.indexOf('\n') != -1)
+		if (Std.is(s, String) && s.indexOf('\n') != -1)
 		{
 			var pre = '';
 			if (hasf(LEVEL))
