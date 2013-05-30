@@ -101,6 +101,7 @@ class Vec3 implements Cloneable<Vec3>
 	inline public function zero():Vec3
 	{
 		x = y = z = 0;
+		w = 1;
 		return this;
 	}
 	
