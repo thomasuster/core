@@ -30,38 +30,21 @@
 package de.polygonal.core.time;
 
 import de.polygonal.core.math.Mean;
-import de.polygonal.ds.Bits;
 import de.polygonal.ds.DA;
 import de.polygonal.core.util.Assert;
 
-using de.polygonal.ds.BitFlags;
-
 class StopWatch
 {
-	static var _instance:StopWatch = null;
-	inline public static function get():StopWatch
-	{
-		return _instance == null ? (_instance = new StopWatch()) : _instance;
-	}
-	
 	static var _nextSlot = 0;
-	public static function getFreeSlot():Int
+	public static function getNextFreeSlot():Int
 	{
 		return _nextSlot++;
 	}
 	
-	var _bits:Int;
-	var _time:DA<Float>;
-	var _mean:DA<Mean>;
-	
-	inline public static function clock(slot:Int):Void { get()._clock(slot); }
-	inline public static function query(slot:Int):Float { return get()._query(slot); }
-	inline public static function reset(slot:Int):Void { get()._reset(slot); }
-	inline public static function total():Float { return get()._total(); }
-	inline public static function clear():Void { return get()._clear(); }
-	
-	function new()
+	static function init():Void
 	{
+		_initialized = true;
+		
 		_time = new DA(32, 32);
 		_time.fill(0, 32);
 		
@@ -69,7 +52,7 @@ class StopWatch
 		_mean.assign(Mean, [10], 32);
 	}
 	
-	function _free()
+	public static function free():Void
 	{
 		for (i in _mean) i.free();
 		
@@ -78,56 +61,55 @@ class StopWatch
 		
 		_time = null;
 		_mean = null;
+		
+		_initialized = false;
 	}
 	
-	inline function _clock(slot:Int)
+	static var _initialized:Bool;
+	static var _bits:Int;
+	static var _time:DA<Float>;
+	static var _mean:DA<Mean>;
+	
+	inline public static function clock(slot:Int):Void
 	{
-		#if debug
-		D.assert(slot >= 0 && slot < 32, 'slot >= 0 && slot < 32');
-		#end
-		
+		if (!_initialized) init();
 		var now = haxe.Timer.stamp();
-		
-		if (hasf(1 << slot))
+		if (_bits & (1 << slot) > 0)
 		{
 			_mean.get(slot).add(now - _time.get(slot));
-			clrf(1 << slot);
+			_bits &= ~(1 << slot);
 		}
 		else
 		{
 			_time.set(slot, now);
-			setf(1 << slot);
+			_bits |= (1 << slot);
 		}
 	}
 	
-	inline function _query(slot:Int)
+	inline public static function query(slot:Int):Float
 	{
-		#if debug
-		D.assert(!hasf(1 << slot), '!hasf(1 << slot)');
-		#end
-		
+		if (!_initialized) init();
 		return _mean.get(slot).val();
 	}
 	
-	inline function _reset(slot:Int)
+	inline public static function reset(slot:Int):Void
 	{
-		#if debug
-		D.assert(slot >= 0 && slot < 32, 'slot >= 0 && slot < 32');
-		#end
-		
-		clrf(1 << slot);
+		if (!_initialized) init();
+		_bits &= ~(1 << slot);
 		_mean.get(slot).clear();
 	}
 	
-	inline function _total()
+	inline public static function total():Float
 	{
+		if (!_initialized) init();
 		var t = 0.;
 		for (i in 0...32) t += _mean.get(i).val();
 		return t;
 	}
 	
-	inline function _clear()
+	inline public static function clear():Void
 	{
-		nulf();
+		if (!_initialized) init();
+		_bits = 0;
 	}
 }
