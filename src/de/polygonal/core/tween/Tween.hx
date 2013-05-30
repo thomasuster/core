@@ -299,7 +299,6 @@ class Tween implements IObservable implements IObserver implements TimelineListe
 	
 	public function cancel():Tween
 	{
-		if (_observable == null) return this;
 		Timeline.cancel(_id);
 		_id = 1;
 		if (_interpolate) Timebase.detach(this);
