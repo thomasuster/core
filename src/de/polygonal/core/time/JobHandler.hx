@@ -34,14 +34,21 @@ class JobHandler implements TimelineListener
 	var _jobId:Int;
 	var _job:Job;
 	
-	public function new(job:Job, duration:Float, delay = 0.)
+	public function new(job:Job = null)
 	{
+		_job = job;
+	}
+	
+	public function run(job:Job = null, duration:Float, delay = 0.):Void
+	{
+		if (job != null) _job = job;
 		_jobId = Timeline.schedule(this, duration, delay);
 	}
 	
-	public function free():Void
+	public function cancel():Void
 	{
-		if (_job != null) Timeline.cancel(_jobId);
+		if (_job != null)
+			Timeline.cancel(_jobId);
 	}
 	
 	function onBlip():Void

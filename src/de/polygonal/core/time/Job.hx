@@ -39,7 +39,7 @@ interface Job
 	/**
 	 * Called while the job is running.
 	 */
-	function onProgress(ratio:Float):Void;
+	function onProgress(alpha:Float):Void;
 	
 	/**
 	 * Called when the job has been completed.
