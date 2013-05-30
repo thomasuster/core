@@ -32,8 +32,6 @@ package de.polygonal.core.time;
 import de.polygonal.core.event.IObserver;
 import de.polygonal.core.event.Observable;
 import de.polygonal.core.fmt.Sprintf;
-import de.polygonal.core.math.Mathematics;
-import de.polygonal.core.util.Assert;
 import de.polygonal.ds.ArrayedQueue;
 import de.polygonal.ds.Cloneable;
 import de.polygonal.ds.Collection;
@@ -52,12 +50,14 @@ class Timeline
 	
 	public static function attach(o:IObserver, mask:Int = 0):Void
 	{
+		D.assert(_initialized, 'call Timeline.init() first');
 		if (observable == null) init();
 		observable.attach(o, mask);
 	}
 	
 	public static function detach(o:IObserver, mask:Int = 0):Void
 	{
+		D.assert(_initialized, 'call Timeline.init() first');
 		observable.detach(o, mask);
 	}
 	
@@ -81,8 +81,13 @@ class Timeline
 	static var _tickRate:Float;
 	#end
 	
-	static function init():Void
+	public static function init():Void
 	{
+		if (_initialized) return;
+		_initialized = true;
+		
+		Timebase.init();
+		
 		observable = new Observable(100);
 		
 		_currTick = Timebase.processedTicks;
@@ -98,8 +103,6 @@ class Timeline
 		#if debug
 		_tickRate = 0;
 		#end
-		
-		_initialized = true;
 	}
 	
 	/**
@@ -108,6 +111,9 @@ class Timeline
 	 */	
 	public static function free():Void
 	{
+		if (!_initialized) return;
+		_initialized = false;
+		
 		for (i in _data) for (j in i) j.onCancel();
 		
 		_runningIntervals.free();
@@ -127,8 +133,6 @@ class Timeline
 		
 		observable.clear(true);
 		observable = null;
-		
-		_initialized = false;
 	}
 	
 	/**
@@ -140,7 +144,7 @@ class Timeline
 	 */
 	public static function schedule(listener:TimelineListener = null, duration:Float, delay = 0., repeatCount = 0, repeatInterval = .0):Int
 	{
-		if (!_initialized) init();
+		D.assert(_initialized, 'call Timeline.init() first');
 		
 		#if debug
 		D.assert(duration >= .0, 'duration >= .0');
@@ -200,6 +204,8 @@ class Timeline
 	 */
 	public static function cancel(id = 0):Bool
 	{
+		D.assert(_initialized, 'call Timeline.init() first');
+		
 		if (id < 0) return false;
 		if (!_initialized) return false;
 		if (id == 0)
@@ -233,7 +239,7 @@ class Timeline
 	 */
 	public static function cancelAll():Void
 	{
-		if (!_initialized) return;
+		D.assert(_initialized, 'call Timeline.init() first');
 		
 		for (collection in _data)
 		{
@@ -247,11 +253,10 @@ class Timeline
 	 * @throws de.polygonal.core.util.AssertError <em>Timeline</em> is empty (debug only).
 	 */
 	public static var progress(get_progress, never):Float;
-	inline static function get_progress():Float
+	static function get_progress():Float
 	{
-		#if debug
+		D.assert(_initialized, 'call Timeline.init() first');
 		D.assert(_currInterval != null, '_currInterval != null');
-		#end
 		
 		return _currInterval.getRatio();
 	}
@@ -263,9 +268,8 @@ class Timeline
 	public static var id(get_id, never):Int;
 	inline static function get_id():Int
 	{
-		#if debug
+		D.assert(_initialized, 'call Timeline.init() first');
 		D.assert(_currInterval != null, '_currInterval != null');
-		#end
 		
 		return _currInterval.id;
 	}
@@ -278,9 +282,8 @@ class Timeline
 	public static var iteration(get_iteration, never):Int;
 	inline static function get_iteration():Int
 	{
-		#if debug
+		D.assert(_initialized, 'call Timeline.init() first');
 		D.assert(_currInterval != null, '_currInterval != null');
-		#end
 		
 		if (_currInterval.iterations == -1)
 			return -1;
@@ -293,7 +296,7 @@ class Timeline
 	 */
 	public static function advance():Void
 	{
-		if (!_initialized) return;
+		D.assert(_initialized, 'call Timeline.init() first');
 		
 		_currTick = Timebase.processedTicks;
 		_currSubTick = 0;
@@ -402,7 +405,10 @@ class Timeline
 }
 
 @:publicFields
-private class TimeInterval implements Heapable<TimeInterval> implements Cloneable<TimeInterval> implements TimelineListener
+private class TimeInterval
+	implements Heapable<TimeInterval>
+	implements Cloneable<TimeInterval>
+	implements TimelineListener
 {
 	var id:Int;
 	var poolId:Int;
