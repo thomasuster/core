@@ -37,13 +37,27 @@ import de.polygonal.core.time.Timeline;
 
 class MainLoop extends Entity
 {
-	public var paused:Bool;
+	static var _instance:MainLoop = null;
+	inline public static function get():MainLoop
+	{
+		return _instance == null ? (_instance = new MainLoop()) : _instance;
+	}
 	
-	public function new(run:Bool)
+	public static var onTick0:Void->Void = function() {};
+	public static var onTick1:Void->Void = function() {};
+	
+	public static var onDraw0:Void->Void = function() {};
+	public static var onDraw1:Void->Void = function() {};
+	
+	public var paused = false;
+	
+	function new()
 	{
 		super();
+		
+		Timebase.init();
 		Timebase.attach(this);
-		this.paused = run == false;
+		Timeline.init();
 	}
 	
 	override function onFree():Void
@@ -56,40 +70,27 @@ class MainLoop extends Entity
 		switch (type)
 		{
 			case TimebaseEvent.TICK:
-				#if (!no_traces && log)
-				//identify tick step
-				var log = de.polygonal.core.Root.log;
-				if (log != null)
-					for (handler in log.getLogHandler())
-						handler.setPrefix(de.polygonal.core.fmt.Sprintf.format('t%03d', [Timebase.processedTicks % 1000]));
-				#end
+				onTick0();
 				
 				if (paused) return;
 				
-				Timeline.get().advance();
+				Timeline.advance();
 				commit();
-				var timeDelta:Float = userData;
 				
+				var timeDelta:Float = userData;
 				propagateTick(timeDelta, this);
 				
-				#if verbose
-				var s = Entity.printTopologyStats();
-				if (s != null) de.polygonal.core.Root.debug(s);
-				#end
+				onTick1();
 			
 			case TimebaseEvent.RENDER:
-				#if (!no_traces && log)
-				//identify draw step
-				var log = de.polygonal.core.Root.log;
-				if (log != null)
-					for (handler in log.getLogHandler())
-						handler.setPrefix(de.polygonal.core.fmt.Sprintf.format('r%03d', [Timebase.processedFrames % 1000]));
-				#end
+				onDraw0();
 				
 				if (paused) return;
 				
 				var alpha:Float = userData;
 				propagateDraw(alpha, this);
+				
+				onDraw1();
 		}
 	}
 }
