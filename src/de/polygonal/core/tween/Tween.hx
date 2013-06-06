@@ -177,6 +177,7 @@ class Tween implements IObservable implements IObserver implements TimelineListe
 		D.assert(target != null, 'target is null');
 		#end
 		
+		_id          = -1;
 		_key         = key;
 		_target      = target;
 		_ease        = EaseFactory.create(ease);
