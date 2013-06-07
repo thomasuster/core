@@ -618,19 +618,48 @@ class Entity implements IObserver implements IObservable implements Hashable
 	
 	/**
 	 * Returns the first sibling whose class or subclass matches <code>x</code> or null if no entity was found.
+	 * @param hint if greater (or less) than 0, only scans through the siblings right (or left) of this entity, otherwise iterates over all siblings.
 	 */
-	public function sibling<T:Entity>(x:Class<T>):T
+	public function sibling<T:Entity>(x:Class<T>, hint = 0):T
 	{
 		var a = getClassType(x);
-		var n = treeNode.getFirstSibling();
+		var n = treeNode;
 		var m = Entity.typeMap;
-		while (n != null)
+
+		if (hint == 0)
 		{
-			var e = n.val;
-			if (m.has((e._type << 16) | a))
-				return cast e;
-			n = n.next;
+			n = treeNode.getFirstSibling();
+			while (n != null)
+			{
+				var e = n.val;
+				if (m.has((e._type << 16) | a))
+					return cast e;
+				n = n.next;
+			}
 		}
+		else
+		if (hint < 0)
+		{
+			while (n != null)
+			{
+				var e = n.val;
+				if (m.has((e._type << 16) | a))
+					return cast e;
+				n = n.prev;
+			}
+		}
+		else
+		if (hint > 0)
+		{
+			while (n != null)
+			{
+				var e = n.val;
+				if (m.has((e._type << 16) | a))
+					return cast e;
+				n = n.next;
+			}
+		}
+
 		return null;
 	}
 	
