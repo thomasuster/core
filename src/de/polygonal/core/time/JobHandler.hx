@@ -37,6 +37,7 @@ class JobHandler implements TimelineListener
 	public function new(job:Job = null)
 	{
 		_job = job;
+		_jobId = -1;
 	}
 	
 	public function run(job:Job = null, duration:Float, delay = 0.):Void
@@ -47,7 +48,7 @@ class JobHandler implements TimelineListener
 	
 	public function cancel():Void
 	{
-		if (_job != null)
+		if (_job != null && _jobId != -1)
 			Timeline.cancel(_jobId);
 	}
 	
