@@ -65,7 +65,7 @@ class MainLoop extends Entity
 		Timebase.detach(this);
 	}
 	
-	override public function update(type:Int, source:IObservable, userData:Dynamic):Void
+	override public function onUpdate(type:Int, source:IObservable, userData:Dynamic):Void
 	{
 		switch (type)
 		{

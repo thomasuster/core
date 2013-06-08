@@ -66,7 +66,7 @@ class Observable extends HashableItem implements IObservable
 		for (observable in _getRegistry())
 		{
 			c += observable.size();
-			s += Sprintf.format('%-20s -> %s\n', [StringUtil.ellipsis(Std.string(observable), 20, true), observable.getObserverList().join(',')]);
+			s += Sprintf.format('%-20s -> %s\n', [StringUtil.ellipsis(Std.string(observable), 20, 0), observable.size()]);
 		}
 		return Sprintf.format('#observers: %03d\n', [c]) + s;
 	}
@@ -128,7 +128,7 @@ class Observable extends HashableItem implements IObservable
 	}
 	
 	/**
-	 * Delegates <em>IObserver.update()</em> to the given function <code>func</code>, as long as <code>func</code> returns true.<br/>
+	 * Delegates <em>IObserver.onUpdate()</em> to the given function <code>func</code>, as long as <code>func</code> returns true.<br/>
 	 * Example:<br/>
 	 * <pre class="prettyprint">
 	 * import de.polygonal.core.event.Observable;
@@ -302,9 +302,9 @@ class Observable extends HashableItem implements IObservable
 		}
 	}
 	
-	inline function _findNode(o:IObserver)
+	inline function _findNode(o:IObserver):ObserverNode
 	{
-		return _nodeLookup.get(o.__guid);
+		return _nodeLookup.get(o.__guid); //TODo use global map?
 	}
 	
 	/**
@@ -324,7 +324,7 @@ class Observable extends HashableItem implements IObservable
 	 * 
 	 * class MyObserver implements IObserver {
 	 *     public function new() {}
-	 *     public function update(type:Int, source:Observable, userData:Dynamic):Void {}
+	 *     public function onUpdate(type:Int, source:Observable, userData:Dynamic):Void {}
 	 * }
 	 * 
 	 * class Main {
@@ -350,8 +350,7 @@ class Observable extends HashableItem implements IObservable
 	 */
 	public function attach(o:IObserver, mask = 0):Void
 	{
-		if (_freed) //free() was called?
-			return;
+		if (_freed) return; //free() was called?
 		
 		//assign an id for fast node lookup
 		if (o.__guid == 0) o.__guid = _nextGUID++;
@@ -399,6 +398,7 @@ class Observable extends HashableItem implements IObservable
 		
 		if (mask == 0 || mask == Bits.ALL)
 		{
+			//prevent mask lookup if we listen to all updates
 			n.all = true;
 		}
 		else
@@ -437,7 +437,7 @@ class Observable extends HashableItem implements IObservable
 	 * 
 	 * class MyObserver implements IObserver {
 	 *     public function new() {}
-	 *     public function update(type:Int, source:Observable, userData:Dynamic):Void {}
+	 *     public function onUpdate(type:Int, source:Observable, userData:Dynamic):Void {}
 	 * }
 	 * 
 	 * class Main {
@@ -591,9 +591,19 @@ class Observable extends HashableItem implements IObservable
 		return new ObservableIterator<IObserver>(_observer);
 	}
 	
-	function _notify(type:Int, userData:Dynamic = null)
+	inline function getEventId(type:Int):Int
 	{
-		if (_observerCount == 0 || (type & _blacklist) == type)
+		return ObserverMacro.EVENT_MASK;
+	}
+	
+	inline function getGroupid(type:Int):Int
+	{
+		return ObserverMacro.NUM_EVENT_BITS;
+	}
+	
+	function _notify(type:Int, userData:Dynamic = null):Void
+	{
+		if (_observerCount == 0 || (type & _blacklist) == type) //_blackList > 0?
 			return; //early out
 		
 		var eventBits = type & ObserverMacro.EVENT_MASK;
@@ -636,6 +646,8 @@ class Observable extends HashableItem implements IObservable
 					//restore state
 					userData = _stack.pop();
 					type     = _stack.pop();
+					eventBits = type & ObserverMacro.EVENT_MASK;
+					groupId  = type >>> ObserverMacro.NUM_EVENT_BITS;
 					
 					//resume update
 					_update(_stack.pop(), type, eventBits, groupId, userData);
@@ -655,7 +667,7 @@ class Observable extends HashableItem implements IObservable
 			//preserve reference to next node so a detach() doesn't break an update
 			_hook = node.next;
 			if (node.all || node.mask[groupId] & eventBits > 0) //observer is suited for this update?
-				node.observer.update(type, _source, userData); //update
+				node.observer.onUpdate(type, _source, userData); //update
 			node = _hook;
 		}
 	}
@@ -680,7 +692,6 @@ class ObserverNode
 		groupBits = 0;
 		all = false;
 		var k = 1 << ObserverMacro.NUM_GROUP_BITS;
-		
 		mask = new Vector<Int>(k);
 		for (i in 0...k) mask[i] = 0;
 	}
@@ -711,14 +722,14 @@ private class ObservableIterator<T>
 private class Bind implements IObserver
 {
 	static var _pool:DynamicObjectPool<Bind>;
-	inline public static function get(f:Int->Dynamic->Bool, mask:Int):Bind
+	public static function get(f:Int->Dynamic->Bool, mask:Int):Bind
 	{
 		if (_pool == null)
 			_pool = new DynamicObjectPool<Bind>(Bind, null, null, 1024);
 		
 		#if verbose
 		if (_pool.capacity() == _pool.size())
-			Root.warn('Observable.Bind pool exhausted.');
+			L.d('observable bind pool exhausted');
 		#end
 		
 		var o = _pool.get();
@@ -732,7 +743,7 @@ private class Bind implements IObserver
 	var _g:Int;
 	var _t:Int;
 	
-	public function update(type:Int, source:IObservable, userData:Dynamic):Void
+	public function onUpdate(type:Int, source:IObservable, userData:Dynamic):Void
 	{
 		if (_t != 0)
 		{
@@ -750,13 +761,13 @@ private class Bind implements IObserver
 		_pool.put(this);
 		
 		#if verbose
-		Root.debug('returning Observable.Bind object to pool.');
+		L.d('returning observable bind object');
 		#end
 		
 		if (_pool.used() == 0)
 		{
 			#if verbose
-			Root.debug('reclaiming Observable.Bind pool.');
+			L.d('reclaiming observable bind pool');
 			#end
 			_pool.reclaim();
 		}
@@ -766,13 +777,13 @@ private class Bind implements IObserver
 private class Delegate implements IObserver
 {
 	static var _pool:DynamicObjectPool<Delegate>;
-	inline public static function get(f:Int->IObservable->Dynamic->Bool):Delegate
+	public static function get(f:Int->IObservable->Dynamic->Bool):Delegate
 	{
 		if (_pool == null) _pool = new DynamicObjectPool<Delegate>(Delegate, null, null, 256);
 		
-		#if warnings
+		#if verbose
 		if (_pool.capacity() == _pool.size())
-			de.polygonal.core.log.Log.getLog(Observable).warn('Delegate pool exhausted.');
+			L.d('observable delegate pool exhausted');
 		#end
 		
 		var o = _pool.get();
@@ -782,7 +793,7 @@ private class Delegate implements IObserver
 	
 	var _f:Int->IObservable->Dynamic->Bool;
 	
-	public function update(type:Int, source:IObservable, userData:Dynamic):Void 
+	public function onUpdate(type:Int, source:IObservable, userData:Dynamic):Void
 	{
 		if (_f(type, source, userData)) return;
 		
@@ -791,13 +802,13 @@ private class Delegate implements IObserver
 		_pool.put(this);
 		
 		#if verbose
-		Root.debug('returning Observable.Delegate object to pool.');
+		L.d('returning observable delegate object');
 		#end
 		
 		if (_pool.used() == 0)
 		{
 			#if verbose
-			Root.debug('reclaiming Observable.Delegate pool.');
+			L.d('reclaiming observable delegate pool');
 			#end
 			_pool.reclaim();
 		}

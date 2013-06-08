@@ -184,7 +184,7 @@ class LogHandler implements IObserver
 		_bits = flags;
 	}
 	
-	public function update(type:Int, source:IObservable, userData:Dynamic):Void
+	public function onUpdate(type:Int, source:IObservable, userData:Dynamic):Void
 	{
 		if (type == LogEvent.LOG_MESSAGE)
 		{

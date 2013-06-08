@@ -322,7 +322,7 @@ class Tween implements IObservable implements IObserver implements TimelineListe
 		if (_observable != null) _observable.notify(type, userData);
 	}
 	
-	public function update(type:Int, source:IObservable, userData:Dynamic):Void 
+	public function onUpdate(type:Int, source:IObservable, userData:Dynamic):Void
 	{
 		if (_id == -1) return;
 		var alpha:Float = userData;

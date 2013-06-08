@@ -911,7 +911,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 		getObservable().notify(type, userData);
 	}
 	
-	public function update(type:Int, source:IObservable, userData:Dynamic):Void {}
+	public function onUpdate(type:Int, source:IObservable, userData:Dynamic):Void {}
 	
 	public function sendMsg(receiverId:String, msg:String, userData:Dynamic = null):Void
 	{

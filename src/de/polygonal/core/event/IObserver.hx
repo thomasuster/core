@@ -43,5 +43,5 @@ interface IObserver
 	 * @param source   the event source.
 	 * @param userData the event data or null if no additional information was passed.
 	 */
-	function update(type:Int, source:IObservable, userData:Dynamic):Void;
+	function onUpdate(type:Int, source:IObservable, userData:Dynamic):Void;
 }
