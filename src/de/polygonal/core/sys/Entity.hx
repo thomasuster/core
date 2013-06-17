@@ -400,29 +400,19 @@ class Entity implements IObserver implements IObservable implements Hashable
 	/**
 	 * Adds a child entity to this entity.
 	 * @param x an object inheriting from Entity or a reference to an Entity class.
+	 * @return the added entity
 	 */
-	public function add(x:Dynamic, priority = Limits.UINT16_MAX):Entity
+	public function add<T:Entity>(?cl:Class<T>, ?inst:T, priority = Limits.UINT16_MAX):T
 	{
-		#if debug
-		D.assert(x != null, 'x is null');
-		#end
-		
-		var c:Entity =
-		#if flash
-		if (untyped x.hasOwnProperty('prototype'))
-		#else
-		if (Type.getClass(x) == null)
-		#end
-			cast Type.createInstance(x, []);
-		else
-			x;
+		var c:Entity = inst;
+		if (c == null) c = Type.createInstance(cl, []);
 		
 		if (c._hasf(BIT_PENDING_ADD))
 		{
 			#if verbose
-			Root.warn(Sprintf.format('entity \'%s\' already added to %s', [c.id, id]));
+			trace(Sprintf.format('entity \'%s\' already added to %s', [c.id, id]));
 			#end
-			return c;
+			return cast c;
 		}
 		
 		if (c._hasf(BIT_PENDING_REMOVE))
@@ -431,7 +421,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 			c._clrf(BIT_PENDING_REMOVE);
 			c._setf(BIT_PENDING_ADD);
 			if (c.priority != priority) c.priority = priority;
-			return c;
+			return cast c;
 		}
 		
 		#if debug
@@ -451,7 +441,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 		c._clrf(BIT_PENDING_REMOVE);
 		c._setf(BIT_PENDING_ADD);
 		
-		return this;
+		return cast c;
 	}
 	
 	/**
