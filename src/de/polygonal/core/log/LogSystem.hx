@@ -109,7 +109,7 @@ class LogSystem
 	/**
 	 * Creates a new log or returns an existing one.
 	 */
-	public static function createLog(name:Dynamic, addDefaultHandler = false):Log
+	public static function createLog(name:String, addDefaultHandler = false):Log
 	{
 		if (_logLookup == null)
 		{

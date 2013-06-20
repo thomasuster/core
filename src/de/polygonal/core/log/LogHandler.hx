@@ -36,6 +36,7 @@ import de.polygonal.core.fmt.StringUtil;
 import de.polygonal.core.log.LogLevel;
 import de.polygonal.core.log.LogMessage;
 import de.polygonal.core.util.Assert;
+import haxe.ds.StringMap;
 
 using de.polygonal.ds.BitFlags;
 using de.polygonal.ds.Bits;
@@ -66,18 +67,20 @@ class LogHandler implements IObserver
 	
 	var _level:Int;
 	var _mask:Int;
-	var _message:LogMessage;
 	var _bits:Int;
+	var _message:LogMessage;
+	var _tagFormat:StringMap<Int>;
 	
 	function new()
 	{
-		_level     = 0;
-		_mask      = 0;
-		_message   = null;
-		_bits      = 0;
+		_level = 0;
+		_mask = 0;
+		_bits = 0;
+		_message = null;
+		_tagFormat = null;
 		
 		setLevel(LogLevel.DEBUG);
-		setFormat(0, ':');
+		setFormat(0);
 		init();
 	}
 	
@@ -178,10 +181,17 @@ class LogHandler implements IObserver
 	 *     }
 	 * }</pre>
 	 */
-	public function setFormat(flags:Int, sep = ':'):Void
+	public function setFormat(flags:Int, tag:String = null):Void
 	{
 		if (flags == 0) nulf();
-		_bits = flags;
+		if (tag != null)
+		{
+			if (_tagFormat == null)
+				_tagFormat = new StringMap();
+			_tagFormat.set(tag, flags);
+		}
+		else
+			_bits = flags;
 	}
 	
 	public function onUpdate(type:Int, source:IObservable, userData:Dynamic):Void
@@ -189,8 +199,17 @@ class LogHandler implements IObserver
 		if (type == LogEvent.LOG_MESSAGE)
 		{
 			_message = cast userData;
+			
 			if (_mask.hasBits(_message.outputLevel))
+			{
+				var tmp = _bits;
+				if (_tagFormat != null && _tagFormat.exists(_message.tag))
+					_bits = _tagFormat.get(_message.tag);
+				
 				output(format());
+				
+				_bits = tmp;
+			}
 		}
 	}
 	

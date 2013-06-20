@@ -44,10 +44,14 @@ class Log
 	
 	public var name(default, null):String;
 	
+	public var inclTag:EReg = null;
+	public var exclTag:EReg = null;
+	
 	var _observable:Observable;
 	var _mask:Int;
 	var _level:Int;
 	var _logMessage:LogMessage;
+	var _tagFilter:EReg;
 	
 	public function new(name:String)
 	{
@@ -292,8 +296,16 @@ class Log
 		#end
 	}
 
-	inline function output(level:Int, msg:String, tag:String, ?posInfos:haxe.PosInfos):Void
+	function output(level:Int, msg:String, tag:String, ?posInfos:haxe.PosInfos):Void
 	{
+		if (inclTag != null)
+			if (!inclTag.match(tag))
+				return;
+		
+		if (exclTag != null)
+			if (exclTag.match(tag))
+				return;
+		
 		_counter++; if (_counter == 1000) _counter = 0;
 		
 		if (msg == null) msg = 'null';
