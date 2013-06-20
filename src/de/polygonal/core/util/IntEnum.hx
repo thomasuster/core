@@ -70,6 +70,12 @@ class IntEnum
 			default: Context.error('unsupported declaration', pos);
 		}
 		
+		fields.push
+		({
+			name: 'NUM_FIELDS', doc: null, meta: [], access: [APublic, AStatic, AInline], pos: pos,
+			kind: FVar(TPath( { pack: [], name: 'Int', params: [], sub: null } ), { expr: EConst(CInt(Std.string(i))), pos: pos } ),
+		});
+		
 		return fields;
 	}
 }
