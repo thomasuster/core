@@ -51,8 +51,8 @@ class Interval
 		return M.fmin(_t0 / _t1, 1);
 	}
 	
-	public var isFinished(get_isFinished, never):Bool;
-	inline function get_isFinished():Bool
+	public var finished(get_finished, never):Bool;
+	inline function get_finished():Bool
 	{
 		return alpha >= 1;
 	}

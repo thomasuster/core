@@ -358,10 +358,10 @@ class Mat44
 		var w = r - l;
 		var h = t - b;
 		var d = f - n;
-		m11 = 2 / w; m12 = 0;     m13 = 0;      m14 = -(r + l) / w;
-		m21 = 0;     m22 = 2 / h; m23 = 0;      m24 = -(t + b) / h;
-		m31 = 0;     m32 = 0;     m33 = -2 / d; m34 = -(f + n) / d;
-		m41 = 0;     m42 = 0;     m43 = 0;      m44 = 1;
+		m11 = 2 / w;		m12 = 0;			m13 = 0;			m14 = 0;
+		m21 = 0;			m22 = 2 / h;		m23 = 0;			m24 = 0;
+		m31 = 0;			m32 = 0;			m33 =-2 / d;		m34 = 0;
+		m41 =-(r + l) / w;	m42 =-(t + b) / h;	m43 =-(f + n) / d;	m44 = 1;
 		return this;
 	}
 	
@@ -734,6 +734,7 @@ class Mat44
 	
 	/**
 	 * Same as <em>timesVector()</em>, but without modifying <code>rhs</code>.
+	 * <code>rhs</code> and <code>output</code> can reference the same object.
 	 * @param output stores the result.
 	 */
 	inline public function timesVectorConst(rhs:Vec3, output:Vec3):Vec3
