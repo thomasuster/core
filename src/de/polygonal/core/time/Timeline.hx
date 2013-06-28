@@ -32,6 +32,7 @@ package de.polygonal.core.time;
 import de.polygonal.core.event.IObserver;
 import de.polygonal.core.event.Observable;
 import de.polygonal.core.fmt.Sprintf;
+import de.polygonal.core.util.Assert;
 import de.polygonal.ds.ArrayedQueue;
 import de.polygonal.ds.Cloneable;
 import de.polygonal.ds.Collection;
@@ -164,7 +165,7 @@ class Timeline
 		if (repeatCount != 0 && repeatInterval == .0)
 			repeatInterval = delay; //use delay as interval
 		
-		var delayTicks = M.round(delay / Timebase.tickRate);
+		var delayTicks = Math.round(delay / Timebase.tickRate);
 		var ageTicks = _currTick + delayTicks;
 		var id = ++_nextId;
 		
