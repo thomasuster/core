@@ -31,16 +31,19 @@ package de.polygonal.core.util;
 
 import haxe.CallStack;
 
-class AssertError 
+class AssertError
 {
 	public var message:String;
 	
 	public function new(?message:String, ?info:haxe.PosInfos)
 	{
 		this.message = message;
+		
+		var stack = CallStack.toString(CallStack.callStack());
+		stack = ~/\nCalled from de\.polygonal\.core\.util\.AssertError.*$/m.replace(stack, '');
+		
 		throw 'Assertation ' + (message == null ? '' : '"' + message + '" ') + 'failed in file ' +
-			info.fileName + 'line ' + info.lineNumber + ', ' + info.className + '::' + info.methodName + '\nCall stack:' +
-			CallStack.toString(CallStack.callStack());
+			info.fileName + ', line ' + info.lineNumber + ', ' + info.className + '::' + info.methodName + '\nCall stack:' + stack;
 	}
 	
 	public function toString():String
