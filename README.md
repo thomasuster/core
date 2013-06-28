@@ -50,8 +50,8 @@ If you want to test the latest beta build, you should pull the dev branch and ad
 
 ## Changelog
 
-### 1.03 (dev-branch)
-_supports Haxe 3.0.0 r6415_
+### 1.0.0 (released 2013-06-28)
+_support Haxe Compiler 3.0.0_
 
  * modified: support Haxe 3 only (Haxe 2.x and Neko 1.x are no longer supported)
  * fixed: ie10 console.debug
@@ -63,6 +63,7 @@ _supports Haxe 3.0.0 r6415_
  * modified: print call stack on assertion
  * modified: enable RLE (run length encoder) for all targets
  * modified: move resource loader to separate flash library
+ * modified: renamed IObserver.update() to IObserver.onUpdate() to prevent method name clashing 
 
 ### 1.02 (released 2013-01-30)
 
