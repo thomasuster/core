@@ -102,5 +102,7 @@ class DisplayObjectTween extends Tween implements TweenTarget
 		if (hasf(HEIGHT))   _o.height;
 		else
 		if (hasf(ALPHA))    _o.alpha;
+		else
+			throw 'unknown property';
 	}
 }
