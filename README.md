@@ -50,7 +50,7 @@ If you want to test the latest beta build, you should pull the dev branch and ad
 
 ## Changelog
 
-### 1.0.0 (released 2013-06-28)
+### 1.0.3 (released 2013-06-28)
 _support Haxe Compiler 3.0.0_
 
  * modified: support Haxe 3 only (Haxe 2.x and Neko 1.x are no longer supported)
