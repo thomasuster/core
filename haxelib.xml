@@ -1,0 +1,8 @@
+<project name="polygonal-core" url="https://github.com/polygonal/core" license="MIT">
+	<user name="polygonal"/>
+	<tag v="cross"/>
+	<tag v="utility"/>
+	<depends name="polygonal-ds"/>
+	<description>core library used by other polygonal libraries</description>
+	<version name="1.01">see CHANGES</version>
+</project>

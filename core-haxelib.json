@@ -1,0 +1,13 @@
+{
+  "name": "polygonal-core",
+  "url": "https://github.com/polygonal/core",
+  "license": "MIT",
+  "tags": ["cross", "utility"],
+  "description": "core library used by other polygonal libraries",
+  "version": "1.0.0",
+  "releasenote": "See README",
+  "contributors":"polygonal",
+  "dependencies": {
+    "polygonal-ds":""
+  }
+}
