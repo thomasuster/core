@@ -66,7 +66,7 @@ class TextFieldHandler extends LogHandler
 		tf.name = 'loghandler';
 		tf.selectable = false;
 		flash.Lib.current.addEventListener(flash.events.Event.ADDED, onAdded);
-		_buffer = new ArrayedQueue<String>(_numLines, false);
+		_buffer = new ArrayedQueue<String>(_numLines * 4, false);
 	}
 	
 	override function output(message:String):Void
