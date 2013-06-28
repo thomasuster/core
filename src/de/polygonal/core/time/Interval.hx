@@ -33,21 +33,17 @@ import de.polygonal.core.math.Mathematics;
 
 class Interval
 {
-	public var length(get_length, set_length):Float;
-	inline function get_length():Float
+	public var duration(get_duration, set_duration):Float;
+	inline function get_duration():Float
 	{
-		return _length;
+		return _duration;
 	}
-	inline function set_length(x:Float):Float
+	inline function set_duration(x:Float):Float
 	{
-		_length = x;
+		_duration = x;
 		reset();
 		return x;
 	}
-	
-	var _t0:Float;
-	var _t1:Float;
-	var _length:Float;
 	
 	public var alpha(get_alpha, never):Float;
 	inline function get_alpha():Float
@@ -55,22 +51,33 @@ class Interval
 		return M.fmin(_t0 / _t1, 1);
 	}
 	
+	public var isFinished(get_isFinished, never):Bool;
+	inline function get_isFinished():Bool
+	{
+		return alpha >= 1;
+	}
+	
+	public var remainingSeconds(get_remainingSeconds, never):Float;
+	inline function get_remainingSeconds():Float
+	{
+		return _t1 - _t0;
+	}
+	
 	public var hold:Bool;
 	
-	public function new(length:Float = 0)
+	var _t0:Float;
+	var _t1:Float;
+	var _duration:Float;
+	
+	public function new(duration:Float = 0)
 	{
-		this.length = length;
+		this.duration = duration;
 	}
 	
 	inline public function reset():Void
 	{
 		_t0 = 0;
-		_t1 = length;
-	}
-	
-	inline public function isFinished():Bool
-	{
-		return alpha >= 1;
+		_t1 = duration;
 	}
 	
 	inline public function advance(dt:Float):Float
