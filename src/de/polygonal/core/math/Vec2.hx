@@ -29,7 +29,6 @@
  */
 package de.polygonal.core.math;
 
-import de.polygonal.core.fmt.Sprintf;
 import de.polygonal.core.math.Mathematics;
 
 /**

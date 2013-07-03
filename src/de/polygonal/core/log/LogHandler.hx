@@ -31,7 +31,6 @@ package de.polygonal.core.log;
 
 import de.polygonal.core.event.IObservable;
 import de.polygonal.core.event.IObserver;
-import de.polygonal.core.fmt.Sprintf;
 import de.polygonal.core.fmt.StringUtil;
 import de.polygonal.core.log.LogLevel;
 import de.polygonal.core.log.LogMessage;

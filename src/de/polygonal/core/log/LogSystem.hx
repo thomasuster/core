@@ -29,7 +29,6 @@
  */
 package de.polygonal.core.log;
 
-import de.polygonal.core.fmt.Sprintf;
 import de.polygonal.ds.DA;
 import haxe.ds.StringMap;
 

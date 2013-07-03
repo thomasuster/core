@@ -30,7 +30,6 @@
 package de.polygonal.core.event;
 
 import de.polygonal.core.event.Observable;
-import de.polygonal.core.fmt.Sprintf;
 import de.polygonal.core.fmt.StringUtil;
 import de.polygonal.ds.Array2;
 import de.polygonal.ds.ArrayedStack;

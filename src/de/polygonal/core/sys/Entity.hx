@@ -32,7 +32,6 @@ package de.polygonal.core.sys;
 import de.polygonal.core.event.IObservable;
 import de.polygonal.core.event.IObserver;
 import de.polygonal.core.event.Observable;
-import de.polygonal.core.fmt.Sprintf;
 import de.polygonal.core.math.Limits;
 import de.polygonal.core.util.ClassUtil;
 import de.polygonal.ds.Bits;

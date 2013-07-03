@@ -168,6 +168,6 @@ class Vec3 implements Cloneable<Vec3>
 	public function toString():String
 	{
 		var format = '{%-+10.4f %-+10.4f %-+10.4f %-+10.4f}';
-		return de.polygonal.core.fmt.Sprintf.format(format, [x, y, z, w]);
+		return Sprintf.format(format, [x, y, z, w]);
 	}
 }
