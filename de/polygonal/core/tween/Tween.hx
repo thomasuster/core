@@ -95,54 +95,8 @@ class Tween implements IObservable implements IObserver implements TimelineListe
 	 */
 	public static function create(key:String = null, object:Dynamic, fields:Dynamic, ease:Ease, to:Float, duration:Float, interpolateState = false):Tween
 	{
-		#if (flash || nme)
-		if (Std.is(object, flash.display.DisplayObject))
-		{
-			var flags = 0;
-			if (Std.is(fields, String))
-				flags = _getFlag(fields);
-			else
-			if (Std.is(fields, Array))
-			{
-				for (field in cast(fields, Array<Dynamic>))
-					flags |= _getFlag(field);
-			}
-			
-			if (key != null)
-			{
-				var o = Tween.get(key);
-				if (o != null && Std.is(o, DisplayObjectTween))
-				{
-					var t:DisplayObjectTween = cast o;
-					t.flags(flags).ease(ease).to(to).duration(duration).run();
-					return t;
-				}
-			}
-			return new DisplayObjectTween(key, object, flags, ease, to, duration, interpolateState);
-		}
-		#end
-		
 		return new GenericTween(key, object, fields, ease, to , duration, interpolateState).run();
 	}
-	
-	#if (flash || nme)
-	inline static function _getFlag(field:Dynamic):Int
-	{
-		var flag = 0;
-		switch (Std.string(field))
-		{
-			case 'x':        flag |= DisplayObjectTween.X;
-			case 'y':        flag |= DisplayObjectTween.Y;
-			case 'width':    flag |= DisplayObjectTween.WIDTH;
-			case 'height':   flag |= DisplayObjectTween.HEIGHT;
-			case 'scaleX':   flag |= DisplayObjectTween.SCALEX;
-			case 'scaleY':   flag |= DisplayObjectTween.SCALEY;
-			case 'rotation': flag |= DisplayObjectTween.ROTATION;
-			case 'alpha':    flag |= DisplayObjectTween.ALPHA;
-		}
-		return flag;
-	}
-	#end
 	
 	var _id:Int;
 	var _key:String;
