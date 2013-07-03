@@ -38,26 +38,26 @@ import de.polygonal.ds.Bits;
  */
 class NumberFormat
 {
-	static var _hexLUT = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'];
+	static var _hexLUT = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"];
 	
 	/**
 	 * Returns a string representation of the unsigned integer <code>x</code> in binary notation.
 	 * @param byteDelimiter a character to insert between bytes. The default value is an empty string.
 	 */
-	public static function toBin(x:Int, byteDelimiter = '', leadingZeros = false):String
+	public static function toBin(x:Int, byteDelimiter = "", leadingZeros = false):String
 	{
 		var n = Limits.INT_BITS - Bits.nlz(x);
-		var s = ((x & 1) > 0) ? '1' : '0'; 
+		var s = ((x & 1) > 0) ? "1" : "0";
 		x >>= 1;
 		for (i in 1...n)
 		{
-			s = (((x & 1) > 0) ? '1' : '0') + ((i & 7 == 0) ? byteDelimiter : '') + s;
+			s = (((x & 1) > 0) ? "1" : "0") + ((i & 7 == 0) ? byteDelimiter : "") + s;
 			x >>= 1;
 		}
 		
 		if (leadingZeros)
 			for (i in 0...Limits.INT_BITS - n)
-				s = '0' + s;
+				s = "0" + s;
 		return s;
 	}
 	
@@ -66,8 +66,8 @@ class NumberFormat
 	 */
 	public static function toHex(x:Int):String
 	{
-		if (x == 0) return '0';
-		var s = '';
+		if (x == 0) return "0";
+		var s = "";
 		var a = _hexLUT;
 		while (x != 0)
 		{
@@ -82,7 +82,7 @@ class NumberFormat
 	 */
 	public static function toOct(x:Int):String
 	{
-		var s = '';
+		var s = "";
 		var t = x;
 		do
 		{
@@ -99,7 +99,7 @@ class NumberFormat
 	 */
 	public static function toRadix(x:Int, radix:Int):String
 	{
-		var s = '';
+		var s = "";
 		var t = x;
 		while (t > 0)
 		{
@@ -117,22 +117,22 @@ class NumberFormat
 	public static function toFixed(x:Float, decimalPlaces:Int):String
 	{
 		if (Math.isNaN(x))
-			return 'NaN';
+			return "NaN";
 		else
 		{
 			var t = M.exp(10, decimalPlaces);
 			var s = Std.string(Std.int(x * t) / t);
-			var i = s.indexOf('.');
+			var i = s.indexOf(".");
 			if (i != -1)
 			{
 				for (i in s.substr(i + 1).length...decimalPlaces)
-					s += '0';
+					s += "0";
 			}
 			else
 			{
-				s += '.';
+				s += ".";
 				for (i in 0...decimalPlaces)
-					s += '0';
+					s += "0";
 			}
 			return s;
 		}
@@ -147,15 +147,15 @@ class NumberFormat
 		var ms = x % 1000;
 		var r = (x - ms) / 1000;
 		var tmp = r % 60;
-		return (('0' + ((r - tmp) / 60)).substr(-2)) + ':' + ('0' + tmp).substr(-2);
+		return (("0" + ((r - tmp) / 60)).substr(-2)) + ":" + ("0" + tmp).substr(-2);
 	}
 	
 	/**
 	 * Groups the digits in the input number by using a thousands separator.<br/>
-	 * E.g. the number 1024 is converted to the string '1.024'.
+	 * E.g. the number 1024 is converted to the string "1.024".
 	 * @param thousandsSeparator a character to use as a thousands separator. The default value is ".".
 	 */
-	public static function groupDigits(x:Int, thousandsSeparator = '.'):String
+	public static function groupDigits(x:Int, thousandsSeparator = "."):String
 	{
 		var n:Float = x;
 		var c = 0;
@@ -173,7 +173,7 @@ class NumberFormat
 			return source;
 		else
 		{
-			var target = '';
+			var target = "";
 			
 			var i = 0;
 			var j = source.length - 1;
@@ -199,22 +199,22 @@ class NumberFormat
 	 * @param decimalSeparator a character to use as a decimal separator. The default value is ",".
 	 * @param thousandsSeparator a character to use as a thousands separator. The default value is ".".
 	 */
-	public static function centToEuro(x:Int, decimalSeparator = ',', thousandsSeparator = '.'):String	
+	public static function centToEuro(x:Int, decimalSeparator = ",", thousandsSeparator = "."):String	
 	{
 		var euro = Std.int(x / 100);
 		if (euro == 0)
 		{
 			if (x < 10)
-				return '0' + decimalSeparator + '0' + x;
+				return "0" + decimalSeparator + "0" + x;
 			else
-				return '0' + decimalSeparator + x;
+				return "0" + decimalSeparator + x;
 		}
 		else 
 		{
 			var str:String;
 			var cent = x - euro * 100;	
 			if (cent < 10)
-				str = decimalSeparator + '0' + cent;
+				str = decimalSeparator + "0" + cent;
 			else
 				str = decimalSeparator + cent;
 			if (euro >= 1000)
@@ -226,10 +226,10 @@ class NumberFormat
 					num = Std.int(euro / 1000);	
 					add = euro - num * 1000; 
 					if (add < 10)
-						str = thousandsSeparator + '00' + add + str;
+						str = thousandsSeparator + "00" + add + str;
 					else
 					if (add < 100)
-						str = thousandsSeparator + '0' + add + str; 
+						str = thousandsSeparator + "0" + add + str; 
 					else
 						str = thousandsSeparator + add + str;
 					euro = num;

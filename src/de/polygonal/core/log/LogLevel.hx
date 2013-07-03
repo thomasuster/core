@@ -80,12 +80,12 @@ class LogLevel
 		return
 		switch (Bits.ntz(level))
 		{
-			case 0: 'DEBUG';
-			case 1: 'INFO';
-			case 2: 'WARN';
-			case 3: 'ERROR';
-			case 4: 'OFF';
-			case _: '?';
+			case 0: "DEBUG";
+			case 1: "INFO";
+			case 2: "WARN";
+			case 3: "ERROR";
+			case 4: "OFF";
+			case _: "?";
 		}
 	}
 	
@@ -94,12 +94,12 @@ class LogLevel
 		return
 		switch (Bits.ntz(level))
 		{
-			case 0: 'D';
-			case 1: 'I';
-			case 2: 'W';
-			case 3: 'E';
-			case 4: 'O';
-			case _: '?';
+			case 0: "D";
+			case 1: "I";
+			case 2: "W";
+			case 3: "E";
+			case 4: "O";
+			case _: "?";
 		}
 	}
 }

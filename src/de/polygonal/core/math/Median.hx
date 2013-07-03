@@ -50,7 +50,7 @@ class Median
 	 */
 	public function new(size:Int)
 	{
-		_set = new DoubleMemory(_s = size, 'Median._set');
+		_set = new DoubleMemory(_s = size, "Median._set");
 		_set.fill(0);
 		_val = 0;
 	}

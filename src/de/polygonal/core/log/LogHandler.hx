@@ -112,7 +112,7 @@ class LogHandler implements IObserver
 					a.push(LogLevel.getName(i));
 				i <<= 1;
 			}
-			return a.join('|');
+			return a.join("|");
 		}
 		
 		return LogLevel.getName(_level);
@@ -139,7 +139,7 @@ class LogHandler implements IObserver
 	public function setLevel(x:Int):Void
 	{
 		#if debug
-		D.assert((x & LogLevel.ALL) > 0, '(x & LogLevel.ALL) > 0');
+		D.assert((x & LogLevel.ALL) > 0, "(x & LogLevel.ALL) > 0");
 		#end
 		
 		_level = x;
@@ -220,8 +220,8 @@ class LogHandler implements IObserver
 		var fmt, val;
 		
 		//date & time
-		fmt = '%s';
-		val = '';
+		fmt = "%s";
+		val = "";
 		if (hasf(DATE | TIME))
 		{
 			var date = Date.now().toString();
@@ -237,56 +237,56 @@ class LogHandler implements IObserver
 		vals.push(val);
 		
 		//level
-		fmt = '%s';
-		val = '';
+		fmt = "%s";
+		val = "";
 		if (hasf(LEVEL))
 		{
 			val = LogLevel.getShortName(_message.outputLevel);
-			if (hasf(DATE | TIME)) fmt = ' %s';
+			if (hasf(DATE | TIME)) fmt = " %s";
 		}
 		args.push(fmt);
 		vals.push(val);
 		
 		//log name
-		fmt = '%s';
-		val = '';
+		fmt = "%s";
+		val = "";
 		if (hasf(NAME))
 		{
-			if (hasf(LEVEL)) fmt = '/%s';
+			if (hasf(LEVEL)) fmt = "/%s";
 			val = _message.log.name;
 		}
 		args.push(fmt);
 		vals.push(val);
 		
 		//message tag
-		fmt = '%s';
-		val = '';
+		fmt = "%s";
+		val = "";
 		if (hasf(TAG))
 		{
 			if (_message.tag != null)
 			{
 				val = _message.tag;
-				fmt = '/%s';
+				fmt = "/%s";
 			}
 		}
 		args.push(fmt);
 		vals.push(val);
 		
 		//position infos
-		fmt = '%s';
+		fmt = "%s";
 		if (hasf(CLASS | METHOD | LINE))
 		{
-			fmt = '(';
+			fmt = "(";
 			
 			if (hasf(CLASS))
 			{
 				var className = _message.posInfos.className;
 				if (hasf(CLASS_SHORT))
-					className = className.substr(className.lastIndexOf('.') + 1);
+					className = className.substr(className.lastIndexOf(".") + 1);
 				if (className.length > 30)
 					className = StringUtil.ellipsis(className, 30, 0);
 				
-				fmt += '%s';
+				fmt += "%s";
 				vals.push(className);
 			}
 			
@@ -295,55 +295,55 @@ class LogHandler implements IObserver
 				var methodName = _message.posInfos.methodName;
 				if (methodName.length > 30) methodName = StringUtil.ellipsis(methodName, 30, 0);
 				
-				fmt += hasf(CLASS) ? '.%s' : '%s';
+				fmt += hasf(CLASS) ? ".%s" : "%s";
 				vals.push(methodName);
 			}
 			
 			if (hasf(LINE))
 			{
-				fmt += hasf(CLASS | METHOD) ? ' %04d' : '%04d';
+				fmt += hasf(CLASS | METHOD) ? " %04d" : "%04d";
 				vals.push(_message.posInfos.lineNumber);
 			}
 			
-			fmt += ')';
+			fmt += ")";
 		}
 		else
-			vals.push('');
+			vals.push("");
 		args.push(fmt);
 		
 		//message
-		fmt = _bits == 0 ? '%s' : ': %s';
+		fmt = _bits == 0 ? "%s" : ": %s";
 		val = _message.msg;
 		var s = val;
-		if (Std.is(s, String) && s.indexOf('\n') != -1)
+		if (Std.is(s, String) && s.indexOf("\n") != -1)
 		{
-			var pre = '';
+			var pre = "";
 			if (hasf(LEVEL))
 				pre = LogLevel.getShortName(_message.outputLevel);
 			if (hasf(NAME))
 			{
 				if (hasf(LEVEL))
-					pre += '/';
+					pre += "/";
 				pre += _message.log.name;
 			}
 			if (hasf(TAG))
 				if (_message.tag != null)
-					pre += '/' + _message.tag;
+					pre += "/" + _message.tag;
 			
-			if (s.indexOf('\r') != -1)
-				s = s.split('\r').join('');
+			if (s.indexOf("\r") != -1)
+				s = s.split("\r").join("");
 			var tmp = [];
-			for (i in s.split('\n'))
-				if (i != '') tmp.push(i);
+			for (i in s.split("\n"))
+				if (i != "") tmp.push(i);
 			
 			if (_bits != FORMAT_RAW)
-				val = '\n' + pre + ': ' + tmp.join('\n' + pre + ': ');
+				val = "\n" + pre + ": " + tmp.join("\n" + pre + ": ");
 		}
 		
 		args.push(fmt);
 		vals.push(val);
 		
-		return Sprintf.format(args.join(''), vals);
+		return Sprintf.format(args.join(""), vals);
 	}
 	
 	function output(msg:String):Void {}

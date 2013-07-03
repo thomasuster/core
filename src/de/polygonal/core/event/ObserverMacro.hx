@@ -103,11 +103,11 @@ class ObserverMacro
 	
 	macro public static function create(e:Expr):Array<Field>
 	{
-		var numBits = Context.defined('neko') ? 30 : 32;
+		var numBits = Context.defined("neko") ? 30 : 32;
 		NUM_EVENT_BITS = numBits - NUM_GROUP_BITS;
 		
 		if (_groupCounter > (1 << NUM_GROUP_BITS) - 1)
-			Context.error('too many groups', Context.currentPos());
+			Context.error("too many groups", Context.currentPos());
 		
 		var pos = Context.currentPos();
 		var gid    = _groupCounter++;
@@ -118,7 +118,7 @@ class ObserverMacro
 		switch (e.expr)
 		{
 			case EArrayDecl(a):
-				if (a.length > NUM_EVENT_BITS) Context.error('too many types', pos);
+				if (a.length > NUM_EVENT_BITS) Context.error("too many types", pos);
 				
 				for (b in a)
 				{
@@ -132,12 +132,12 @@ class ObserverMacro
 									names.push(d);
 									tid++;
 								
-								default: Context.error('unsupported declaration', pos);
+								default: Context.error("unsupported declaration", pos);
 							}
-						default: Context.error('unsupported declaration', pos);
+						default: Context.error("unsupported declaration", pos);
 					}
 				}
-			default: Context.error('unsupported declaration', pos);
+			default: Context.error("unsupported declaration", pos);
 		}
 		
 		fields.push(_makeNameFunc(names, gid, pos));
@@ -152,14 +152,14 @@ class ObserverMacro
 	
 	macro public static function guid():Array<Field>
 	{
-		if (haxe.macro.Context.defined('display')) return null;
+		if (haxe.macro.Context.defined("display")) return null;
 		var c = haxe.macro.Context.getLocalClass().get();
 		while (c.superClass != null)
 		{
 			c = c.superClass.t.get();
 			for (i in c.interfaces)
 			{
-				if (i.t.toString() == 'de.polygonal.core.event.IObserver')
+				if (i.t.toString() == "de.polygonal.core.event.IObserver")
 					return null;
 			}
 		}
@@ -167,7 +167,7 @@ class ObserverMacro
 		var fields = Context.getBuildFields();
 		for (field in fields)
 		{
-			if (field.name == 'new')
+			if (field.name == "new")
 			{
 				switch (field.kind)
 				{
@@ -175,7 +175,7 @@ class ObserverMacro
 						switch (f.expr.expr)
 						{
 							case ExprDef.EBlock(a):
-								a.unshift({expr: EBinop(Binop.OpAssign, {expr: EConst(CIdent('__guid')), pos: p}, {expr: EConst(CInt('0')), pos: p}), pos: p});
+								a.unshift({expr: EBinop(Binop.OpAssign, {expr: EConst(CIdent("__guid")), pos: p}, {expr: EConst(CInt("0")), pos: p}), pos: p});
 							default:
 						}
 					default:
@@ -184,7 +184,7 @@ class ObserverMacro
 			}
 		}
 		
-		fields.push({name: '__guid', doc: null, meta: [], access: [APublic], kind: FVar(TPath({pack: [], name: 'Int', params: [], sub: null})), pos: p});
+		fields.push({name: "__guid", doc: null, meta: [], access: [APublic], kind: FVar(TPath({pack: [], name: "Int", params: [], sub: null})), pos: p});
 		return fields;
 	}
 	
@@ -192,118 +192,118 @@ class ObserverMacro
 	{
 		var a = EBinop(OpEq,
 			{expr: EConst(CInt(Std.string(gid))), pos: pos},
-			{expr: EBinop(OpUShr, {expr: EConst(CIdent('x')), pos: pos}, {expr: EConst(CInt(Std.string(NUM_EVENT_BITS))), pos: pos}), pos: pos});
+			{expr: EBinop(OpUShr, {expr: EConst(CIdent("x")), pos: pos}, {expr: EConst(CInt(Std.string(NUM_EVENT_BITS))), pos: pos}), pos: pos});
 		
 		var f =
 		{
-			args: [{name: 'x', opt: false, type: TPath({pack: [], name: 'Int', params: [], sub: null}), value: null}],
-			ret: TPath({pack: [], name: 'Bool', params: [], sub: null}),
+			args: [{name: "x", opt: false, type: TPath({pack: [], name: "Int", params: [], sub: null}), value: null}],
+			ret: TPath({pack: [], name: "Bool", params: [], sub: null}),
 			expr: {expr: EReturn({expr: a, pos: pos}), pos: pos},
 			params: []
 		}
 		
-		return {name: 'has', doc: null, meta: [], access: [AStatic, APublic, AInline], kind: FFun(f), pos: pos}
+		return {name: "has", doc: null, meta: [], access: [AStatic, APublic, AInline], kind: FFun(f), pos: pos}
 	}
 	
 	static function _makeGroupFunc(pos)
 	{
 		var f =
 		{
-			args: [{name: 'x', opt: false, type: TPath({pack: [], name: 'Int', params: [], sub: null}), value: null}],
-			ret: TPath({pack: [], name: 'Int', params: [], sub: null}),
-			expr: {expr: EReturn({expr: EBinop(OpUShr, {expr: EConst(CIdent('x')), pos: pos}, {expr: EConst(CInt(Std.string(NUM_EVENT_BITS))), pos: pos}), pos: pos}), pos: pos},
+			args: [{name: "x", opt: false, type: TPath({pack: [], name: "Int", params: [], sub: null}), value: null}],
+			ret: TPath({pack: [], name: "Int", params: [], sub: null}),
+			expr: {expr: EReturn({expr: EBinop(OpUShr, {expr: EConst(CIdent("x")), pos: pos}, {expr: EConst(CInt(Std.string(NUM_EVENT_BITS))), pos: pos}), pos: pos}), pos: pos},
 			params: []
 		}
 		
-		return {name: 'group', doc: null, meta: [], access: [AStatic, APublic, AInline], kind: FFun(f), pos: pos}
+		return {name: "group", doc: null, meta: [], access: [AStatic, APublic, AInline], kind: FFun(f), pos: pos}
 	}
 	
 	static function _makeNameFunc(names:Array<String>, gid, p)
 	{
-		if (haxe.macro.Context.defined('display'))
+		if (haxe.macro.Context.defined("display"))
 		{
 			var f =
 			{
-				args: [{name: 'x', opt: false, type: TPath({pack: [], name: 'Int', params: [], sub: null}), value: null}],
-				ret: TPath({name: 'Array', pack: [], params: [TPType(TPath({name: 'String', pack: [], params: [], sub: null}))], sub: null}),
+				args: [{name: "x", opt: false, type: TPath({pack: [], name: "Int", params: [], sub: null}), value: null}],
+				ret: TPath({name: "Array", pack: [], params: [TPType(TPath({name: "String", pack: [], params: [], sub: null}))], sub: null}),
 				expr: {expr: EBlock([]), pos: p},
 				params: []
 			}
 			
-			return {name: 'getName', doc: null, meta: [], access: [AStatic, APublic], kind: FFun(f), pos: p}
+			return {name: "getName", doc: null, meta: [], access: [AStatic, APublic], kind: FFun(f), pos: p}
 		}
 		else
 		{
 			function maskExpr(typeShift:Int)
 			{
 				var p = haxe.macro.Context.currentPos();
-				var a = EBinop(OpShl, {expr: EConst(CInt('1')), pos: p}, {expr: EConst(CInt(Std.string(typeShift))), pos: p});
+				var a = EBinop(OpShl, {expr: EConst(CInt("1")), pos: p}, {expr: EConst(CInt(Std.string(typeShift))), pos: p});
 				return EParenthesis({expr: a, pos: p});
 			}
 			
 			var e = [];
-			e.push({expr: EVars([{expr: {expr: ENew({name:'Array', pack: [], params: [TPType(TPath({name:'String', pack: [], params: [], sub: null}))], sub: null}, []), pos: p},
-				name: 'output', type: TPath({name: 'Array', pack: [], params: [TPType(TPath({name: 'String', pack: [], params: [], sub: null}))], sub: null})}]), pos: p});
+			e.push({expr: EVars([{expr: {expr: ENew({name:"Array", pack: [], params: [TPType(TPath({name:"String", pack: [], params: [], sub: null}))], sub: null}, []), pos: p},
+				name: "output", type: TPath({name: "Array", pack: [], params: [TPType(TPath({name: "String", pack: [], params: [], sub: null}))], sub: null})}]), pos: p});
 			for (i in 0...names.length)
 			{
-				e.push({expr: EVars([{expr: {expr: maskExpr(i), pos: p}, name: 'mask', type: TPath({name:'Int', pack: [], params: [], sub: null})}]), pos: p});
+				e.push({expr: EVars([{expr: {expr: maskExpr(i), pos: p}, name: "mask", type: TPath({name:"Int", pack: [], params: [], sub: null})}]), pos: p});
 				e.push({expr: EIf(
-					{expr: EBinop(OpGt, {expr: EBinop(OpAnd, {expr: EConst(CIdent('x')), pos: p}, {expr: EConst(CIdent('mask')), pos: p}), pos: p}, {expr: EConst(CInt('0')), pos: p}), pos: p},
-					{expr: EBlock([{expr: ECall({expr: EField({expr: EConst(CIdent('output')), pos: p}, 'push'), pos: p}, [{expr: EConst(CString(names[i])), pos: p}]), pos: p}]), pos: p}, null), pos : p});
+					{expr: EBinop(OpGt, {expr: EBinop(OpAnd, {expr: EConst(CIdent("x")), pos: p}, {expr: EConst(CIdent("mask")), pos: p}), pos: p}, {expr: EConst(CInt("0")), pos: p}), pos: p},
+					{expr: EBlock([{expr: ECall({expr: EField({expr: EConst(CIdent("output")), pos: p}, "push"), pos: p}, [{expr: EConst(CString(names[i])), pos: p}]), pos: p}]), pos: p}, null), pos : p});
 			}
-			e.push({expr: EReturn({expr: EConst(CIdent('output')), pos: p}), pos : p});
+			e.push({expr: EReturn({expr: EConst(CIdent("output")), pos: p}), pos : p});
 			
 			var f =
 			{
-				args: [{name: 'x', opt: false, type: TPath({pack: [], name: 'Int', params: [], sub: null}), value: null}],
-				ret: TPath({name: 'Array', pack: [], params: [TPType(TPath({name: 'String', pack: [], params: [], sub: null}))], sub: null}),
+				args: [{name: "x", opt: false, type: TPath({pack: [], name: "Int", params: [], sub: null}), value: null}],
+				ret: TPath({name: "Array", pack: [], params: [TPType(TPath({name: "String", pack: [], params: [], sub: null}))], sub: null}),
 				expr: {expr: EBlock(e), pos: p},
 				params: []
 			}
 			
-			return {name: 'getName', doc: null, meta: [], access: [AStatic, APublic], kind: FFun(f), pos: p}
+			return {name: "getName", doc: null, meta: [], access: [AStatic, APublic], kind: FFun(f), pos: p}
 		}
 	}
 	
 	static function _makeTypeField(name, tid, gid, pos):Field
 	{
-		if (haxe.macro.Context.defined('display'))
+		if (haxe.macro.Context.defined("display"))
 		{
 			return {name: name, doc: null, meta: [], access: [AStatic, APublic],
-				kind: FVar(TPath({pack : [], name : 'Int', params : [], sub : null}), {expr: EConst(CInt('0')), pos: pos}), pos: pos}
+				kind: FVar(TPath({pack : [], name : "Int", params : [], sub : null}), {expr: EConst(CInt("0")), pos: pos}), pos: pos}
 		}
 		else
 		{
-			var a = EBinop(OpShl, {expr: EConst(CInt('1')), pos: pos}, {expr: EConst(CInt(Std.string(tid))), pos: pos});
+			var a = EBinop(OpShl, {expr: EConst(CInt("1")), pos: pos}, {expr: EConst(CInt(Std.string(tid))), pos: pos});
 			var b = EBinop(OpShl, {expr: EConst(CInt(Std.string(gid))), pos: pos}, {expr: EConst(CInt(Std.string(NUM_EVENT_BITS))), pos: pos});
 			var c = EBinop(OpOr, {expr: a, pos: pos}, {expr: b, pos: pos});
 			return {name: name, doc: null, meta: [], access: [AStatic, APublic, AInline],
-				kind: FVar(TPath({pack : [], name : 'Int', params : [], sub : null}), {expr: c, pos: pos}), pos: pos}
+				kind: FVar(TPath({pack : [], name : "Int", params : [], sub : null}), {expr: c, pos: pos}), pos: pos}
 		}
 	}
 	
 	static function _makeGroupIdField(gid, pos):Field
 	{
-		return {name: 'GROUP_ID', doc: null, meta: [], access: [AStatic, APublic, AInline],
-			kind: FVar(TPath({pack : [], name : 'Int', params : [], sub : null}), {expr: EConst(CInt(Std.string(gid))), pos: pos}), pos: pos}
+		return {name: "GROUP_ID", doc: null, meta: [], access: [AStatic, APublic, AInline],
+			kind: FVar(TPath({pack : [], name : "Int", params : [], sub : null}), {expr: EConst(CInt(Std.string(gid))), pos: pos}), pos: pos}
 	}
 	
 	static function _makeGroupMaskField(gid, pos):Field
 	{
 		var mask = EBinop(OpShl, {expr: EConst(CInt(Std.string(gid))), pos: pos}, {expr: EConst(CInt(Std.string(NUM_EVENT_BITS))), pos: pos});
 		
-		return {name: 'GROUP_MASK', doc: null, meta: [], access: [AStatic, APublic, AInline],
-			kind: FVar(TPath({pack : [], name : 'Int', params : [], sub : null}), {expr: mask, pos: pos}), pos: pos}
+		return {name: "GROUP_MASK", doc: null, meta: [], access: [AStatic, APublic, AInline],
+			kind: FVar(TPath({pack : [], name : "Int", params : [], sub : null}), {expr: mask, pos: pos}), pos: pos}
 	}
 	
 	static function _makeEventMaskField(n, pos):Field
 	{
 		var mask = EBinop(OpSub,
-			{expr: EBinop(OpShl, {expr: EConst(CInt('1')), pos: pos}, {expr: EConst(CInt(Std.string(n))), pos: pos}), pos: pos},
-			{expr: EConst(CInt('1')), pos: pos});
+			{expr: EBinop(OpShl, {expr: EConst(CInt("1")), pos: pos}, {expr: EConst(CInt(Std.string(n))), pos: pos}), pos: pos},
+			{expr: EConst(CInt("1")), pos: pos});
 		
-		return {name: 'EVENT_MASK', doc: null, meta: [], access: [AStatic, APublic, AInline],
-			kind: FVar(TPath({pack : [], name : 'Int', params : [], sub : null}), {expr: mask, pos: pos}), pos: pos}
+		return {name: "EVENT_MASK", doc: null, meta: [], access: [AStatic, APublic, AInline],
+			kind: FVar(TPath({pack : [], name : "Int", params : [], sub : null}), {expr: mask, pos: pos}), pos: pos}
 	}
 	#end
 }

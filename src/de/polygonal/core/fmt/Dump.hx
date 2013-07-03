@@ -39,12 +39,12 @@ class Dump
 	 */
 	public static function object(o:Dynamic):String
 	{
-		return _object(o, '');
+		return _object(o, "");
 	}
 	
 	static function _object(o:Dynamic, ws:String):String
 	{
-		var s = '\n';
+		var s = "\n";
 		var fields = Reflect.fields(o);
 		for (field in fields)
 		{
@@ -52,17 +52,17 @@ class Dump
 			switch (Type.typeof(value))
 			{
 				case Type.ValueType.TObject:
-					s += ws + '' + field + ':';
-					s += _object(value, ws + '|    ');
+					s += ws + "" + field + ":";
+					s += _object(value, ws + "|    ");
 				
 				case Type.ValueType.TClass(c):
-					s += ws + Sprintf.format('%s: %s [%s]\n', [field, value, Type.getClassName(c)]);
+					s += ws + Sprintf.format("%s: %s [%s]\n", [field, value, Type.getClassName(c)]);
 				
 				case Type.ValueType.TEnum(e):
-					s += ws + Sprintf.format('%s: %s [Enum(%s)]\n', [field, value, Type.getEnumName(e)]);
+					s += ws + Sprintf.format("%s: %s [Enum(%s)]\n", [field, value, Type.getEnumName(e)]);
 				
 				default:
-					s += ws + Sprintf.format('%s: %s [%s]\n', [field, value, Std.string(Type.typeof(value)).substr(1)]);
+					s += ws + Sprintf.format("%s: %s [%s]\n", [field, value, Std.string(Type.typeof(value)).substr(1)]);
 			}
 		}
 		return s;

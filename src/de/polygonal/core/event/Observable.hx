@@ -61,13 +61,13 @@ class Observable extends HashableItem implements IObservable
 	public static function dump():String
 	{
 		var c = 0;
-		var s = '';
+		var s = "";
 		for (observable in _getRegistry())
 		{
 			c += observable.size();
-			s += Sprintf.format('%-20s -> %s\n', [StringUtil.ellipsis(Std.string(observable), 20, 0), observable.size()]);
+			s += Sprintf.format("%-20s -> %s\n", [StringUtil.ellipsis(Std.string(observable), 20, 0), observable.size()]);
 		}
-		return Sprintf.format('#observers: %03d\n', [c]) + s;
+		return Sprintf.format("#observers: %03d\n", [c]) + s;
 	}
 	
 	/**
@@ -728,7 +728,7 @@ private class Bind implements IObserver
 		
 		#if verbose
 		if (_pool.capacity() == _pool.size())
-			L.d('observable bind pool exhausted');
+			L.d("observable bind pool exhausted");
 		#end
 		
 		var o = _pool.get();
@@ -760,13 +760,13 @@ private class Bind implements IObserver
 		_pool.put(this);
 		
 		#if verbose
-		L.d('returning observable bind object');
+		L.d("returning observable bind object");
 		#end
 		
 		if (_pool.used() == 0)
 		{
 			#if verbose
-			L.d('reclaiming observable bind pool');
+			L.d("reclaiming observable bind pool");
 			#end
 			_pool.reclaim();
 		}
@@ -782,7 +782,7 @@ private class Delegate implements IObserver
 		
 		#if verbose
 		if (_pool.capacity() == _pool.size())
-			L.d('observable delegate pool exhausted');
+			L.d("observable delegate pool exhausted");
 		#end
 		
 		var o = _pool.get();
@@ -801,13 +801,13 @@ private class Delegate implements IObserver
 		_pool.put(this);
 		
 		#if verbose
-		L.d('returning observable delegate object');
+		L.d("returning observable delegate object");
 		#end
 		
 		if (_pool.used() == 0)
 		{
 			#if verbose
-			L.d('reclaiming observable delegate pool');
+			L.d("reclaiming observable delegate pool");
 			#end
 			_pool.reclaim();
 		}

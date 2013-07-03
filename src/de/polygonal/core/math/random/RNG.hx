@@ -67,7 +67,7 @@ class RNG
 	 */
 	public function random():Float
 	{
-		return throw 'override for implementation';
+		return throw "override for implementation";
 	}
 	
 	/**
@@ -75,7 +75,7 @@ class RNG
 	 */
 	public function randomFloat():Float
 	{
-		return throw 'override for implementation';
+		return throw "override for implementation";
 	}
 	
 	/**

@@ -218,7 +218,7 @@ class Mathematics
 	}
 	
 	/**
-	 * Fast version of <em>Math.max</em>(<code>x</code>, <code>y</code>).
+	 * Returns max(<code>x</code>, <code>y</code>).
 	 */
 	inline public static function fmax(x:Float, y:Float):Float
 	{
@@ -407,7 +407,7 @@ class Mathematics
 		#if js
 		return Math.round(x / y) * y;
 		#elseif flash
-		var t:Float = untyped __global__['Math'].round((x / y));
+		var t:Float = untyped __global__["Math"].round((x / y));
 		return t * y;
 		#else
 		var t = x / y;
@@ -472,7 +472,7 @@ class Mathematics
 	}
 	
 	/**
-	 * Computes the 'quake-style' fast square root of <code>x</code>.
+	 * Computes the "quake-style" fast square root of <code>x</code>.
 	 */
 	inline public static function sqrt(x:Float):Float
 	{
@@ -489,7 +489,7 @@ class Mathematics
 	}
 	
 	/**
-	 * Computes the 'quake-style' fast inverse square root of <code>x</code>.
+	 * Computes the "quake-style" fast inverse square root of <code>x</code>.
 	 */
 	inline public static function invSqrt(x:Float):Float
 	{

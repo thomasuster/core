@@ -65,22 +65,22 @@ class PropertyFile
 			var val = map.get(key);
 			
 			var c = null, n:String, p = [];
-			if (val.indexOf(',') != -1)
+			if (val.indexOf(",") != -1)
 			{
 				var arrExpr = [];
 				var arrType;
-				var tmp = val.split(',');
+				var tmp = val.split(",");
 				
-				if (tmp[0].indexOf('.') != -1)
+				if (tmp[0].indexOf(".") != -1)
 				{
 					for (i in tmp) arrExpr.push({expr: EConst(CFloat(Std.string(Std.parseFloat(i)))), pos: pos});
-					arrType = 'Float';
+					arrType = "Float";
 				}
 				else
-				if (tmp[0] == 'false' || tmp[0] == 'true')
+				if (tmp[0] == "false" || tmp[0] == "true")
 				{
 					for (i in tmp) arrExpr.push({expr: EConst(CIdent(Std.string(i))), pos: pos});
-					arrType = 'Bool';
+					arrType = "Bool";
 				}
 				else
 				{
@@ -88,38 +88,38 @@ class PropertyFile
 					if (int == null)
 					{
 						for (i in tmp) arrExpr.push({expr: EConst(CString(i)), pos: pos});
-						arrType = 'String';
+						arrType = "String";
 					}
 					else
 					{
 						for (i in tmp) arrExpr.push({expr: EConst(CInt(Std.string(Std.parseInt(i)))), pos: pos});
-						arrType = 'Int';
+						arrType = "Int";
 					}
 				}
 				
-				n = 'Array';
+				n = "Array";
 				c = EArrayDecl(arrExpr);
 				p = [TPType(TPath({sub: null, name: arrType, pack: [], params: []}))];
 			}
 			else
-			if (val.indexOf('.') != -1)
+			if (val.indexOf(".") != -1)
 			{
 				if (Math.isNaN(Std.parseFloat(val)))
 				{
 					c = EConst(CString(val));
-					n = 'String';
+					n = "String";
 				}
 				else
 				{
 					c = EConst(CFloat(StringTools.trim(val)));
-					n = 'Float';
+					n = "Float";
 				}
 			}
 			else
-			if (val == 'true' || val == 'false')
+			if (val == "true" || val == "false")
 			{
 				c = EConst(CIdent(val));
-				n = 'Bool';
+				n = "Bool";
 			}
 			else
 			{
@@ -127,17 +127,17 @@ class PropertyFile
 				if (int == null)
 				{
 					c = EConst(CString(val));
-					n = 'String';
+					n = "String";
 				}
 				else
 				{
 					c = EConst(CInt(StringTools.trim(val)));
-					n = 'Int';
+					n = "Int";
 				}
 			}
 			
 			if (c == null)
-				Context.error('invalid field type', Context.currentPos());
+				Context.error("invalid field type", Context.currentPos());
 			
 			if (useStaticFields)
 				fields.push({name: key, doc: null, meta: [], access: access, kind: FVar(TPath({pack: [], name: n, params: p, sub: null}), {expr: c, pos: pos}), pos: pos});
@@ -148,13 +148,13 @@ class PropertyFile
 			}
 		}
 		
-		if (!useStaticFields) fields.push({name: 'new', doc: null, meta: [], access: [APublic], kind: FFun({args: [], ret: null, expr: {expr: EBlock(assign), pos:pos}, params: []}), pos: pos});
+		if (!useStaticFields) fields.push({name: "new", doc: null, meta: [], access: [APublic], kind: FFun({args: [], ret: null, expr: {expr: EBlock(assign), pos:pos}, params: []}), pos: pos});
 		return fields;
 	}
 	#end
 	
 	/**
-	 * Parses a .properties file according to this <a href='http://en.wikipedia.org/wiki/Java_properties'>format</a>.
+	 * Parses a .properties file according to this <a href="http://en.wikipedia.org/wiki/Java_properties">format</a>.
 	 * @return a hash with all key/value pairs defined in <code>str</code>.
 	 */
 	public static function parse(str:String):StringMap<String>
@@ -167,7 +167,7 @@ class PropertyFile
 			{
 				if (pairs.exists(pair.key))
 				{
-					var msg = 'found duplicate key: ' + pair.key;
+					var msg = "found duplicate key: " + pair.key;
 					#if macro
 					var min = str.indexOf(pair.key, str.indexOf(pair.key) + 1);
 					var max = min + pair.key.length;
@@ -180,7 +180,7 @@ class PropertyFile
 			}
 		}
 		
-		var line = '';
+		var line = "";
 		var i = 0;
 		var k = str.length - 1;
 		while (i < k)
@@ -188,35 +188,35 @@ class PropertyFile
 			var c = str.charAt(i++);
 			var peek = str.charAt(i);
 			
-			if (c == '\r')
+			if (c == "\r")
 			{
-				if (peek == '\n')
+				if (peek == "\n")
 				{
 					i++;
-					if (str.charAt(i - 3) != '\\')
+					if (str.charAt(i - 3) != "\\")
 					{
 						add(parseLine(line));
-						line = '';
+						line = "";
 					}
 				}
 				else
-				if (str.charAt(i - 2) != '\\')
+				if (str.charAt(i - 2) != "\\")
 				{
 					add(parseLine(line));
-					line = '';
+					line = "";
 				}
 			}
 			else
-			if (c == '\n')
+			if (c == "\n")
 			{
-				if (str.charAt(i - 2) != '\\')
+				if (str.charAt(i - 2) != "\\")
 				{
 					add(parseLine(line));
-					line = '';
+					line = "";
 				}
 			}
 			else
-			if (c == '\\') {}
+			if (c == "\\") {}
 			else
 				line += c;
 		}
@@ -232,34 +232,34 @@ class PropertyFile
 	{
 		var isInst = Type.getClass(obj) != null;
 		
-		var rtti = Reflect.field(isInst ? Type.getClass(obj) : obj, '__rtti');
+		var rtti = Reflect.field(isInst ? Type.getClass(obj) : obj, "__rtti");
 		if (rtti == null)
-			throw '@:rtti metadata required';
-
+			throw "@:rtti metadata required";
+		
 		var xml = Xml.parse(rtti).firstElement();
-
+		
 		var pairs = parse(str);
 		for (key in pairs.keys())
 		{
 			//resolve type from rtti
 			var e = xml.elementsNamed(key).next();
-			var type = e.firstChild().get('path');
+			var type = e.firstChild().get("path");
 			var param = null;
-			if (type == 'Array') param = e.firstChild().firstChild().get('path');
+			if (type == "Array") param = e.firstChild().firstChild().get("path");
 			
 			//convert string to real type
 			var value:Dynamic = pairs.get(key);
 			switch (type)
 			{
-				case 'Int':   value = Std.parseInt(value);
-				case 'Float': value = Std.parseFloat(value);
-				case 'Bool':  value = value == 'true';
-				case 'Array': value = value.split(',');
+				case "Int":   value = Std.parseInt(value);
+				case "Float": value = Std.parseFloat(value);
+				case "Bool":  value = value == "true";
+				case "Array": value = value.split(",");
 					switch (param)
 					{
-						case 'Int':   for (i in 0...value.length) value[i] = Std.parseInt(value[i]);
-						case 'Float': for (i in 0...value.length) value[i] = Std.parseFloat(value[i]);
-						case 'Bool' : for (i in 0...value.length) value[i] = value[i] == 'true';
+						case "Int":   for (i in 0...value.length) value[i] = Std.parseInt(value[i]);
+						case "Float": for (i in 0...value.length) value[i] = Std.parseFloat(value[i]);
+						case "Bool" : for (i in 0...value.length) value[i] = value[i] == "true";
 						case _:
 					}
 				case _:
@@ -280,43 +280,43 @@ class PropertyFile
 		while (i < k)
 		{
 			var c = str.charAt(i);
-			if (c == ' ' || c == '\t')
+			if (c == " " || c == "\t")
 				i++;
 			else
 				break;
 		}
 		
 		var c = str.charAt(i);
-		if (c == '#') return null;
-		if (c == '!') return null;
+		if (c == "#") return null;
+		if (c == "!") return null;
 		
-		var key = '';
+		var key = "";
 		while (i < k)
 		{
 			var c = str.charAt(i++);
-			if (c == ' ' || c == '\t' || c == ':' || c == '=') break;
+			if (c == " " || c == "\t" || c == ":" || c == "=") break;
 			key += c;
 		}
 		
 		while (i < k)
 		{
 			var c = str.charAt(i);
-			if (c == ' ' || c == '\t')
+			if (c == " " || c == "\t")
 				i++;
 			else
 				break;
 		}
 		
-		var val = '';
+		var val = "";
 		while (i < k)
 		{
 			var c = str.charAt(i++);
 			val += c;
 		}
 		
-		if (val == '') val = key;
+		if (val == "") val = key;
 		
-		if (val == key && val == '') return null;
+		if (val == key && val == "") return null;
 		
 		return {key: key, val: val};
 	}

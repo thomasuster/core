@@ -128,7 +128,7 @@ class Tween implements IObservable implements IObserver implements TimelineListe
 		if (ease == null) ease = Ease.None;
 		
 		#if debug
-		D.assert(target != null, 'target is null');
+		D.assert(target != null, "target is null");
 		#end
 		
 		_id          = -1;

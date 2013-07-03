@@ -35,7 +35,7 @@ class L
 	static var _log:de.polygonal.core.log.Log;
 	public static function log():de.polygonal.core.log.Log
 	{
-		if (_log == null) _log = de.polygonal.core.log.LogSystem.createLog('core', true);
+		if (_log == null) _log = de.polygonal.core.log.LogSystem.createLog("core", true);
 		return _log;
 	}
 	

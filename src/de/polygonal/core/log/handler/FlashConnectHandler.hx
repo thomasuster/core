@@ -45,14 +45,14 @@ import flash.net.XMLSocket;
 using de.polygonal.ds.BitFlags;
 
 #if !flash
-'The FlashConnectHandler class is only available for flash'
+"The FlashConnectHandler class is only available for flash"
 #end
 
 class FlashConnectHandler extends LogHandler
 {
 	inline public static var MESSAGE_LIMIT        = 1000;
 	inline public static var DISPATCH_INTERVAL_MS = 50;
-	inline public static var HOST                 = 'localhost';
+	inline public static var HOST                 = "localhost";
 	inline public static var PORT                 = 1978;
 	
 	var _socket:XMLSocket;
@@ -118,24 +118,24 @@ class FlashConnectHandler extends LogHandler
 		if (_buffer.isEmpty()) return;
 		
 		var i = 0;
-		var s = '<flashconnect>';
+		var s = "<flashconnect>";
 		while (!_buffer.isEmpty())
 		{
 			i++;
 			if (i > MESSAGE_LIMIT)
 			{
 				Timebase.detach(this);
-				s += getMessage('FlashConnect aborted. You have reached the limit of maximum messages.', 3);
+				s += getMessage("FlashConnect aborted. You have reached the limit of maximum messages.", 3);
 			}
 			s += _buffer.dequeue();
 		}
-		s += '</flashconnect>';
+		s += "</flashconnect>";
 		_socket.send(s);
 	}
 	
 	function getMessage(message:String, level:Int):String
 	{
-		return '<message cmd=\'trace\' state=\'' + level + '\'>' + untyped __global__['encodeURI'](message) + '</message>';
+		return "<message cmd=\"trace\" state=\"" + level + "\">" + untyped __global__["encodeURI"](message) + "</message>";
 	}
 	
 	function onConnect(event:Event)

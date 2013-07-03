@@ -44,7 +44,7 @@ class EntityManager
 		var key = _keyLookup.get(e.id);
 		var a = _entitiesById.get(key);
 		var success = a.remove(e);
-		if (!success) throw 'error unregistering entity';
+		if (!success) throw "error unregistering entity";
 	}
 	
 	public static function resolveEntity(id:String):Entity
@@ -56,7 +56,7 @@ class EntityManager
 	public static function sendMsg(sender:Entity, receiverId:String, msg:String, userData:Dynamic):Void
 	{
 		#if debug
-		D.assert(_keyLookup.exists(receiverId), 'entity is not registered');
+		D.assert(_keyLookup.exists(receiverId), "entity is not registered");
 		#end
 		
 		var key = _keyLookup.get(receiverId);

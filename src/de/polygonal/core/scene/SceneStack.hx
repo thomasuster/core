@@ -46,7 +46,7 @@ class SceneStack extends Entity
 		_transitions = new StringMap<Class<SceneTransition>>();
 		
 		//scenes are added to this bag
-		_sceneBag = new Entity('sceneBag');
+		_sceneBag = new Entity("sceneBag");
 		super.add(_sceneBag);
 		commit();
 	}
@@ -75,14 +75,14 @@ class SceneStack extends Entity
 	
 	override public function add(child:Entity, priority = Limits.UINT16_MAX):Entity
 	{
-		return throw 'use push() instead';
+		return throw "use push() instead";
 	}
 	
 	override function onRemoveDescendant(x:Entity):Void
 	{
 		if (x.is(Scene))
 		{
-			L.i('scene ' + x.id + ' was removed');
+			L.i("scene " + x.id + " was removed");
 			
 			//update priorities (=z indices)
 			var z = 0;
@@ -103,7 +103,7 @@ class SceneStack extends Entity
 	public function push(scene:Scene):Void
 	{
 		#if debug
-		D.assert(scene != null, 'scene is null');
+		D.assert(scene != null, "scene is null");
 		#end
 		
 		var a:Scene = null;
@@ -124,7 +124,7 @@ class SceneStack extends Entity
 			b = scene;
 			
 			#if debug
-			D.assert(a != b, 'a != b');
+			D.assert(a != b, "a != b");
 			#end
 		}
 		else
@@ -199,7 +199,7 @@ class SceneStack extends Entity
 	
 	function getKey(a:Dynamic, b:Dynamic):String
 	{
-		var key = '';
+		var key = "";
 		
 		if (Type.getClass(a) != null) a = Type.getClass(a);
 		key += Type.getClassName(a);

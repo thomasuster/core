@@ -60,20 +60,20 @@ class IntEnum
 										doc: null,
 										meta: [],
 										access: [AStatic, APublic, AInline],
-										kind: FVar(TPath( { pack: [], name: 'Int', params: [], sub: null } ), { expr: EConst(CInt(Std.string(val))), pos: pos } ),
+										kind: FVar(TPath( { pack: [], name: "Int", params: [], sub: null } ), { expr: EConst(CInt(Std.string(val))), pos: pos } ),
 										pos: pos});
-								default: Context.error('unsupported declaration', pos);
+								default: Context.error("unsupported declaration", pos);
 							}
-						default: Context.error('unsupported declaration', pos);
+						default: Context.error("unsupported declaration", pos);
 					}
 				}
-			default: Context.error('unsupported declaration', pos);
+			default: Context.error("unsupported declaration", pos);
 		}
 		
 		fields.push
 		({
-			name: 'NUM_FIELDS', doc: null, meta: [], access: [APublic, AStatic, AInline], pos: pos,
-			kind: FVar(TPath( { pack: [], name: 'Int', params: [], sub: null } ), { expr: EConst(CInt(Std.string(i))), pos: pos } ),
+			name: "NUM_FIELDS", doc: null, meta: [], access: [APublic, AStatic, AInline], pos: pos,
+			kind: FVar(TPath( { pack: [], name: "Int", params: [], sub: null } ), { expr: EConst(CInt(Std.string(i))), pos: pos } ),
 		});
 		
 		return fields;

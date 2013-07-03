@@ -42,7 +42,7 @@ import haxe.macro.Type;
 class EntityType
 {
 	#if macro
-	inline static var CACHE_PATH = 'tmp_entity_type_cache';
+	inline static var CACHE_PATH = "tmp_entity_type_cache";
 	
 	static var callbackRegistered = false;
 	static var types:StringMap<Int> = null;
@@ -52,14 +52,14 @@ class EntityType
 	
 	macro public static function build():Array<Field>
 	{
-		if (Context.defined('display')) return null;
+		if (Context.defined("display")) return null;
 		
 		//write cache file when done
 		if (!callbackRegistered)
 		{
 			callbackRegistered = true;
 			Context.onGenerate(onGenerate);
-			Context.registerModuleDependency('de.polygonal.core.sys.Entity', CACHE_PATH);
+			Context.registerModuleDependency("de.polygonal.core.sys.Entity", CACHE_PATH);
 		}
 		
 		var c = Context.getLocalClass().get();
@@ -81,7 +81,7 @@ class EntityType
 				//parse cache file and store in types map
 				types = new StringMap<Int>();
 				next = -1;
-				for (i in cache.split(';'))
+				for (i in cache.split(";"))
 				{
 					var ereg = ~/([\w.]+):(\d+)/;
 					ereg.match(i);
@@ -102,7 +102,7 @@ class EntityType
 				next++;
 				addType(f, next);
 				types.set(id, next);
-				cache += ';' + id + ':' + next;
+				cache += ";" + id + ":" + next;
 				changed = true;
 			}
 		}
@@ -110,7 +110,7 @@ class EntityType
 		{
 			//no cache file exists
 			addType(f, 1);
-			cache = id + ':' + 1;
+			cache = id + ":" + 1;
 			changed = true;
 		}
 		
@@ -123,11 +123,11 @@ class EntityType
 		fields.push
 		(
 			{
-				name: '___type',
+				name: "___type",
 				doc: null,
 				meta: [],
 				access: [APublic, AStatic],
-				kind: FVar(TPath({pack: [], name: 'Int', params: [], sub: null}), {expr: EConst(CInt(Std.string(type))), pos: p}),
+				kind: FVar(TPath({pack: [], name: "Int", params: [], sub: null}), {expr: EConst(CInt(Std.string(type))), pos: p}),
 				pos: p
 			}
 		);

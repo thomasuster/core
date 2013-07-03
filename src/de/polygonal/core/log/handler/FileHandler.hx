@@ -30,7 +30,7 @@
 package de.polygonal.core.log.handler;
 
 #if (!neko && !cpp)
-'The FileHandler class is only available for neko/cpp'
+"The FileHandler class is only available for neko/cpp"
 #end
 
 import de.polygonal.core.log.LogHandler;
@@ -67,7 +67,7 @@ class FileHandler extends LogHandler
 		if (!_success) return;
 		
 		var fout = sys.io.File.append(_fileName, false);
-		fout.writeString(message + '\n');
+		fout.writeString(message + "\n");
 		fout.close();
 	}
 }

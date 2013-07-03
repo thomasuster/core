@@ -55,7 +55,7 @@ class GenericTween extends Tween implements TweenTarget
 			_fields = ArrayUtil.copy(field, _fields);
 		}
 		else
-			throw 'invalid/unsupported field';
+			throw "invalid/unsupported field";
 		
 		super(key, this, ease, to, duration, interpolateState);
 	}

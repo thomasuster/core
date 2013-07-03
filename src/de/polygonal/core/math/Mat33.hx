@@ -87,7 +87,7 @@ class Mat33
 	inline public function getCol(i:Int, output:Vec3):Vec3
 	{
 		#if debug
-		D.assert(i >= 0 && i < 3, 'i >= 0 && i < 3');
+		D.assert(i >= 0 && i < 3, "i >= 0 && i < 3");
 		#end
 		
 		switch (i)
@@ -368,7 +368,7 @@ class Mat33
 		var cf3 = t13 * t32 - t12 * t33;
 		var cf6 = t12 * t23 - t13 * t22;
 		var det = t11 * cf0 + t21 * cf3 + t31 * cf6;
-		D.assert(!M.cmpZero(det, M.ZERO_TOLERANCE), 'singular matrix');
+		D.assert(!M.cmpZero(det, M.ZERO_TOLERANCE), "singular matrix");
 		var invDet = 1 / det;
 		m11 = invDet * cf0;
 		m12 = invDet * cf3;
@@ -394,7 +394,7 @@ class Mat33
 		var cf3 = m13 * m32 - m12 * m33;
 		var cf6 = m12 * m23 - m13 * m22;
 		var det = m11 * cf0 + m21 * cf3 + m31 * cf6;
-		D.assert(!M.cmpZero(det, M.ZERO_TOLERANCE), 'singular matrix');
+		D.assert(!M.cmpZero(det, M.ZERO_TOLERANCE), "singular matrix");
 		var invDet = 1 / det;
 		output.m11 = invDet * cf0;
 		output.m12 = invDet * cf3;
@@ -440,10 +440,10 @@ class Mat33
 	/** Returns the string form of the value that this object represents. */
 	public function toString():String
 	{
-		var format = '\n' +
-			'%-+10.4f %-+10.4f %-+10.4f\n' +
-			'%-+10.4f %-+10.4f %-+10.4f\n' +
-			'%-+10.4f %-+10.4f %-+10.4f\n';
+		var format = "\n" +
+			"%-+10.4f %-+10.4f %-+10.4f\n" +
+			"%-+10.4f %-+10.4f %-+10.4f\n" +
+			"%-+10.4f %-+10.4f %-+10.4f\n";
 		return Sprintf.format(format, [m11, m12, m13, m21, m22, m23, m31, m32, m33]);
 	}
 	

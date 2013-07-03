@@ -41,13 +41,13 @@ class Timebase
 {
 	public static function attach(o:IObserver, mask:Int = 0):Void
 	{
-		D.assert(_initialized, 'call Timebase.init() first');
+		D.assert(_initialized, "call Timebase.init() first");
 		observable.attach(o, mask);
 	}
 	
 	public static function detach(o:IObserver, mask:Int = 0):Void
 	{
-		D.assert(_initialized, 'call Timebase.init() first');
+		D.assert(_initialized, "call Timebase.init() first");
 		observable.detach(o, mask);
 	}
 	
@@ -85,7 +85,7 @@ class Timebase
 	public static var realTime(default, null) = 0.;
 	
 	/**
-	 * Processed 'virtual' time in seconds (includes scaling).
+	 * Processed "virtual" time in seconds (includes scaling).
 	 */
 	public static var gameTime(default, null) = 0.;
 	
@@ -95,7 +95,7 @@ class Timebase
 	public static var realTimeDelta(default, null) = 0.;
 	
 	/**
-	 * 'Virtual' frame delta time in seconds (includes scaling).
+	 * "Virtual" frame delta time in seconds (includes scaling).
 	 */
 	public static var gameTimeDelta(default, null) = 0.;
 	
@@ -227,7 +227,7 @@ class Timebase
 	 */
 	public static function halt():Void
 	{
-		D.assert(_initialized, 'call Timebase.init() first');
+		D.assert(_initialized, "call Timebase.init() first");
 		if (!_halted)
 		{
 			_halted = true;
@@ -241,7 +241,7 @@ class Timebase
 	 */
 	public static function resume():Void
 	{
-		D.assert(_initialized, 'call Timebase.init() first');
+		D.assert(_initialized, "call Timebase.init() first");
 		if (_halted)
 		{
 			_halted = false;
@@ -266,7 +266,7 @@ class Timebase
 	 */
 	public static function freeze(x:Float):Void
 	{
-		D.assert(_initialized, 'call Timebase.init() first');
+		D.assert(_initialized, "call Timebase.init() first");
 		_freezeDelay = x;
 		_accumulator = 0;
 		observable.notify(TimebaseEvent.FREEZE_BEGIN);
@@ -277,7 +277,7 @@ class Timebase
 	 */
 	public static function manualStep():Void
 	{
-		D.assert(_initialized, 'call Timebase.init() first');
+		D.assert(_initialized, "call Timebase.init() first");
 		realTimeDelta = tickRate;
 		realTime += realTimeDelta;
 		
@@ -331,11 +331,11 @@ class Timebase
 		{
 			_accumulator += realTimeDelta * timeScale;
 			
-			//clamp accumulator to prevent 'spiral of death'
+			//clamp accumulator to prevent "spiral of death"
 			if (_accumulator > _accumulatorLimit)
 			{
 				#if verbose
-				L.w(Sprintf.format('accumulator clamped from %.2f to %.2f seconds', [_accumulator, _accumulatorLimit]));
+				L.w(Sprintf.format("accumulator clamped from %.2f to %.2f seconds", [_accumulator, _accumulatorLimit]));
 				#end
 				observable.notify(TimebaseEvent.CLAMP, _accumulator);
 				_accumulator = _accumulatorLimit;

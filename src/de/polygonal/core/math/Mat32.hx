@@ -73,7 +73,7 @@ class Mat32 implements de.polygonal.ds.Cloneable<Mat32>
 	 */
 	inline public static function concat(A:Mat32, B:Mat32, C:Mat32):Mat32
 	{
-		D.assert(A != B, 'A != B');
+		D.assert(A != B, "A != B");
 		
 		var t1 = A.m11;
 		var t2 = A.m12;
@@ -321,7 +321,7 @@ class Mat32 implements de.polygonal.ds.Cloneable<Mat32>
 	public function setupLocalToParent(x:Float, y:Float, angle:Float):Void
 	{
 		//copy the rotation portion of the matrix. we can copy the elements directly
-		//(without transposing) because by our definition the rotation matrix is 'normally' an
+		//(without transposing) because by our definition the rotation matrix is "normally" an
 		//object->inertial matrix, which is local->parent.
 		
 		var c = Math.cos(angle);
@@ -346,7 +346,7 @@ class Mat32 implements de.polygonal.ds.Cloneable<Mat32>
 	public function setupParentToLocal(x:Float, y:Float, angle:Float):Void
 	{
 		//copy the rotation portion of the matrix. by our definition, the rotation matrix is
-		//'normally' an object->inertial matrix, which is local->parent. We want a parent->local
+		//"normally" an object->inertial matrix, which is local->parent. We want a parent->local
 		//rotation, so we must transpose while copying.
 		var c = Math.cos(angle);
 		var s = Math.sin(angle);
@@ -401,6 +401,6 @@ class Mat32 implements de.polygonal.ds.Cloneable<Mat32>
 	 */
 	public function toString():String
 	{
-		return Sprintf.format('\n|%+8.3f %+8.3f|\n|%+8.3f %+8.3f|\n|%+8.3f %+8.3f|', [m11, m12, m21, m22, tx, ty]);
+		return Sprintf.format("\n|%+8.3f %+8.3f|\n|%+8.3f %+8.3f|\n|%+8.3f %+8.3f|", [m11, m12, m21, m22, tx, ty]);
 	}
 }

@@ -46,25 +46,25 @@ class Scene extends Entity
 	
 	public function onShowStart(other:Scene):Void
 	{
-		var otherId = other != null ? other.id : 'null';
+		var otherId = other != null ? other.id : "null";
 		L.i('$id.onShowStart($otherId)');
 	}
 	
 	public function onShowEnd(other:Scene):Void
 	{
-		var otherId = other != null ? other.id : 'null';
+		var otherId = other != null ? other.id : "null";
 		L.i('$id.onShowEnd($otherId)');
 	}
 	
 	public function onHideStart(other:Scene):Void
 	{
-		var otherId = other != null ? other.id : 'null';
+		var otherId = other != null ? other.id : "null";
 		L.i('$id.onHideStart($otherId)');
 	}
 	
 	public function onHideEnd(other:Scene):Void
 	{
-		var otherId = other != null ? other.id : 'null';
+		var otherId = other != null ? other.id : "null";
 		L.i('$id.onHideEnd($otherId)');
 	}
 	

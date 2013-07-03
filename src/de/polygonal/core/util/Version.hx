@@ -48,7 +48,7 @@ class Version
 		try
 		{
 			s = sys.io.File.getContent(url);
-			var v = s.split('.');
+			var v = s.split(".");
 			
 			major = Std.parseInt(v[0]);
 			minor = Std.parseInt(v[1]);
@@ -58,11 +58,11 @@ class Version
 			patch++;
 			#end
 			
-			s = major + '.' + minor + '.' + patch;
+			s = major + "." + minor + "." + patch;
 		}
 		catch (unknown:Dynamic)
 		{
-			s = '0.0.0';
+			s = "0.0.0";
 		}
 		
 		var fout = sys.io.File.write(url, false);
@@ -72,38 +72,38 @@ class Version
 		fout.writeString(s);
 		fout.close();
 		
-		var date = DateTools.format(Date.now(), '%d.%m.%y %H:%S');
+		var date = DateTools.format(Date.now(), "%d.%m.%y %H:%S");
 		
 		var fields = Context.getBuildFields();
 		
 		fields.push
 		({
-			name: 'VERSION', doc: null, meta: [], access: [AStatic, APublic, AInline],
-			kind: FVar(TPath({ pack : [], name : 'String', params : [], sub : null}), {expr: EConst(CString('v' + s + ' ' + date)), pos: pos}), pos: pos
+			name: "VERSION", doc: null, meta: [], access: [AStatic, APublic, AInline],
+			kind: FVar(TPath({ pack : [], name : "String", params : [], sub : null}), {expr: EConst(CString("v" + s + " " + date)), pos: pos}), pos: pos
 		});
 		
 		fields.push
 		({
-			name: 'MAJOR', doc: null, meta: [], access: [AStatic, APublic, AInline],
-			kind: FVar(TPath({ pack : [], name : 'String', params : [], sub : null}), {expr: EConst(CString(Std.string(major))), pos: pos}), pos: pos
+			name: "MAJOR", doc: null, meta: [], access: [AStatic, APublic, AInline],
+			kind: FVar(TPath({ pack : [], name : "String", params : [], sub : null}), {expr: EConst(CString(Std.string(major))), pos: pos}), pos: pos
 		});
 		
 		fields.push
 		({
-			name: 'MINOR', doc: null, meta: [], access: [AStatic, APublic, AInline],
-			kind: FVar(TPath({ pack : [], name : 'String', params : [], sub : null}), {expr: EConst(CString(Std.string(minor))), pos: pos}), pos: pos
+			name: "MINOR", doc: null, meta: [], access: [AStatic, APublic, AInline],
+			kind: FVar(TPath({ pack : [], name : "String", params : [], sub : null}), {expr: EConst(CString(Std.string(minor))), pos: pos}), pos: pos
 		});
 		
 		fields.push
 		({
-			name: 'PATCH', doc: null, meta: [], access: [AStatic, APublic, AInline],
-			kind: FVar(TPath({ pack : [], name : 'String', params : [], sub : null}), {expr: EConst(CString(Std.string(patch))), pos: pos}), pos: pos
+			name: "PATCH", doc: null, meta: [], access: [AStatic, APublic, AInline],
+			kind: FVar(TPath({ pack : [], name : "String", params : [], sub : null}), {expr: EConst(CString(Std.string(patch))), pos: pos}), pos: pos
 		});
 		
 		fields.push
 		({
-			name: 'MAJOR_MINOR_PATCH', doc: null, meta: [], access: [AStatic, APublic, AInline],
-			kind: FVar(TPath({ pack : [], name : 'String', params : [], sub : null}), {expr: EConst(CString(Std.string(major) + '.' + Std.string(minor) + '.' + Std.string(patch))), pos: pos}), pos: pos
+			name: "MAJOR_MINOR_PATCH", doc: null, meta: [], access: [AStatic, APublic, AInline],
+			kind: FVar(TPath({ pack : [], name : "String", params : [], sub : null}), {expr: EConst(CString(Std.string(major) + "." + Std.string(minor) + "." + Std.string(patch))), pos: pos}), pos: pos
 		});
 		
 		return fields;

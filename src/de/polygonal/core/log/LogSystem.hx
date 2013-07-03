@@ -40,7 +40,7 @@ class LogSystem
 		keepDefaultTrace: false,
 		addDefaultHandler: true,
 		globalHandlers: new Array<LogHandler>(),
-		logFileName: 'out.log'
+		logFileName: "out.log"
 	};
 	
 	public static var log:Log = null;
@@ -52,7 +52,7 @@ class LogSystem
 	{
 		if (log != null) return;
 		
-		log = createLog('global', false);
+		log = createLog("global", false);
 		
 		if (config.addDefaultHandler)
 		{
@@ -84,7 +84,7 @@ class LogSystem
 					if (~/%(([+\- #0])*)?((\d+)|(\*))?(\.(\d?|(\*)))?[hlL]?[bcdieEfgGosuxX]/g.match(x))
 						x = Sprintf.format(Std.string(x), posInfos.customParams);
 					else
-						x = x + ',' + posInfos.customParams.join(',');
+						x = x + "," + posInfos.customParams.join(",");
 				}
 				
 				log.debug(x, posInfos);
@@ -163,7 +163,7 @@ class LogSystem
 		#elseif cpp
 		handler = new de.polygonal.core.log.handler.FileHandler(config.logFileName);
 		#else
-		throw 'no default log handler available.';
+		throw "no default log handler available.";
 		#end
 		
 		return handler;

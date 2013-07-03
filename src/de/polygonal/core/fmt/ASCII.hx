@@ -93,7 +93,7 @@ class ASCII
    /**"\n"*/inline public static var NEWLINE        = 10;
    /**"\f"*/inline public static var FORMFEED       = 12;
    /**"\r"*/inline public static var CARRIAGERETURN = 13;
-	/**' '*/inline public static var SPACE          = 32;
+	/**" "*/inline public static var SPACE          = 32;
 	/** ! */inline public static var EXCLAM         = 33;
 	/** " */inline public static var QUOTEDBL       = 34;
 	/** # */inline public static var NUMBERSIGN     = 35;

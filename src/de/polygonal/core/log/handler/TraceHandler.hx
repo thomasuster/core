@@ -32,7 +32,7 @@ package de.polygonal.core.log.handler;
 import de.polygonal.core.log.LogHandler;
 
 #if !flash
-'The TraceHandler class is only available for flash'
+"The TraceHandler class is only available for flash"
 #end
 
 using de.polygonal.ds.BitFlags;
@@ -52,7 +52,7 @@ class TraceHandler extends LogHandler
 		#if flash8
 		untyped __trace__(message);
 		#else
-		untyped __global__['trace'](message);
+		untyped __global__["trace"](message);
 		#end
 	}
 }

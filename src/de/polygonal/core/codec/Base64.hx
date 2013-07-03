@@ -65,7 +65,7 @@ class Base64
 		_output = new BytesData();
 		_tmp = new BytesData();
 		
-		BASE64_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+		BASE64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
 		
 		BASE64_ENCODE = new Vector<Int>(BASE64_CHARS.length);
 		BASE64_DECODE = new Vector<Int>(127);
@@ -171,7 +171,7 @@ class Base64
 		
 		var i = 0;
 		var p = 0;
-		var s = '';
+		var s = "";
 		var k = Std.int(source.length);
 		var remainder = k % 3;
 		k -= remainder;
@@ -233,7 +233,7 @@ class Base64
 			}
 			
 			lines.push(s.substr(k));
-			s = lines.join('\n');
+			s = lines.join("\n");
 		}
 		
 		return s;
@@ -242,7 +242,7 @@ class Base64
 	function _decode(source:String, out:BytesData, breakLines = false):BytesData
 	{
 		if (out == null) out = new BytesData();
-		if (breakLines) source = ~/\n/g.replace(source, '');
+		if (breakLines) source = ~/\n/g.replace(source, "");
 		
 		var k = source.length;
 		var i = 0;
@@ -253,7 +253,7 @@ class Base64
 		for (i in 0...source.length)
 		{
 			var code = source.charCodeAt(i);
-			D.assert(code == 61 || code == 43 || code == 47 || (code >= 48 && code <= 57) || (code >= 97 && code <= 122) || (code >= 65 && code <= 90), 'invalid character in input string: \'' + code + '\'');
+			D.assert(code == 61 || code == 43 || code == 47 || (code >= 48 && code <= 57) || (code >= 97 && code <= 122) || (code >= 65 && code <= 90), "invalid character in input string: \"" + code + "\"");
 		}
 		#end
 		

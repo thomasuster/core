@@ -50,13 +50,13 @@ class StringConstants
 							switch (c)
 							{
 								case CIdent(s):
-									fields.push({name: s, doc: null, meta: [], access: [AStatic, APublic, AInline], kind: FVar(TPath({pack: [], name: 'String', params: [], sub: null}), {expr: EConst(CString(s)), pos: pos}), pos: pos});
-								default: Context.error('unsupported declaration', pos);
+									fields.push({name: s, doc: null, meta: [], access: [AStatic, APublic, AInline], kind: FVar(TPath({pack: [], name: "String", params: [], sub: null}), {expr: EConst(CString(s)), pos: pos}), pos: pos});
+								default: Context.error("unsupported declaration", pos);
 							}
-						default: Context.error('unsupported declaration', pos);
+						default: Context.error("unsupported declaration", pos);
 					}
 				}
-			default: Context.error('unsupported declaration', pos);
+			default: Context.error("unsupported declaration", pos);
 		}
 		
 		var arrExpr = [];
@@ -64,8 +64,8 @@ class StringConstants
 		
 		fields.push
 		({
-			name: 'ALL', doc: null, meta: [], access: [APublic, AStatic], pos: pos,
-			kind: FVar(TPath({pack: [], name: 'Array', params: [TPType(TPath({sub: null, name: 'String', pack: [], params: []}))], sub: null}), {expr: EArrayDecl(arrExpr), pos: pos})
+			name: "ALL", doc: null, meta: [], access: [APublic, AStatic], pos: pos,
+			kind: FVar(TPath({pack: [], name: "Array", params: [TPType(TPath({sub: null, name: "String", pack: [], params: []}))], sub: null}), {expr: EArrayDecl(arrExpr), pos: pos})
 		});
 		
 		return fields;

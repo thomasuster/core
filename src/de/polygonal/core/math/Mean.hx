@@ -48,7 +48,7 @@ class Mean
 	 */
 	public function new(size:Int)
 	{
-		_set = new DoubleMemory(_s = size, 'Mean._set');
+		_set = new DoubleMemory(_s = size, "Mean._set");
 		_set.fill(0);
 		_val = 0;
 	}

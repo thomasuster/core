@@ -36,7 +36,7 @@ import de.polygonal.core.math.Mathematics;
 using de.polygonal.ds.BitFlags;
 
 #if !js
-'The ConsoleHandler class is only available for js'
+"The ConsoleHandler class is only available for js"
 #end
 
 /**
@@ -64,7 +64,7 @@ class ConsoleHandler extends LogHandler
 		untyped if (console[levelName] != null) console[levelName](message); else console.log(message);
 		#elseif flash
 		if (flash.external.ExternalInterface.available)
-			flash.external.ExternalInterface.call('console.' + levelName, message);
+			flash.external.ExternalInterface.call("console." + levelName, message);
 		#end
 	}
 }

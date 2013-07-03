@@ -84,12 +84,12 @@ class ConfigXml
 			case TClassdecl(cl):
 				for (f in cl.fields)
 				{
-					if (f.name == 'new') continue;
+					if (f.name == "new") continue;
 					if (include == null || include.match(f.name))
 						fields.push({name: f.name, value: Reflect.field(x, f.name)});
 				}
 			default:
-				throw 'not a class';
+				throw "not a class";
 		}
 		return fields;
 	}
@@ -101,7 +101,7 @@ class ConfigXml
 		var x = Xml.parse(rtti).firstElement();
 		var f = new haxe.xml.Fast(x);
 		
-		var xml = '<params>\n';
+		var xml = "<params>\n";
 		for (e in f.elements)
 		{
 			var prop = e.name;
@@ -109,25 +109,25 @@ class ConfigXml
 			//<e><c>...</c></e>
 			if (e.hasNode.c)
 			{
-				//<e><c path='...'>...</c></e>
+				//<e><c path="...">...</c></e>
 				if (e.node.c.has.path)
 				{
 					var type = e.node.c.att.path;
 					
 					var s = Std.string(Reflect.field(source, prop));
 					
-					if (type == 'Array')
+					if (type == "Array")
 					{
 						s = s.substr(1);
 						s = s.substr(0, s.length - 1);
 						
-						//<e><c path='...'><c path='...'></c></c></e>
+						//<e><c path="..."><c path="..."></c></c></e>
 						var arrayType = e.node.c.node.c.att.path;
-						if (arrayType == 'Float')
+						if (arrayType == "Float")
 						{
-							var tmp = s.split(',');
+							var tmp = s.split(",");
 							for (i in 0...tmp.length)
-								if (tmp[i].indexOf('.') == -1) tmp[i] += '.0';
+								if (tmp[i].indexOf(".") == -1) tmp[i] += ".0";
 						}
 						else
 						{
@@ -136,11 +136,11 @@ class ConfigXml
 					}
 					else
 					{
-						if (type == 'Float')
-							if (s.indexOf('.') == -1) s = s + '.0';
+						if (type == "Float")
+							if (s.indexOf(".") == -1) s = s + ".0";
 					}
 					
-					xml += Sprintf.format('\t<param name=\'%s\' value=\'%s\'/>\n', [prop, s]);
+					xml += Sprintf.format("\t<param name=\"%s\" value=\"%s\"/>\n", [prop, s]);
 				}
 			}
 			else
@@ -149,16 +149,16 @@ class ConfigXml
 				if (e.node.e.has.path)
 				{
 					var type = e.node.e.att.path;
-					if (type == 'Bool')
+					if (type == "Bool")
 					{
 						var s = Std.string(Reflect.field(source, prop));
-						xml += Sprintf.format('\t<param name=\'%s\' value=\'%s\'/>\n', [prop, s]);
+						xml += Sprintf.format("\t<param name=\"%s\" value=\"%s\"/>\n", [prop, s]);
 					}
 				}
 			}
 		}
 		
-		xml += '</params>';
+		xml += "</params>";
 		return xml;
 	}
 	
@@ -168,20 +168,20 @@ class ConfigXml
 		var names = [], values = [];
 		var scan = function(node:Xml, f:Xml->Dynamic->Void)
 		{
-			if (node.nodeName == 'param')
+			if (node.nodeName == "param")
 			{
-				if (!node.exists('value'))
-					throw '\'value\' attribute required';
-				if (!node.exists('name'))
-					throw '\'name\' attribute required';
+				if (!node.exists("value"))
+					throw "\"value\" attribute required";
+				if (!node.exists("name"))
+					throw "\"name\" attribute required";
 				
-				var x = node.get('value');
-				var n = node.get('name');
+				var x = node.get("value");
+				var n = node.get("name");
 				
-				if (x.indexOf(',') != -1)
+				if (x.indexOf(",") != -1)
 				{
-					var t = x.split(',');
-					if (t[0].indexOf('.') != -1)
+					var t = x.split(",");
+					if (t[0].indexOf(".") != -1)
 					{
 						var a = new Array<Float>();
 						for (i in t) a.push(Std.parseFloat(i));
@@ -198,7 +198,7 @@ class ConfigXml
 						Reflect.setField(target, n, t);
 				}
 				else
-				if (x.indexOf('.') != -1)
+				if (x.indexOf(".") != -1)
 					Reflect.setField(target, n, Std.parseFloat(x));
 				else
 				{
@@ -206,8 +206,8 @@ class ConfigXml
 						Reflect.setField(target, n, Std.parseInt(x));
 					else
 					{
-						if (x == 'true' || x == 'false')
-							Reflect.setField(target, n, x == 'true' ? true : false);
+						if (x == "true" || x == "false")
+							Reflect.setField(target, n, x == "true" ? true : false);
 						else
 							Reflect.setField(target, n, x);
 					}
@@ -261,13 +261,13 @@ class ConfigXml
 			{
 				if (node.nodeType == Xml.Element)
 				{
-					if (node.nodeName == 'param')
+					if (node.nodeName == "param")
 					{
-						names.push(node.get('name'));
-						if (node.get('value') == null)
-							values.push(node.get('name'));
+						names.push(node.get("name"));
+						if (node.get("value") == null)
+							values.push(node.get("name"));
 						else
-							values.push(node.get('value'));
+							values.push(node.get("value"));
 					}
 				}
 				
@@ -292,16 +292,16 @@ class ConfigXml
 				var fieldValue = values[i];
 				
 				var c = null, n:String, p = [];
-				if (fieldValue.indexOf(',') != -1)
+				if (fieldValue.indexOf(",") != -1)
 				{
 					var arrExpr = [];
 					var arrType;
-					var tmp = fieldValue.split(',');
+					var tmp = fieldValue.split(",");
 					
-					if (tmp[0].indexOf('.') != -1)
+					if (tmp[0].indexOf(".") != -1)
 					{
 						for (i in tmp) arrExpr.push({expr: EConst(CFloat(Std.string(Std.parseFloat(i)))), pos: pos});
-						arrType = 'Float';
+						arrType = "Float";
 					}
 					else
 					{
@@ -309,38 +309,38 @@ class ConfigXml
 						if (int == null)
 						{
 							for (i in tmp) arrExpr.push({expr: EConst(CString(i)), pos: pos});
-							arrType = 'String';
+							arrType = "String";
 						}
 						else
 						{
 							for (i in tmp) arrExpr.push({expr: EConst(CInt(Std.string(Std.parseInt(i)))), pos: pos});
-							arrType = 'Int';
+							arrType = "Int";
 						}
 					}
 					
-					n = 'Array';
+					n = "Array";
 					c = EArrayDecl(arrExpr);
 					p = [TPType(TPath({sub: null, name: arrType, pack: [], params: []}))];
 				}
 				else
-				if (fieldValue.indexOf('.') != -1)
+				if (fieldValue.indexOf(".") != -1)
 				{
 					if (Math.isNaN(Std.parseFloat(fieldValue)))
 					{
 						c = EConst(CString(fieldValue));
-						n = 'String';
+						n = "String";
 					}
 					else
 					{
 						c = EConst(CFloat(fieldValue));
-						n = 'Float';
+						n = "Float";
 					}
 				}
 				else
-				if (fieldValue == 'true' || fieldValue == 'false')
+				if (fieldValue == "true" || fieldValue == "false")
 				{
 					c = EConst(CIdent(fieldValue));
-					n = 'Bool';
+					n = "Bool";
 				}
 				else
 				{
@@ -348,17 +348,17 @@ class ConfigXml
 					if (int == null)
 					{
 						c = EConst(CString(fieldValue));
-						n = 'String';
+						n = "String";
 					}
 					else
 					{
 						c = EConst(CInt(fieldValue));
-						n = 'Int';
+						n = "Int";
 					}
 				}
 				
 				if (c == null)
-					Context.error('invalid field type', Context.currentPos());
+					Context.error("invalid field type", Context.currentPos());
 				
 				if (staticFields)
 					fields.push({name: fieldName, doc: null, meta: [], access: access, kind: FVar(TPath({pack: [], name: n, params: p, sub: null}), {expr: c, pos: pos}), pos: pos});
@@ -371,10 +371,10 @@ class ConfigXml
 		}
 		catch (unknown:Dynamic)
 		{
-			Context.error('error parsing xml (' + unknown + ')', Context.currentPos());
+			Context.error("error parsing xml (" + unknown + ")", Context.currentPos());
 		}
 		
-		if (!staticFields) fields.push({name: 'new', doc: null, meta: [], access: [APublic], kind: FFun({args: [], ret: null, expr: {expr: EBlock(assign), pos:pos}, params: []}), pos: pos});
+		if (!staticFields) fields.push({name: "new", doc: null, meta: [], access: [APublic], kind: FFun({args: [], ret: null, expr: {expr: EBlock(assign), pos:pos}, params: []}), pos: pos});
 		return fields;
 	}
 }

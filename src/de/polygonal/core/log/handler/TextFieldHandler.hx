@@ -37,7 +37,7 @@ using de.polygonal.ds.BitFlags;
 #if (nme && cpp)
 #elseif flash
 #else
-'The TextFieldHandler class is only available for flash or nme/cpp'
+"The TextFieldHandler class is only available for flash or nme/cpp"
 #end
 
 class TextFieldHandler extends LogHandler
@@ -58,12 +58,12 @@ class TextFieldHandler extends LogHandler
 		else
 		{
 			this.tf = tf = new flash.text.TextField();
-			tf.defaultTextFormat = new flash.text.TextFormat('Arial');
+			tf.defaultTextFormat = new flash.text.TextFormat("Arial");
 			tf.autoSize = flash.text.TextFieldAutoSize.LEFT;
 			flash.Lib.current.addChild(tf);
 		}
 		
-		tf.name = 'loghandler';
+		tf.name = "loghandler";
 		tf.selectable = false;
 		flash.Lib.current.addEventListener(flash.events.Event.ADDED, onAdded);
 		_buffer = new ArrayedQueue<String>(_numLines * 4, false);
@@ -75,9 +75,9 @@ class TextFieldHandler extends LogHandler
 		_counter++;
 		if (_buffer.size() > _numLines)
 			_buffer.dequeue();
-		tf.text = '';
+		tf.text = "";
 		for (i in 0..._buffer.size())
-			tf.appendText(_buffer.get(i) + '\n');
+			tf.appendText(_buffer.get(i) + "\n");
 		tf.scrollV = tf.maxScrollV;
 	}
 	

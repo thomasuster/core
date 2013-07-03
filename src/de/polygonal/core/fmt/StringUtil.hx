@@ -51,7 +51,7 @@ class StringUtil
 	 */
 	public static function reverse(x:String):String
 	{
-		var t = '';
+		var t = "";
 		var i = x.length;
 		while (--i >= 0) t += x.charAt(i);
 		return t;
@@ -67,18 +67,18 @@ class StringUtil
 		var l = str.length;
 		
 		#if debug
-		D.assert(maxLength > 0, 'maxLength > 0');
+		D.assert(maxLength > 0, "maxLength > 0");
 		#end
 		
 		if (useThreeDots)
-			if (maxLength < 4) return '...';
+			if (maxLength < 4) return "...";
 		
 		switch (mode)
 		{
 			case 0:
 				if (l > maxLength)
 				{
-					var ellipsisCharacter = useThreeDots ? '...' : '…';
+					var ellipsisCharacter = useThreeDots ? "..." : "…";
 					return ellipsisCharacter + str.substr(l + ellipsisCharacter.length - maxLength);
 				}
 				else
@@ -87,7 +87,7 @@ class StringUtil
 			case 1:
 				if (l > maxLength)
 				{
-					var ellipsisCharacter = useThreeDots ? '...' : '…';
+					var ellipsisCharacter = useThreeDots ? "..." : "…";
 					return str.substr(0, maxLength - ellipsisCharacter.length) + ellipsisCharacter;
 				}
 				else
@@ -95,18 +95,18 @@ class StringUtil
 			
 			case 2:
 				var l = str.length;
-				var a = str.split('');
+				var a = str.split("");
 				if (useThreeDots)
 				{
-					a[(l >> 1) - 1] = '.';
-					a[(l >> 1)    ] = '.';
-					a[(l >> 1) + 1] = '.';
+					a[(l >> 1) - 1] = ".";
+					a[(l >> 1)    ] = ".";
+					a[(l >> 1) + 1] = ".";
 					var side = 1;
 					while (l > maxLength)
 					{
 						side *= -1;
 						a.splice((l >> 1) + side, 1);
-						a[(l >> 1) + side] = '.';
+						a[(l >> 1) + side] = ".";
 						l--;
 					}
 				}
@@ -117,9 +117,9 @@ class StringUtil
 						a.splice(l >> 1, 1);
 						l--;
 					}
-					a[l >> 1] = '…';
+					a[l >> 1] = "…";
 				}
-				return a.join('');
+				return a.join("");
 		}
 		
 		return null;
@@ -130,8 +130,8 @@ class StringUtil
 	 */
 	public static function fill0(x:String, n:Int):String
 	{
-		var s = '';
-		for (i in 0...n - x.length) s += '0';
+		var s = "";
+		for (i in 0...n - x.length) s += "0";
 		return s + x;
 	}
 	
@@ -146,10 +146,10 @@ class StringUtil
 		while (i-- > 0)
 		{
 			var s = x.charAt(i);
-			if (s == '0')
+			if (s == "0")
 				j++;
 			else
-			if (s == '1')
+			if (s == "1")
 			{
 				b += 1 << j;
 				j++;
@@ -197,7 +197,7 @@ class StringUtil
 	 */
 	public static function generateRandomKey(chars:String, length:Int):String
 	{
-		var s = '';
+		var s = "";
 		for (i in 0...length)
 			s += chars.charAt(Random.randRange(0, chars.length - 1));
 		return s;

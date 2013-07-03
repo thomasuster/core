@@ -133,7 +133,7 @@ class Log
 					a.push(LogLevel.getName(i));
 				i <<= 1;
 			}
-			return a.join('|');
+			return a.join("|");
 		}
 		
 		return LogLevel.getName(_level);
@@ -172,7 +172,7 @@ class Log
 	{
 		#if log
 		#if debug
-		D.assert((x & LogLevel.ALL) > 0, '(x & LogLevel.ALL) > 0');
+		D.assert((x & LogLevel.ALL) > 0, "(x & LogLevel.ALL) > 0");
 		#end
 		
 		_level = x;
@@ -308,7 +308,7 @@ class Log
 		
 		_counter++; if (_counter == 1000) _counter = 0;
 		
-		if (msg == null) msg = 'null';
+		if (msg == null) msg = "null";
 		
 		_logMessage.id          = _counter;
 		_logMessage.msg         = msg;

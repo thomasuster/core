@@ -50,14 +50,14 @@ class Timeline
 	
 	public static function attach(o:IObserver, mask:Int = 0):Void
 	{
-		D.assert(_initialized, 'call Timeline.init() first');
+		D.assert(_initialized, "call Timeline.init() first");
 		if (observable == null) init();
 		observable.attach(o, mask);
 	}
 	
 	public static function detach(o:IObserver, mask:Int = 0):Void
 	{
-		D.assert(_initialized, 'call Timeline.init() first');
+		D.assert(_initialized, "call Timeline.init() first");
 		observable.detach(o, mask);
 	}
 	
@@ -144,20 +144,20 @@ class Timeline
 	 */
 	public static function schedule(listener:TimelineListener = null, duration:Float, delay = 0., repeatCount = 0, repeatInterval = .0):Int
 	{
-		D.assert(_initialized, 'call Timeline.init() first');
+		D.assert(_initialized, "call Timeline.init() first");
 		
 		#if debug
-		D.assert(duration >= .0, 'duration >= .0');
-		D.assert(delay >= .0, 'delay >= .0');
-		D.assert(repeatCount >= 0 || repeatCount == -1, 'repeatCount >= 0 || repeatCount == -1');
-		D.assert(repeatInterval >= 0, 'repeatInterval >= 0');
+		D.assert(duration >= .0, "duration >= .0");
+		D.assert(delay >= .0, "delay >= .0");
+		D.assert(repeatCount >= 0 || repeatCount == -1, "repeatCount >= 0 || repeatCount == -1");
+		D.assert(repeatInterval >= 0, "repeatInterval >= 0");
 		if (_tickRate == 0)
 			_tickRate = Timebase.tickRate;
 		else
 		if (Timebase.tickRate != _tickRate)
 		{
 			var c = _pendingAdditions.size() + _intervalHeap.size() + _runningIntervals.size();
-			D.assert(c == 0, 'tick rate can\'t be changed on-the-fly while there are active intervals');
+			D.assert(c == 0, "tick rate can't be changed on-the-fly while there are active intervals");
 		}
 		#end
 		
@@ -171,7 +171,7 @@ class Timeline
 		var interval =
 		if (_intervalPool.isEmpty())
 		{
-			L.w('TimeInterval pool exhausted');
+			L.w("TimeInterval pool exhausted");
 			new TimeInterval();
 		}
 		else
@@ -204,14 +204,14 @@ class Timeline
 	 */
 	public static function cancel(id = 0):Bool
 	{
-		D.assert(_initialized, 'call Timeline.init() first');
+		D.assert(_initialized, "call Timeline.init() first");
 		
 		if (id < 0) return false;
 		if (!_initialized) return false;
 		if (id == 0)
 		{
 			#if debug
-			D.assert(_currInterval != null, '_currInterval != null');
+			D.assert(_currInterval != null, "_currInterval != null");
 			#end
 			
 			_currInterval.cancel();
@@ -239,7 +239,7 @@ class Timeline
 	 */
 	public static function cancelAll():Void
 	{
-		D.assert(_initialized, 'call Timeline.init() first');
+		D.assert(_initialized, "call Timeline.init() first");
 		
 		for (collection in _data)
 		{
@@ -255,8 +255,8 @@ class Timeline
 	public static var progress(get_progress, never):Float;
 	static function get_progress():Float
 	{
-		D.assert(_initialized, 'call Timeline.init() first');
-		D.assert(_currInterval != null, '_currInterval != null');
+		D.assert(_initialized, "call Timeline.init() first");
+		D.assert(_currInterval != null, "_currInterval != null");
 		
 		return _currInterval.getRatio();
 	}
@@ -268,8 +268,8 @@ class Timeline
 	public static var id(get_id, never):Int;
 	inline static function get_id():Int
 	{
-		D.assert(_initialized, 'call Timeline.init() first');
-		D.assert(_currInterval != null, '_currInterval != null');
+		D.assert(_initialized, "call Timeline.init() first");
+		D.assert(_currInterval != null, "_currInterval != null");
 		
 		return _currInterval.id;
 	}
@@ -282,8 +282,8 @@ class Timeline
 	public static var iteration(get_iteration, never):Int;
 	inline static function get_iteration():Int
 	{
-		D.assert(_initialized, 'call Timeline.init() first');
-		D.assert(_currInterval != null, '_currInterval != null');
+		D.assert(_initialized, "call Timeline.init() first");
+		D.assert(_currInterval != null, "_currInterval != null");
 		
 		if (_currInterval.iterations == -1)
 			return -1;
@@ -296,7 +296,7 @@ class Timeline
 	 */
 	public static function advance():Void
 	{
-		D.assert(_initialized, 'call Timeline.init() first');
+		D.assert(_initialized, "call Timeline.init() first");
 		
 		_currTick = Timebase.processedTicks;
 		_currSubTick = 0;
@@ -312,7 +312,7 @@ class Timeline
 			else
 			{
 				#if debug
-				D.assert(!h.contains(interval), '!_intervalHeap.contains(interval)');
+				D.assert(!h.contains(interval), "!_intervalHeap.contains(interval)");
 				#end
 				h.add(interval);
 			}
@@ -539,9 +539,9 @@ private class TimeInterval
 	
 	function toString():String
 	{
-		var s = '';
+		var s = "";
 		if (iterations == -1)
-			s = 'repeat=inf';
+			s = "repeat=inf";
 		else
 		if (iterations > 0)
 			s = 'repeat=$iterations';
