@@ -335,7 +335,7 @@ class Timebase
 			if (_accumulator > _accumulatorLimit)
 			{
 				#if verbose
-				L.w(Sprintf.format("accumulator clamped from %.2f to %.2f seconds", [_accumulator, _accumulatorLimit]));
+				L.w(Printf.format("accumulator clamped from %.2f to %.2f seconds", [_accumulator, _accumulatorLimit]));
 				#end
 				observable.notify(TimebaseEvent.CLAMP, _accumulator);
 				_accumulator = _accumulatorLimit;

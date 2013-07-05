@@ -140,7 +140,7 @@ class ConfigXml
 							if (s.indexOf(".") == -1) s = s + ".0";
 					}
 					
-					xml += Sprintf.format("\t<param name=\"%s\" value=\"%s\"/>\n", [prop, s]);
+					xml += Printf.format("\t<param name=\"%s\" value=\"%s\"/>\n", [prop, s]);
 				}
 			}
 			else
@@ -152,7 +152,7 @@ class ConfigXml
 					if (type == "Bool")
 					{
 						var s = Std.string(Reflect.field(source, prop));
-						xml += Sprintf.format("\t<param name=\"%s\" value=\"%s\"/>\n", [prop, s]);
+						xml += Printf.format("\t<param name=\"%s\" value=\"%s\"/>\n", [prop, s]);
 					}
 				}
 			}

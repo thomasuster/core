@@ -104,7 +104,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 	public static function printTopologyStats():String
 	{
 		if (_stats[INDEX_ADD] == 0) return null;
-		return Sprintf.format("+%-3d-%-3d|A:%-5d %-5d|D:%-5d %-5d|S:%-5d %-5d|%04d", _stats);
+		return Printf.format("+%-3d-%-3d|A:%-5d %-5d|D:%-5d %-5d|S:%-5d %-5d|%04d", _stats);
 	}
 	#end
 	
@@ -482,7 +482,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 			child._setf(BIT_COMMIT_REMOVAL);
 			child._clrf(BIT_PENDING_REMOVE);
 			child._clrf(BIT_TICK | BIT_DRAW);
-			L.d(Sprintf.format("child %-30s removed from parent %s", [child.id, id]), "entity");
+			L.d(Printf.format("child %-30s removed from parent %s", [child.id, id]), "entity");
 			child.onRemove(this);
 			#if profile
 			_stats[INDEX_REMOVE]++;
@@ -871,12 +871,12 @@ class Entity implements IObserver implements IObservable implements Hashable
 		if (format != null) return format(this);
 		
 		if (treeNode == null)
-			return Sprintf.format("[id=%s (freed)]", [Std.string(id)]);
+			return Printf.format("[id=%s (freed)]", [Std.string(id)]);
 		
 		if (priority != Limits.UINT16_MAX)
-			return Sprintf.format("[id=%s #c=%d, p=%02d%s]", [Std.string(id), treeNode.numChildren(), priority, _hasf(BIT_PENDING) ? " p" : ""]);
+			return Printf.format("[id=%s #c=%d, p=%02d%s]", [Std.string(id), treeNode.numChildren(), priority, _hasf(BIT_PENDING) ? " p" : ""]);
 		else
-			return Sprintf.format("[id=%s #c=%d%s]", [Std.string(id), treeNode.numChildren(), _hasf(BIT_PENDING) ? " p" : ""]);
+			return Printf.format("[id=%s #c=%d%s]", [Std.string(id), treeNode.numChildren(), _hasf(BIT_PENDING) ? " p" : ""]);
 	}
 	
 	public function getObservable():Observable
@@ -1036,7 +1036,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 			_stats[INDEX_SUM]++;
 			#end
 			
-			L.d(Sprintf.format("%-30s got ancestor %s", [id, x.id]), "entity");
+			L.d(Printf.format("%-30s got ancestor %s", [id, x.id]), "entity");
 			onAddAncestor(x);
 		}
 		
@@ -1102,7 +1102,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 			_stats[INDEX_SUM]++;
 			#end
 			
-			L.d(Sprintf.format("%-30s got descendant %s", [x.id, id]), "entity");
+			L.d(Printf.format("%-30s got descendant %s", [x.id, id]), "entity");
 			x.onAddDescendant(this);
 		}
 		
@@ -1152,7 +1152,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 			if (_hasf(BIT_ADD_SIBLING))
 				p.propagateOnAddSibling(this);
 			
-			L.d(Sprintf.format("%-30s added to parent %s", [id, p.id]), "entity");
+			L.d(Printf.format("%-30s added to parent %s", [id, p.id]), "entity");
 			onAdd(p);
 			#if profile
 			_stats[INDEX_ADD]++;
@@ -1171,7 +1171,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 			var e = n.val;
 			if (!e._hasf(BIT_ADDED))
 			{
-				L.d(Sprintf.format("%-30s got sibling %s and vv", [e.id, child.id]), "entity");
+				L.d(Printf.format("%-30s got sibling %s and vv", [e.id, child.id]), "entity");
 				e.onAddSibling(child);
 				child.onAddSibling(e);
 				#if profile
@@ -1215,7 +1215,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 			_setf(BIT_COMMIT_REMOVAL);
 			var p = treeNode.parent.val;
 			
-			L.d(Sprintf.format("child %-30s removed from parent %s", [id, p.id]), "entity");
+			L.d(Printf.format("child %-30s removed from parent %s", [id, p.id]), "entity");
 			onRemove(p);
 			
 			if (_hasf(BIT_REMOVE_SIBLING))
@@ -1232,7 +1232,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 			var e = n.val;
 			if (!e._hasf(BIT_REMOVED))
 			{
-				L.d(Sprintf.format("%-30s lost sibling %s and vv", [e.id, child.id]), "entity");
+				L.d(Printf.format("%-30s lost sibling %s and vv", [e.id, child.id]), "entity");
 				e.onRemoveSibling(child);
 				child.onRemoveSibling(e);
 				#if profile
@@ -1269,7 +1269,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 	{
 		if (_getf(BIT_PENDING | BIT_REMOVE_ANCESTOR) == BIT_REMOVE_ANCESTOR)
 		{
-			L.d(Sprintf.format("%-30s lost ancestor %s", [id, x.id]), "entity");
+			L.d(Printf.format("%-30s lost ancestor %s", [id, x.id]), "entity");
 			onRemoveAncestor(x);
 			#if profile
 			_stats[INDEX_REMOVE_ANCESTOR]++;
@@ -1332,7 +1332,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 	{
 		if (x._getf(BIT_PENDING | BIT_REMOVE_DESCENDANT) == BIT_REMOVE_DESCENDANT)
 		{
-			L.d(Sprintf.format("%-30s lost descendant %s", [x.id, id]), "entity");
+			L.d(Printf.format("%-30s lost descendant %s", [x.id, id]), "entity");
 			x.onRemoveDescendant(this);
 			#if profile
 			_stats[INDEX_REMOVE_DESCENDANT]++;

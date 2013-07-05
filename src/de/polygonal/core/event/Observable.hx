@@ -65,9 +65,9 @@ class Observable extends HashableItem implements IObservable
 		for (observable in _getRegistry())
 		{
 			c += observable.size();
-			s += Sprintf.format("%-20s -> %s\n", [StringUtil.ellipsis(Std.string(observable), 20, 0), observable.size()]);
+			s += Printf.format("%-20s -> %s\n", [StringUtil.ellipsis(Std.string(observable), 20, 0), observable.size()]);
 		}
-		return Sprintf.format("#observers: %03d\n", [c]) + s;
+		return Printf.format("#observers: %03d\n", [c]) + s;
 	}
 	
 	/**

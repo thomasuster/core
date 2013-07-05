@@ -343,7 +343,7 @@ class LogHandler implements IObserver
 		args.push(fmt);
 		vals.push(val);
 		
-		return Sprintf.format(args.join(""), vals);
+		return Printf.format(args.join(""), vals);
 	}
 	
 	function output(msg:String):Void {}

@@ -82,7 +82,7 @@ class LogSystem
 				if (posInfos.customParams != null)
 				{
 					if (~/%(([+\- #0])*)?((\d+)|(\*))?(\.(\d?|(\*)))?[hlL]?[bcdieEfgGosuxX]/g.match(x))
-						x = Sprintf.format(Std.string(x), posInfos.customParams);
+						x = Printf.format(Std.string(x), posInfos.customParams);
 					else
 						x = x + "," + posInfos.customParams.join(",");
 				}

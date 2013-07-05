@@ -549,7 +549,7 @@ private class TimeInterval
 		if (getLife() == 0)
 			return 'Blip id=$id[$subTicks] start=$spawnTicks $s';
 		else
-			return Sprintf.format('Event id=$id[$subTicks] from=$spawnTicks to=$dieTicks progress %.2f $s,', [getRatio()]);
+			return Printf.format('Event id=$id[$subTicks] from=$spawnTicks to=$dieTicks progress %.2f $s,', [getRatio()]);
 	}
 	
 	inline function setCurrentInterval():Void Timeline._currInterval = this;

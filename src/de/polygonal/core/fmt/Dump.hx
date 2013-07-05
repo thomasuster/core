@@ -56,13 +56,13 @@ class Dump
 					s += _object(value, ws + "|    ");
 				
 				case Type.ValueType.TClass(c):
-					s += ws + Sprintf.format("%s: %s [%s]\n", [field, value, Type.getClassName(c)]);
+					s += ws + Printf.format("%s: %s [%s]\n", [field, value, Type.getClassName(c)]);
 				
 				case Type.ValueType.TEnum(e):
-					s += ws + Sprintf.format("%s: %s [Enum(%s)]\n", [field, value, Type.getEnumName(e)]);
+					s += ws + Printf.format("%s: %s [Enum(%s)]\n", [field, value, Type.getEnumName(e)]);
 				
 				default:
-					s += ws + Sprintf.format("%s: %s [%s]\n", [field, value, Std.string(Type.typeof(value)).substr(1)]);
+					s += ws + Printf.format("%s: %s [%s]\n", [field, value, Std.string(Type.typeof(value)).substr(1)]);
 			}
 		}
 		return s;

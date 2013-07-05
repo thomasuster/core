@@ -141,6 +141,6 @@ class Vec2
 	/** Returns the string form of the value that this object represents. */
 	public function toString():String
 	{
-		return Sprintf.format("{Vec2: x=%.3f, y=%.3f}", [x, y]);
+		return Printf.format("{Vec2: x=%.3f, y=%.3f}", [x, y]);
 	}
 }
