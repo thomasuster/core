@@ -42,7 +42,7 @@ class AssertError
 		var stack = CallStack.toString(CallStack.callStack());
 		stack = ~/\nCalled from de\.polygonal\.core\.util\.AssertError.*$/m.replace(stack, "");
 		
-		var s = (message == null ? "" : "\"" + message + "\"");
+		var s = message == null ? "" : message;
 		throw 'Assertation $s failed in file ${info.fileName}, line ${info.lineNumber}, ${info.className}:: ${info.methodName}\nCall stack:${stack}';
 	}
 	

@@ -40,34 +40,41 @@ class Assert
 {
 	macro public static function assert(predicate:Expr, ?info:Expr):Expr
 	{
-		if (!Context.defined("debug")) return {expr: EConst(CInt("0")), pos: Context.currentPos()};
+		if (!Context.defined("debug")) return macro {};
 		
 		var error = false;
-		
 		switch (Context.typeof(predicate))
 		{
 			case TAbstract(_, _):
-			default:
-				error = true;
+			case _: error = true;
 		}
 		
 		if (error) Context.error("predicate should be a boolean", predicate.pos);
 		
+		var hasInfo = true;
 		switch (Context.typeof(info))
 		{
 			case TMono(t):
 				error = t.get() != null;
+				hasInfo = false;
+				
 			case TInst(t, _):
 				error = t.get().name != "String";
-			default:
-				error = true;
+			case _: error = true;
 		}
 		
 		if (error) Context.error("info should be a string", info.pos);
 		
 		var p = Context.currentPos();
+		
+		var infoStr =
+		if (hasInfo)
+			EBinop(OpAdd, info, {expr: EConst(CString(' (' + new haxe.macro.Printer().printExpr(predicate) + ')')), pos: p});
+		else
+			EConst(CString(new haxe.macro.Printer().printExpr(predicate)));
+		
+		var eif = {expr: EThrow({expr: ENew({name: "AssertError", pack: ["de", "polygonal", "core", "util"], params: []}, [{expr: infoStr, pos: p}]), pos: p}), pos: p};
 		var econd = {expr: EBinop(OpNotEq, {expr: EConst(CIdent("true")), pos: p}, predicate), pos: p};
-		var eif = {expr: EThrow({expr: ENew({name: "AssertError", pack: ["de", "polygonal", "core", "util"], params: []}, [info]), pos: p}), pos: p};
 		return {expr: EIf(econd, eif, null), pos: p};
 	}
 }
