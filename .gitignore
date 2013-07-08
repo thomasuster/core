@@ -4,5 +4,5 @@ deploy/*
 obj/*
 tmp/*
 sandbox/*
+dump/*
 *.hxproj
-dump

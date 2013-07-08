@@ -1,5 +1,4 @@
 ﻿import de.polygonal.core.log.handler.TraceHandler;
-import de.polygonal.core.Root;
 import flash.Boot;
 import flash.text.TextFormat;
 
@@ -7,7 +6,6 @@ class UnitTest extends haxe.unit.TestRunner
 {
 	public static function main():Void
 	{
-		Root.init();
 		new UnitTest();
 	}
 	

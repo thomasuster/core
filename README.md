@@ -50,6 +50,10 @@ If you want to test the latest beta build, you should pull the dev branch and ad
 
 ## Changelog
 
+### 1.0.4 (released 2013-07-08)
+
+ * modified: move Sprintf to separate haxelib library (polygonal-sprintf, de.polygonal.Sprintf)
+
 ### 1.0.3 (released 2013-06-28)
 _support Haxe Compiler 3.0.0_
 
