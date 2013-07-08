@@ -30,13 +30,7 @@
 package de.polygonal.core.math;
 
 import de.polygonal.ds.ArrayUtil;
-
-private typedef Arr =
-#if flash10
-flash.Vector<Float>;
-#else
-Array<Float>;
-#end
+import haxe.ds.Vector;
 
 /**
  * <p>The Ziggurat method for generating pseudo random normal and exponential variates.</p>
@@ -48,23 +42,23 @@ class RNORREXP
 	var _jz:UInt;
 	var _hz:Int;
 
-	var _kn:Arr;
-	var _ke:Arr;
-	var _wn:Arr;
-	var _we:Arr;
-	var _fn:Arr;
-	var _fe:Arr;
+	var _kn:Vector<Float>;
+	var _ke:Vector<Float>;
+	var _wn:Vector<Float>;
+	var _we:Vector<Float>;
+	var _fn:Vector<Float>;
+	var _fe:Vector<Float>;
 
 	var _jsr:Int;
 
 	public function new(seed:Int)
 	{
-		_kn = allocArr(128);
-		_ke = allocArr(256);
-		_wn = allocArr(128);
-		_we = allocArr(256);
-		_fn = allocArr(128);
-		_fe = allocArr(256);
+		_kn = new Vector<Float>(128);
+		_ke = new Vector<Float>(256);
+		_wn = new Vector<Float>(128);
+		_we = new Vector<Float>(256);
+		_fn = new Vector<Float>(128);
+		_fe = new Vector<Float>(256);
 		_jsr = 123456789;
 		initLUT(seed);
 	}
@@ -208,14 +202,5 @@ class RNORREXP
 			_we[i] = de / m2;
 			i--;
 		}
-	}
-	
-	function allocArr(size:Int):Arr
-	{
-		#if flash10
-		return new flash.Vector<Float>(size, true);
-		#else
-		return new ArrayUtil.alloc(size);
-		#end
 	}
 }
