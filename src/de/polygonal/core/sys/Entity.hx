@@ -1484,8 +1484,8 @@ class Entity implements IObserver implements IObservable implements Hashable
 				e.treeNode = null;
 				
 				L.d('free ${e.id}', 'entity');
-				e.onFree();
 				EntityManager.unregisterEntity(e);
+				e.onFree();
 				return true;
 			});
 		tmp.free();
