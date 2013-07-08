@@ -167,7 +167,10 @@ class Vec3 implements Cloneable<Vec3>
 	
 	public function toString():String
 	{
-		var format = "{%-+10.4f %-+10.4f %-+10.4f %-+10.4f}";
-		return Printf.format(format, [x, y, z, w]);
+		return Printf.format("Vec3:\n" +
+			"[%-+10.4f]\n" +
+			"[%-+10.4f]\n" +
+			"[%-+10.4f]\n" +
+			"[%-+10.4f]", [x, y, z, w]);
 	}
 }

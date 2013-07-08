@@ -401,6 +401,8 @@ class Mat32 implements de.polygonal.ds.Cloneable<Mat32>
 	 */
 	public function toString():String
 	{
-		return Printf.format("\n|%+8.3f %+8.3f|\n|%+8.3f %+8.3f|\n|%+8.3f %+8.3f|", [m11, m12, m21, m22, tx, ty]);
+		return Printf.format("Mat32:\n" +
+			"[%-+10.4f %-+10.4f %-+10.4f]\n" +
+			"[%-+10.4f %-+10.4f %-+10.4f]", [m11, m12, m21, m22, tx, ty]);
 	}
 }

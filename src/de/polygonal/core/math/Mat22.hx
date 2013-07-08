@@ -191,7 +191,9 @@ class Mat22 implements Cloneable<Mat22>
 	/** Returns the string form of the value that the object represents. */
 	public function toString():String
 	{
-		return Printf.format("Mat22\n%6.3f %6.3f\n%6.3f %6.3f", [m11, m21, m12, m22]);
+		return Printf.format("Mat22:\n" +
+			"[%-+10.4f %-+10.4f]\n" +
+			"[%-+10.4f %-+10.4f]", [m11, m21, m12, m22]);
 	}
 	
 	/** Creates and returns a copy of this object. */
