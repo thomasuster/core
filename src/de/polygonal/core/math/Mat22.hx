@@ -86,7 +86,7 @@ class Mat22 implements Cloneable<Mat22>
 		}
 	}
 	
-	inline public function mul(v:Vec2, out:Vec2):Void
+	inline public function mul(v:Vec2, out:Vec2)
 	{
 		var x = v.x;
 		var y = v.y;
@@ -111,24 +111,24 @@ class Mat22 implements Cloneable<Mat22>
 		m21 = s; m22 = c;
 	}
 	
-	inline public function transpose():Void
+	inline public function transpose()
 	{
 		var tmp = m21; m21 = m12; m12 = tmp;
 	}
 	
-	inline public function setCol1(x:Float, y:Float):Void
+	inline public function setCol1(x:Float, y:Float)
 	{
 		m11 = x;
 		m21 = y;
 	}
 	
-	inline public function setCol2(x:Float, y:Float):Void
+	inline public function setCol2(x:Float, y:Float)
 	{
 		m12 = x;
 		m22 = y;
 	}
 	
-	inline public function identity():Void
+	inline public function identity()
 	{
 		m11 = 1; m12 = 0;
 		m21 = 0; m22 = 1;
@@ -165,7 +165,7 @@ class Mat22 implements Cloneable<Mat22>
 	 * Restores the matrix to a rotation to fight the accumulation of round-off errors due to frequent concatenation with other matrices.
 	 * <warn>The matrix must be a rotation matrix</warn>.
 	 */
-	public function orthonormalize():Void
+	public function orthonormalize()
 	{
 		var t = Math.sqrt(m11 * m11 + m21 * m21);
 		m11 /= t;

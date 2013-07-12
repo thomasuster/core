@@ -69,7 +69,7 @@ class TextFieldHandler extends LogHandler
 		_buffer = new ArrayedQueue<String>(_numLines * 4, false);
 	}
 	
-	override function output(message:String):Void
+	override function output(message:String)
 	{
 		_buffer.enqueue(_counter + message);
 		_counter++;
@@ -81,7 +81,7 @@ class TextFieldHandler extends LogHandler
 		tf.scrollV = tf.maxScrollV;
 	}
 	
-	function onAdded(_):Void
+	function onAdded(_)
 	{
 		if (tf.parent != null)
 		{

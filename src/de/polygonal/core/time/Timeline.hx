@@ -48,14 +48,14 @@ class Timeline
 {
 	public static var POOL_SIZE = 4096;
 	
-	public static function attach(o:IObserver, mask:Int = 0):Void
+	public static function attach(o:IObserver, mask:Int = 0)
 	{
 		D.assert(_initialized, "call Timeline.init() first");
 		if (observable == null) init();
 		observable.attach(o, mask);
 	}
 	
-	public static function detach(o:IObserver, mask:Int = 0):Void
+	public static function detach(o:IObserver, mask:Int = 0)
 	{
 		D.assert(_initialized, "call Timeline.init() first");
 		observable.detach(o, mask);
@@ -81,7 +81,7 @@ class Timeline
 	static var _tickRate:Float;
 	#end
 	
-	public static function init():Void
+	public static function init()
 	{
 		if (_initialized) return;
 		_initialized = true;
@@ -109,7 +109,7 @@ class Timeline
 	 * Destroys the system by removing all registered observers and explicitly nullifying all references for GC'ing used resources.
 	 * The system is automatically reinitialized once an observer is attached.
 	 */	
-	public static function free():Void
+	public static function free()
 	{
 		if (!_initialized) return;
 		_initialized = false;
@@ -237,7 +237,7 @@ class Timeline
 	 * Cancels all pending/running events.<br/>
 	 * Triggers a <em>TimelineEvent.CANCEL</em> update for each cancelled event.
 	 */
-	public static function cancelAll():Void
+	public static function cancelAll()
 	{
 		D.assert(_initialized, "call Timeline.init() first");
 		
@@ -294,7 +294,7 @@ class Timeline
 	/**
 	 * Updates the timeline.
 	 */
-	public static function advance():Void
+	public static function advance()
 	{
 		D.assert(_initialized, "call Timeline.init() first");
 		
@@ -439,7 +439,7 @@ private class TimeInterval
 		return (dieTicks - spawnTicks);
 	}
 	
-	inline function rise():Void
+	inline function rise()
 	{
 		var delayTicks = getLife() + ticks;
 		spawnTicks += delayTicks;
@@ -453,7 +453,7 @@ private class TimeInterval
 		}
 	}
 	
-	inline function cancel():Void
+	inline function cancel()
 	{
 		ageTicks = -1;
 	}
@@ -468,12 +468,12 @@ private class TimeInterval
 		return iterations != 0;
 	}
 	
-	inline function reuse():Void
+	inline function reuse()
 	{
 		if (poolId != -1) Timeline._intervalPool.put(poolId);
 	}
 	
-	inline function onBlip():Void 
+	inline function onBlip() 
 	{
 		setCurrentInterval();
 		if (listener != null)
@@ -482,7 +482,7 @@ private class TimeInterval
 			observable.notify(TimelineEvent.BLIP, id);
 	}
 	
-	inline function onStart():Void 
+	inline function onStart() 
 	{
 		setCurrentInterval();
 		if (listener != null)
@@ -491,7 +491,7 @@ private class TimeInterval
 			observable.notify(TimelineEvent.INTERVAL_START, id);
 	}
 	
-	inline function onProgress(alpha:Float):Void
+	inline function onProgress(alpha:Float)
 	{
 		setCurrentInterval();
 		if (listener != null)
@@ -500,7 +500,7 @@ private class TimeInterval
 			observable.notify(TimelineEvent.INTERVAL_PROGRESS, id);
 	}
 	
-	inline function onEnd():Void 
+	inline function onEnd() 
 	{
 		setCurrentInterval();
 		if (listener != null)
@@ -509,7 +509,7 @@ private class TimeInterval
 			observable.notify(TimelineEvent.INTERVAL_END, id);
 	}
 	
-	inline function onCancel():Void 
+	inline function onCancel() 
 	{
 		setCurrentInterval();
 		if (listener != null)
@@ -552,5 +552,5 @@ private class TimeInterval
 			return Printf.format('Event id=$id[$subTicks] from=$spawnTicks to=$dieTicks progress %.2f $s,', [getRatio()]);
 	}
 	
-	inline function setCurrentInterval():Void Timeline._currInterval = this;
+	inline function setCurrentInterval() Timeline._currInterval = this;
 }

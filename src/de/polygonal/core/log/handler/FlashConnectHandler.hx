@@ -65,7 +65,7 @@ class FlashConnectHandler extends LogHandler
 		super();
 	}
 	
-	override function init():Void
+	override function init()
 	{
 		super.init();
 		
@@ -79,9 +79,9 @@ class FlashConnectHandler extends LogHandler
 		_buffer = new ArrayedQueue(MESSAGE_LIMIT);
 	}
 	
-	override public function update(type:Int, source:IObservable, userData:Dynamic):Void
+	override public function onUpdate(type:Int, source:IObservable, userData:Dynamic)
 	{
-		super.update(type, source, userData);
+		super.onUpdate(type, source, userData);
 		if (type == TimebaseEvent.TICK)
 		{
 			if (Lib.getTimer() - _time > 50)
@@ -92,7 +92,7 @@ class FlashConnectHandler extends LogHandler
 		}
 	}
 	
-	override function output(message:String):Void
+	override function output(message:String)
 	{
 		var level = _message.outputLevel;
 		var flashConnectLevel = 0;
@@ -113,7 +113,7 @@ class FlashConnectHandler extends LogHandler
 		_buffer.enqueue(getMessage(message, flashConnectLevel));
 	}
 	
-	function dispatch():Void
+	function dispatch()
 	{
 		if (_buffer.isEmpty()) return;
 		

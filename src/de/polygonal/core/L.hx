@@ -39,17 +39,17 @@ class L
 		return _log;
 	}
 	
-	inline public static function d(msg:Dynamic, ?tag:String, ?posInfos:haxe.PosInfos):Void log().d(Std.string(msg), tag, posInfos);
-	inline public static function i(msg:Dynamic, ?tag:String, ?posInfos:haxe.PosInfos):Void log().i(Std.string(msg), tag, posInfos);
-	inline public static function w(msg:Dynamic, ?tag:String, ?posInfos:haxe.PosInfos):Void log().w(Std.string(msg), tag, posInfos);
-	inline public static function e(msg:Dynamic, ?tag:String, ?posInfos:haxe.PosInfos):Void log().e(Std.string(msg), tag, posInfos);
+	inline public static function d(msg:Dynamic, ?tag:String, ?posInfos:haxe.PosInfos) log().d(Std.string(msg), tag, posInfos);
+	inline public static function i(msg:Dynamic, ?tag:String, ?posInfos:haxe.PosInfos) log().i(Std.string(msg), tag, posInfos);
+	inline public static function w(msg:Dynamic, ?tag:String, ?posInfos:haxe.PosInfos) log().w(Std.string(msg), tag, posInfos);
+	inline public static function e(msg:Dynamic, ?tag:String, ?posInfos:haxe.PosInfos) log().e(Std.string(msg), tag, posInfos);
 }
 #else
 class L
 {
-	inline public static function d(x:Dynamic, ?tag:String):Void {}
-	inline public static function i(x:Dynamic, ?tag:String):Void {}
-	inline public static function w(x:Dynamic, ?tag:String):Void {}
-	inline public static function e(x:Dynamic, ?tag:String):Void {}
+	inline public static function d(x:Dynamic, ?tag:String) {}
+	inline public static function i(x:Dynamic, ?tag:String) {}
+	inline public static function w(x:Dynamic, ?tag:String) {}
+	inline public static function e(x:Dynamic, ?tag:String) {}
 }
 #end

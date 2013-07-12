@@ -74,7 +74,7 @@ class Interval
 		this.duration = duration;
 	}
 	
-	inline public function reset():Void
+	inline public function reset()
 	{
 		_t0 = 0;
 		_t1 = duration;

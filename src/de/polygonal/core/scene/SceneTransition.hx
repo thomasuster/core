@@ -53,7 +53,7 @@ class SceneTransition extends Entity
 		if (mode == SceneTransitionMode.Sequential) _duration /= 2;
 	}
 	
-	override function onFree():Void
+	override function onFree()
 	{
 		a = null;
 		b = null;
@@ -61,7 +61,7 @@ class SceneTransition extends Entity
 		_mode = null;
 	}
 	
-	override function onAdd(parent:Entity):Void
+	override function onAdd(parent:Entity)
 	{
 		switch (_mode) 
 		{
@@ -84,7 +84,7 @@ class SceneTransition extends Entity
 		}
 	}
 	
-	override function onTick(dt:Float, parent:Entity):Void
+	override function onTick(dt:Float, parent:Entity)
 	{
 		switch (_mode) 
 		{
@@ -157,9 +157,9 @@ class SceneTransition extends Entity
 		}
 	}
 	
-	function onStart(a:Scene, b:Scene):Void {}
+	function onStart(a:Scene, b:Scene) {}
 	
-	function onAdvance(scene:Scene, x:Float, dir:Int):Void {}
+	function onAdvance(scene:Scene, x:Float, dir:Int) {}
 	
-	function onComplete(scene:Scene):Void {}
+	function onComplete(scene:Scene) {}
 }

@@ -138,7 +138,7 @@ class RNORREXP
 		return _jz + _jsr;
 	}
 	
-	function initLUT(jsrseed:Int):Void
+	function initLUT(jsrseed:Int)
 	{
 		var m1 = 2147483648.;
 		var m2 = 4294967296.;

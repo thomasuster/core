@@ -56,7 +56,7 @@ class RNG
 	 * Defines a new <code>seed</code>.<br/>
 	 * This will produce a different series of numbers.
 	 */
-	public function setSeed(seed:Int):Void
+	public function setSeed(seed:Int)
 	{
 		_seed = seed;
 	}

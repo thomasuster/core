@@ -54,7 +54,7 @@ class ParkMiller extends RNG
 	/**
 	 * @throws de.polygonal.core.util.AssertError invalid seed value (has to be in the range <arg>&#091;0, 2^31 - 1&#093;</arg> (debug only).
 	 */
-	override public function setSeed(seed:Int):Void
+	override public function setSeed(seed:Int)
 	{
 		#if (debug && !neko)
 		D.assert(seed >= 0 && seed < Limits.INT32_MAX, "seed >= 0 && seed < Limits.INT32_MAX");

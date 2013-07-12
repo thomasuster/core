@@ -117,7 +117,7 @@ class EntityType
 		return f;
 	}
 	
-	static function addType(fields:Array<Field>, type:Int):Void
+	static function addType(fields:Array<Field>, type:Int)
 	{
 		var p = Context.currentPos();
 		fields.push
@@ -133,7 +133,7 @@ class EntityType
 		);
 	}
 	
-	static function onGenerate(types:Array<haxe.macro.Type>):Void
+	static function onGenerate(types:Array<haxe.macro.Type>)
 	{
 		if (!changed) return;
 		var fout = sys.io.File.write(CACHE_PATH, false);

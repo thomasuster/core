@@ -111,7 +111,7 @@ class Vec2
 	}
 	
 	/** Clamps this vector to <code>max</code> length. */
-	inline public function clamp(max:Float):Void
+	inline public function clamp(max:Float)
 	{
 		var tx = x;
 		var ty = y;

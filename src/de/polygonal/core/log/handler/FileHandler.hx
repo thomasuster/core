@@ -62,7 +62,7 @@ class FileHandler extends LogHandler
 		}
 	}
 	
-	override function output(message:String):Void
+	override function output(message:String)
 	{
 		if (!_success) return;
 		

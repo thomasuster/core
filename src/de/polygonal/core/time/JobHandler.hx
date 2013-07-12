@@ -40,33 +40,33 @@ class JobHandler implements TimelineListener
 		_jobId = -1;
 	}
 	
-	public function run(job:Job = null, duration:Float, delay = 0.):Void
+	public function run(job:Job = null, duration:Float, delay = 0.)
 	{
 		if (job != null) _job = job;
 		_jobId = Timeline.schedule(this, duration, delay);
 	}
 	
-	public function cancel():Void
+	public function cancel()
 	{
 		if (_job != null && _jobId != -1)
 			Timeline.cancel(_jobId);
 	}
 	
-	function onBlip():Void
+	function onBlip()
 	{
 	}
 	
-	function onStart():Void
+	function onStart()
 	{
 		_job.onStart();
 	}
 	
-	function onProgress(alpha:Float):Void
+	function onProgress(alpha:Float)
 	{
 		_job.onProgress(alpha);
 	}
 	
-	function onEnd():Void
+	function onEnd()
 	{
 		if (_job != null)
 		{
@@ -75,7 +75,7 @@ class JobHandler implements TimelineListener
 		}
 	}
 	
-	function onCancel():Void
+	function onCancel()
 	{
 		if (_job != null)
 		{

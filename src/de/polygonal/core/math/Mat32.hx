@@ -227,7 +227,7 @@ class Mat32 implements de.polygonal.ds.Cloneable<Mat32>
 	inline public function mul22Ty(x:Float, y:Float):Float { return x * m12 + y * m22; }
 	
 	/** Sets the matrix to identity. */
-	inline public function identity():Void
+	inline public function identity()
 	{
 		m11 = 1; m12 = 0;
 		m21 = 0; m22 = 1;
@@ -235,7 +235,7 @@ class Mat32 implements de.polygonal.ds.Cloneable<Mat32>
 	}
 	
 	/** Zero the 3rd row of the matrix, which contains the translation portion. */
-	inline public function zeroTranslation():Void
+	inline public function zeroTranslation()
 	{
 		tx = ty = 0;
 	}
@@ -259,12 +259,12 @@ class Mat32 implements de.polygonal.ds.Cloneable<Mat32>
 	}
 	
 	/** Sets the translation portion of the matrix. */
-	inline public function setTranslation(x:Float, y:Float):Void
+	inline public function setTranslation(x:Float, y:Float)
 	{
 		tx = x; ty = y;
 	}
 	
-	inline public function setScale(x:Float, y:Float):Void
+	inline public function setScale(x:Float, y:Float)
 	{
 		m11 = x; m12 = 0;     
 		m21 = 0; m22 = y;
@@ -279,7 +279,7 @@ class Mat32 implements de.polygonal.ds.Cloneable<Mat32>
 	}
 	
 	/** Sets the 2x2 rotation portion given a 2x2 rotation matrix <i>R</i>. */
-	inline public function setRotationMatrix(R:Mat22):Void
+	inline public function setRotationMatrix(R:Mat22)
 	{
 		m11 = R.m11; m12 = R.m12;
 		m21 = R.m21; m22 = R.m22;
@@ -292,7 +292,7 @@ class Mat32 implements de.polygonal.ds.Cloneable<Mat32>
 	}
 	
 	/** Sets the 2x2 rotation portion given an <i>angle</i> in radians. */
-	inline public function setAngle(angle:Float):Void
+	inline public function setAngle(angle:Float)
 	{
 		var c = Math.cos(angle);
 		var s = Math.sin(angle);
@@ -301,7 +301,7 @@ class Mat32 implements de.polygonal.ds.Cloneable<Mat32>
 	}
 	
 	/** Sets the translation portion of the matrix. */
-	inline public function setupTranslation(x:Float, y:Float):Void
+	inline public function setupTranslation(x:Float, y:Float)
 	{
 		//set the linear transformation portion to identity
 		m11 = 1; m12 = 0;
@@ -318,7 +318,7 @@ class Mat32 implements de.polygonal.ds.Cloneable<Mat32>
 	 * inertial space, then we translate into world space.
 	 * @param angle The orientation of the local reference frame in radians.
 	 */
-	public function setupLocalToParent(x:Float, y:Float, angle:Float):Void
+	public function setupLocalToParent(x:Float, y:Float, angle:Float)
 	{
 		//copy the rotation portion of the matrix. we can copy the elements directly
 		//(without transposing) because by our definition the rotation matrix is "normally" an
@@ -343,7 +343,7 @@ class Mat32 implements de.polygonal.ds.Cloneable<Mat32>
 	 * translates last. So we think about creating two matrices T and R, and then concatenating M = TR.
 	 * @param orient The orientation of the local reference frame, which can be specified using either an angle (radians) or a 2x2 rotation matrix.
 	 */
-	public function setupParentToLocal(x:Float, y:Float, angle:Float):Void
+	public function setupParentToLocal(x:Float, y:Float, angle:Float)
 	{
 		//copy the rotation portion of the matrix. by our definition, the rotation matrix is
 		//"normally" an object->inertial matrix, which is local->parent. We want a parent->local

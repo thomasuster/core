@@ -13,7 +13,7 @@ class EntityManager
 	
 	static var _entitiesById:IntMap<Array<Entity>> = null;
 	
-	public static function registerEntity(e:Entity):Void
+	public static function registerEntity(e:Entity)
 	{
 		if (!_initialized)
 		{
@@ -38,7 +38,7 @@ class EntityManager
 		}
 	}
 	
-	public static function unregisterEntity(e:Entity):Void
+	public static function unregisterEntity(e:Entity)
 	{
 		if (!_keyLookup.exists(e.id)) return;
 		var key = _keyLookup.get(e.id);
@@ -53,7 +53,7 @@ class EntityManager
 		return _entitiesById.get(key)[0];
 	}
 	
-	public static function sendMsg(sender:Entity, receiverId:String, msg:String, userData:Dynamic):Void
+	public static function sendMsg(sender:Entity, receiverId:String, msg:String, userData:Dynamic)
 	{
 		#if debug
 		D.assert(_keyLookup.exists(receiverId), "entity is not registered");

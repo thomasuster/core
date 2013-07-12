@@ -60,12 +60,12 @@ class MainLoop extends Entity
 		Timeline.init();
 	}
 	
-	override function onFree():Void
+	override function onFree()
 	{
 		Timebase.detach(this);
 	}
 	
-	override public function onUpdate(type:Int, source:IObservable, userData:Dynamic):Void
+	override public function onUpdate(type:Int, source:IObservable, userData:Dynamic)
 	{
 		switch (type)
 		{

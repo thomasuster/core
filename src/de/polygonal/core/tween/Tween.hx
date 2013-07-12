@@ -56,7 +56,7 @@ class Tween implements IObservable implements IObserver implements TimelineListe
 	/**
 	 * Stops and destroys all running tweens.
 	 */
-	public static function stopActiveTweens():Void
+	public static function stopActiveTweens()
 	{
 		for (i in _activeTweens) i.free();
 		if (_activeTweens.isEmpty()) _activeTweens = null;
@@ -74,7 +74,7 @@ class Tween implements IObservable implements IObserver implements TimelineListe
 	/**
 	 * Removes all non-running <em>Tween</em> objects with assigned keys.
 	 */
-	public static function purge():Void
+	public static function purge()
 	{
 		for (i in _map.keys())
 		{
@@ -145,7 +145,7 @@ class Tween implements IObservable implements IObserver implements TimelineListe
 		_repeat      = 0;
 	}
 	
-	public function free():Void
+	public function free()
 	{
 		if (_observable == null) return;
 		if (_activeTweens != null) _activeTweens.remove(this);
@@ -260,32 +260,32 @@ class Tween implements IObservable implements IObserver implements TimelineListe
 		return this;
 	}
 	
-	public function attach(o:IObserver, mask = 0):Void
+	public function attach(o:IObserver, mask = 0)
 	{
 		if (_observable == null) _observable = new Observable(0, this);
 		_observable.attach(o, mask);
 	}
 	
-	public function detach(o:IObserver, mask:Int = 0):Void 
+	public function detach(o:IObserver, mask:Int = 0) 
 	{
 		if (_observable != null) _observable.attach(o, mask);
 	}
 	
-	public function notify(type:Int, userData:Dynamic = null):Void 
+	public function notify(type:Int, userData:Dynamic = null) 
 	{
 		if (_observable != null) _observable.notify(type, userData);
 	}
 	
-	public function onUpdate(type:Int, source:IObservable, userData:Dynamic):Void
+	public function onUpdate(type:Int, source:IObservable, userData:Dynamic)
 	{
 		if (_id == -1) return;
 		var alpha:Float = userData;
 		_target.set(M.lerp(_a, _b, alpha));
 	}
 	
-	function onBlip():Void {}
+	function onBlip() {}
 	
-	function onStart():Void
+	function onStart()
 	{
 		if (_activeTweens == null) _activeTweens = new DA<Tween>();
 		_activeTweens.pushBack(this);
@@ -295,7 +295,7 @@ class Tween implements IObservable implements IObserver implements TimelineListe
 		notify(TweenEvent.START, _min);
 	}
 	
-	function onProgress(alpha:Float):Void 
+	function onProgress(alpha:Float) 
 	{
 		if (_id == -1) return;
 		_a = _b; _b = M.lerp(_min, _max, _ease.interpolate(alpha));
@@ -303,7 +303,7 @@ class Tween implements IObservable implements IObserver implements TimelineListe
 		notify(TweenEvent.ADVANCE, _b);
 	}
 	
-	function onEnd():Void 
+	function onEnd() 
 	{
 		if (_id == -1) return;
 		_id = -1;
@@ -326,7 +326,7 @@ class Tween implements IObservable implements IObserver implements TimelineListe
 		if (_key == null) free();
 	}
 	
-	function onCancel():Void 
+	function onCancel() 
 	{
 		if (_activeTweens != null) _activeTweens.remove(this);
 		notify(TweenEvent.FINISH, _b);

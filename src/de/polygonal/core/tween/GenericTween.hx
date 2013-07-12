@@ -60,14 +60,14 @@ class GenericTween extends Tween implements TweenTarget
 		super(key, this, ease, to, duration, interpolateState);
 	}
 	
-	override public function free():Void 
+	override public function free() 
 	{
 		super.free();
 		_object = null;
 		_fields = null;
 	}
 	
-	public function set(x:Float):Void
+	public function set(x:Float)
 	{
 		for (field in _fields)
 		{

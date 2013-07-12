@@ -186,7 +186,7 @@ class Mat33
 	}
 	
 	/** Multiplies all matrix elements by the scalar <code>x</code>. */
-	inline public function timesScalar(x:Float):Void
+	inline public function timesScalar(x:Float)
 	{
 		m11 *= x; m12 *= x; m13 *= x;
 		m21 *= x; m22 *= x; m23 *= x;
@@ -446,7 +446,7 @@ class Mat33
 			"[%-+10.4f %-+10.4f %-+10.4f]", [m11, m12, m13, m21, m22, m23, m31, m32, m33]);
 	}
 	
-	inline function _fastTrig(angle:Float):Void
+	inline function _fastTrig(angle:Float)
 	{
 		TrigApprox.sinCos(angle, sineCosine);
 	}

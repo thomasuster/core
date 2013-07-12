@@ -48,7 +48,7 @@ class LogSystem
 	static var _logList:DA<Log> = null;
 	static var _logLookup:StringMap<Log> = null;
 	
-	public static function init():Void
+	public static function init()
 	{
 		if (log != null) return;
 		
@@ -77,7 +77,7 @@ class LogSystem
 			var defaultTrace = haxe.Log.trace;
 			
 			//override default trace to add some sprintf sugar
-			haxe.Log.trace = function(x:Dynamic, ?posInfos:haxe.PosInfos):Void
+			haxe.Log.trace = function(x:Dynamic, ?posInfos:haxe.PosInfos)
 			{
 				if (posInfos.customParams != null)
 				{
@@ -95,12 +95,12 @@ class LogSystem
 		else
 		{
 			if (!config.keepDefaultTrace)
-				haxe.Log.trace = function(x:Dynamic, ?posInfos:haxe.PosInfos):Void {};
+				haxe.Log.trace = function(x:Dynamic, ?posInfos:haxe.PosInfos) {};
 		}
 		#end
 	}
 	
-	public static function registerGlobalHandler(x:LogHandler):Void
+	public static function registerGlobalHandler(x:LogHandler)
 	{
 		config.globalHandlers.push(x);
 	}
@@ -135,7 +135,7 @@ class LogSystem
 	/**
 	 * Unregisters an existing log.
 	 */
-	public static function removeLog(log:Log):Void
+	public static function removeLog(log:Log)
 	{
 		var keys = _logLookup.keys();
 		for (i in keys)

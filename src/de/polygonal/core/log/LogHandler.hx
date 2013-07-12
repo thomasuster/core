@@ -86,7 +86,7 @@ class LogHandler implements IObserver
 	/**
 	 * Destroys this object by explicitly nullifying all references for GC'ing used resources.
 	 */
-	public function free():Void {}
+	public function free() {}
 	
 	/**
 	 * Returns the active output level(s) encoded as a bitfield.
@@ -136,7 +136,7 @@ class LogHandler implements IObserver
 	 * }</pre>
 	 * @throws de.polygonal.core.util.AssertError invalid log level (debug only).
 	 */
-	public function setLevel(x:Int):Void
+	public function setLevel(x:Int)
 	{
 		#if debug
 		D.assert((x & LogLevel.ALL) > 0, "(x & LogLevel.ALL) > 0");
@@ -180,7 +180,7 @@ class LogHandler implements IObserver
 	 *     }
 	 * }</pre>
 	 */
-	public function setFormat(flags:Int, tag:String = null):Void
+	public function setFormat(flags:Int, tag:String = null)
 	{
 		if (flags == 0) nulf();
 		if (tag != null)
@@ -193,7 +193,7 @@ class LogHandler implements IObserver
 			_bits = flags;
 	}
 	
-	public function onUpdate(type:Int, source:IObservable, userData:Dynamic):Void
+	public function onUpdate(type:Int, source:IObservable, userData:Dynamic)
 	{
 		if (type == LogEvent.LOG_MESSAGE)
 		{
@@ -346,9 +346,9 @@ class LogHandler implements IObserver
 		return Printf.format(args.join(""), vals);
 	}
 	
-	function output(msg:String):Void {}
+	function output(msg:String) {}
 	
-	function init():Void
+	function init()
 	{
 		_bits = DEFAULT_FORMAT;
 	}

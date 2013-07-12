@@ -56,7 +56,7 @@ class ConsoleHandler extends LogHandler
 		super();
 	}
 	
-	override function output(message:String):Void
+	override function output(message:String)
 	{
 		var levelName = LogLevel.getName(M.min(_message.outputLevel, LogLevel.ERROR)).toLowerCase();
 		

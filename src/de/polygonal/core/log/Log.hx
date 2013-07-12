@@ -68,7 +68,7 @@ class Log
 	 * Adds the handler <code>x</code> to this log.<br/>
 	 * Once registered, <code>x</code> receives logging messages.
 	 */
-	public function addHandler(x:LogHandler):Void
+	public function addHandler(x:LogHandler)
 	{
 		#if log
 		for (observer in _observable)
@@ -80,7 +80,7 @@ class Log
 	/**
 	 * Removes the handler <code>x</code> from this log.
 	 */
-	public function removeHandler(x:LogHandler):Void
+	public function removeHandler(x:LogHandler)
 	{
 		#if log
 		_observable.detach(x);
@@ -90,7 +90,7 @@ class Log
 	/**
 	 * Removes all handlers  from this log.
 	 */
-	public function removeAllHandlers():Void
+	public function removeAllHandlers()
 	{
 		#if log
 		for (handler in _observable.getObserverList())
@@ -168,7 +168,7 @@ class Log
 	 * @throws de.polygonal.core.util.AssertError invalid log level (debug only).
 	 */
 	#if !log inline #end
-	public function setLevel(x:Int):Void
+	public function setLevel(x:Int)
 	{
 		#if log
 		#if debug
@@ -197,7 +197,7 @@ class Log
 	 * @param msg the log message.
 	 */
 	#if !log inline #end
-	public function d(msg:String, ?tag:String, ?posInfos:haxe.PosInfos):Void
+	public function d(msg:String, ?tag:String, ?posInfos:haxe.PosInfos)
 	{
 		#if log
 		if (_observable.size() > 0)
@@ -210,7 +210,7 @@ class Log
 	 * @param msg the log message.
 	 */
 	#if !log inline #end
-	public function debug(msg:String, ?tag:String, ?posInfos:haxe.PosInfos):Void
+	public function debug(msg:String, ?tag:String, ?posInfos:haxe.PosInfos)
 	{
 		#if log
 		if (_observable.size() > 0)
@@ -223,7 +223,7 @@ class Log
 	 * @param msg the log message.
 	 */
 	#if !log inline #end
-	public function i(msg:String, ?tag:String, ?posInfos:haxe.PosInfos):Void
+	public function i(msg:String, ?tag:String, ?posInfos:haxe.PosInfos)
 	{
 		#if log
 		if (_observable.size() > 0)
@@ -236,7 +236,7 @@ class Log
 	 * @param msg the log message.
 	 */
 	#if !log inline #end
-	public function info(msg:String, ?tag:String, ?posInfos:haxe.PosInfos):Void
+	public function info(msg:String, ?tag:String, ?posInfos:haxe.PosInfos)
 	{
 		#if log
 		if (_observable.size() > 0)
@@ -249,7 +249,7 @@ class Log
 	 * @param msg the log message.
 	 */
 	#if !log inline #end
-	public function w(msg:String, ?tag:String, ?posInfos:haxe.PosInfos):Void
+	public function w(msg:String, ?tag:String, ?posInfos:haxe.PosInfos)
 	{
 		#if log
 		if (_observable.size() > 0)
@@ -262,7 +262,7 @@ class Log
 	 * @param msg the log message.
 	 */
 	#if !log inline #end
-	public function warn(msg:String, ?tag:String, ?posInfos:haxe.PosInfos):Void
+	public function warn(msg:String, ?tag:String, ?posInfos:haxe.PosInfos)
 	{
 		#if log
 		if (_observable.size() > 0)
@@ -275,7 +275,7 @@ class Log
 	 * @param msg the log message.
 	 */
 	#if !log inline #end
-	public function e(msg:String, ?tag:String, ?posInfos:haxe.PosInfos):Void
+	public function e(msg:String, ?tag:String, ?posInfos:haxe.PosInfos)
 	{
 		#if log
 		if (_observable.size() > 0)
@@ -288,7 +288,7 @@ class Log
 	 * @param msg the log message.
 	 */
 	#if !log inline #end
-	public function error(msg:String, ?tag:String, ?posInfos:haxe.PosInfos):Void
+	public function error(msg:String, ?tag:String, ?posInfos:haxe.PosInfos)
 	{
 		#if log
 		if (_observable.size() > 0)
@@ -296,7 +296,7 @@ class Log
 		#end
 	}
 
-	function output(level:Int, msg:String, tag:String, ?posInfos:haxe.PosInfos):Void
+	function output(level:Int, msg:String, tag:String, ?posInfos:haxe.PosInfos)
 	{
 		if (inclTag != null)
 			if (!inclTag.match(tag))

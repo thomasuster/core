@@ -323,7 +323,7 @@ class Base64
 		return cast b[i];
 	}
 	
-	inline function _setByte(b:BytesData, i:Int, x:Int):Void
+	inline function _setByte(b:BytesData, i:Int, x:Int)
 	{
 		b[i] = cast x;
 	}

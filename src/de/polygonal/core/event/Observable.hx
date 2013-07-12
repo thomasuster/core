@@ -73,7 +73,7 @@ class Observable extends HashableItem implements IObservable
 	/**
 	 * Clears all installed observers (application-wide).
 	 */
-	public static function release():Void
+	public static function release()
 	{
 		try
 		{
@@ -202,7 +202,7 @@ class Observable extends HashableItem implements IObservable
 	 * Destroys this object by detaching all observers and explicitly nullifying all nodes, pointers and elements for GC'ing used resources.<br/>
 	 * Improves GC efficiency/performance (optional).
 	 */
-	public function free():Void
+	public function free()
 	{
 		if (_freed) return;
 		
@@ -245,7 +245,7 @@ class Observable extends HashableItem implements IObservable
 	 * This improves performance when observers are frequently attached and detached.
 	 * This value can be adjusted at any time; a value of zero disables preallocation.
 	 */
-	public function reserve(x:Int):Void
+	public function reserve(x:Int)
 	{
 		_poolCapacity = x;
 		if (x < _poolSize)
@@ -270,7 +270,7 @@ class Observable extends HashableItem implements IObservable
 	 * The internal pool defined by <em>reserve()</em> is not altered.
 	 * @param purge if true, the pool is emptied.
 	 */
-	public function clear(purge = false):Void
+	public function clear(purge = false)
 	{
 		if (_observerCount > 0) _getRegistry().remove(this);
 		
@@ -323,7 +323,7 @@ class Observable extends HashableItem implements IObservable
 	 * 
 	 * class MyObserver implements IObserver {
 	 *     public function new() {}
-	 *     public function onUpdate(type:Int, source:Observable, userData:Dynamic):Void {}
+	 *     public function onUpdate(type:Int, source:Observable, userData:Dynamic) {}
 	 * }
 	 * 
 	 * class Main {
@@ -347,7 +347,7 @@ class Observable extends HashableItem implements IObservable
 	 * By default, <code>o</code> receives all updates from an event group.<br/>
 	 * <warn>Must only contain event types from a single group, e.g. this mask is invalid: MyEventA.EVENT_X | MyEventB.EVENT_Y.</warn>
 	 */
-	public function attach(o:IObserver, mask = 0):Void
+	public function attach(o:IObserver, mask = 0)
 	{
 		if (_freed) return; //free() was called?
 		
@@ -436,7 +436,7 @@ class Observable extends HashableItem implements IObservable
 	 * 
 	 * class MyObserver implements IObserver {
 	 *     public function new() {}
-	 *     public function onUpdate(type:Int, source:Observable, userData:Dynamic):Void {}
+	 *     public function onUpdate(type:Int, source:Observable, userData:Dynamic) {}
 	 * }
 	 * 
 	 * class Main {
@@ -463,7 +463,7 @@ class Observable extends HashableItem implements IObservable
 	 * By default, <code>o</code> is unregistered from the entire event group.<br/>
 	 * <warn>Must only contain event types from a single group.</warn>
 	 */
-	public function detach(o:IObserver, mask:Int = 0):Void
+	public function detach(o:IObserver, mask:Int = 0)
 	{
 		if (_freed) //free() was called?
 			return;
@@ -530,7 +530,7 @@ class Observable extends HashableItem implements IObservable
 	 * <warn>Must only contain event types from a single group.</warn>
 	 * @param userData additional event data. Default value is null.
 	 */
-	public function notify(type:Int, userData:Dynamic = null):Void
+	public function notify(type:Int, userData:Dynamic = null)
 	{
 		_notify(type, userData);
 	}
@@ -539,7 +539,7 @@ class Observable extends HashableItem implements IObservable
 	 * Disables all updates of type <code>x</code>.<br/>
 	 * Improves performance if an event group repeatedly fires frequent updates that are not handled by an application (e.g. mouse move events).
 	 */
-	public function muteType(x:Int):Void
+	public function muteType(x:Int)
 	{
 		_blacklist |= x;
 	}
@@ -547,7 +547,7 @@ class Observable extends HashableItem implements IObservable
 	/**
 	 * Removes the update type <code>x</code> from a blacklist of disabled updates, see <em>mute()</em>.<br/>
 	 */
-	public function unmuteType(x:Int):Void
+	public function unmuteType(x:Int)
 	{
 		_blacklist = _blacklist & ~x;
 	}
@@ -600,7 +600,7 @@ class Observable extends HashableItem implements IObservable
 		return ObserverMacro.NUM_EVENT_BITS;
 	}
 	
-	function _notify(type:Int, userData:Dynamic = null):Void
+	function _notify(type:Int, userData:Dynamic = null)
 	{
 		if (_observerCount == 0 || (type & _blacklist) == type) //_blackList > 0?
 			return; //early out
@@ -742,7 +742,7 @@ private class Bind implements IObserver
 	var _g:Int;
 	var _t:Int;
 	
-	public function onUpdate(type:Int, source:IObservable, userData:Dynamic):Void
+	public function onUpdate(type:Int, source:IObservable, userData:Dynamic)
 	{
 		if (_t != 0)
 		{
@@ -792,7 +792,7 @@ private class Delegate implements IObserver
 	
 	var _f:Int->IObservable->Dynamic->Bool;
 	
-	public function onUpdate(type:Int, source:IObservable, userData:Dynamic):Void
+	public function onUpdate(type:Int, source:IObservable, userData:Dynamic)
 	{
 		if (_f(type, source, userData)) return;
 		

@@ -225,7 +225,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 	 * The method invokes <em>onFree()</em> on each entity, giving each entity the opportunity to perform some cleanup (e.g. free resources or unregister from listeners).<br/>
 	 * Only effective if <em>commit()</em> is called afterwards.
 	 */
-	public function free():Void
+	public function free()
 	{
 		if (_hasf(BIT_COMMIT_SUICIDE))
 		{
@@ -250,7 +250,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 		return treeNode.childIterator();
 	}
 	
-	public function hideUpdate(flags:Int, deep = false, rise = false):Void
+	public function hideUpdate(flags:Int, deep = false, rise = false)
 	{
 		_clrf(flags);
 		
@@ -281,7 +281,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 	 * <li>Stops calling <em>onDraw()</em> on all descendants if called inside <em>onDraw()</em>.</li>
 	 * </ul>
 	 */
-	inline public function stop():Void
+	inline public function stop()
 	{
 		_c++;
 	}
@@ -316,7 +316,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 	/**
 	 * Sorts the children according to their <em>priority</em> value.
 	 */
-	public function sortChildren():Void
+	public function sortChildren()
 	{
 		var n = treeNode.children;
 		while (n != null)
@@ -333,7 +333,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 	/**
 	 * Carries out any pending changes (additions/removals).
 	 */
-	public function commit():Void
+	public function commit()
 	{
 		#if debug
 		if (treeNode != treeNode.getRoot())
@@ -442,7 +442,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 	 * Removes a <code>child</code> entity from this entity or this entity if <code>child</code> is omitted.
 	 * @param deep if true, recursively removes all nodes in the subtree rooted at this node.
 	 */
-	public function remove(child:Entity = null, deep = false):Void
+	public function remove(child:Entity = null, deep = false)
 	{
 		if (child == null)
 		{
@@ -694,7 +694,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 	 * If an ancestor calls <em>stop()</em>, message bubbling stops at this node.
 	 * @param userData additional custom data.
 	 */
-	public function liftMsg(x:String, userData:Dynamic = null):Void
+	public function liftMsg(x:String, userData:Dynamic = null)
 	{
 		var n = treeNode.parent;
 		while (n != null)
@@ -723,7 +723,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 	 * @param userData additional custom data.
 	 * @param sender used internally.
 	 */
-	public function dropMsg(x:String, userData:Dynamic = null, sender:Entity = null):Void
+	public function dropMsg(x:String, userData:Dynamic = null, sender:Entity = null)
 	{
 		if (sender == null) sender = this;
 		
@@ -763,7 +763,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 	 * node.
 	 * @param userData additional custom data.
 	 */
-	public function slipMsg(x:String, userData:Dynamic = null):Void
+	public function slipMsg(x:String, userData:Dynamic = null)
 	{
 		var n = treeNode.prev;
 		while (n != null)
@@ -886,24 +886,24 @@ class Entity implements IObserver implements IObservable implements Hashable
 		return _observable;
 	}
 	
-	public function attach(o:IObserver, mask = 0):Void
+	public function attach(o:IObserver, mask = 0)
 	{
 		getObservable().attach(o, mask);
 	}
 	
-	public function detach(o:IObserver, mask = 0):Void
+	public function detach(o:IObserver, mask = 0)
 	{
 		if (_observable != null) getObservable().detach(o, mask);
 	}
 	
-	public function notify(type:Int, userData:Dynamic = null):Void
+	public function notify(type:Int, userData:Dynamic = null)
 	{
 		getObservable().notify(type, userData);
 	}
 	
-	public function onUpdate(type:Int, source:IObservable, userData:Dynamic):Void {}
+	public function onUpdate(type:Int, source:IObservable, userData:Dynamic) {}
 	
-	public function sendMsg(receiverId:String, msg:String, userData:Dynamic = null):Void
+	public function sendMsg(receiverId:String, msg:String, userData:Dynamic = null)
 	{
 		EntityManager.sendMsg(this, receiverId, msg, userData);
 	}
@@ -911,83 +911,83 @@ class Entity implements IObserver implements IObservable implements Hashable
 	/**
 	 * Hook; invoked after <code>sender</code> has sent a message <code>msg</code> to this entity, passing <code>userData</code>.
 	 */
-	public function onMsg(msg:String, sender:Entity, userData:Dynamic):Void {}
+	public function onMsg(msg:String, sender:Entity, userData:Dynamic) {}
 	
 	/**
 	 * Hook; invoked by <em>free()</em> on all children,
 	 * giving each one the opportunity to perform some cleanup.
 	 */
-	function onFree():Void
+	function onFree()
 	{
 	}
 	
 	/**
 	 * Hook; invoked after this entity was attached to its parent <code>x</code>.
 	 */
-	function onAdd(parent:Entity):Void
+	function onAdd(parent:Entity)
 	{
 	}
 
 	/**
 	 * Hook; invoked after an ancestor <code>x</code> was added to this entity.
 	 */
-	function onAddAncestor(x:Entity):Void
+	function onAddAncestor(x:Entity)
 	{
 	}
 	
 	/**
 	 * Hook; invoked after a descendant <code>x</code> was added to this entity.
 	 */
-	function onAddDescendant(x:Entity):Void
+	function onAddDescendant(x:Entity)
 	{
 	}
 	
 	/**
 	 * Hook; invoked after a sibling <code>x</code> was added to this entity.
 	 */
-	function onAddSibling(x:Entity):Void
+	function onAddSibling(x:Entity)
 	{
 	}
 	
 	/**
 	 * Hook; invoked after this entity was removed from its parent <code>x</code>.
 	 */
-	function onRemove(parent:Entity):Void
+	function onRemove(parent:Entity)
 	{
 	}
 	
 	/**
 	 * Hook; invoked after this entity has lost the ancestor <code>x</code>.
 	 */
-	function onRemoveAncestor(x:Entity):Void
+	function onRemoveAncestor(x:Entity)
 	{
 	}
 	
 	/**
 	 * Hook; invoked after this entity has lost the descendant <code>x</code>.
 	 */
-	function onRemoveDescendant(x:Entity):Void
+	function onRemoveDescendant(x:Entity)
 	{
 	}
 	
 	/**
 	 * Hook; invoked after this entity has lost the sibling <code>x</code>.
 	 */
-	function onRemoveSibling(x:Entity):Void
+	function onRemoveSibling(x:Entity)
 	{
 	}
 	
 	/**
 	 * Hook; updates this entity.
 	 */
-	function onTick(timeDelta:Float, parent:Entity):Void {}
+	function onTick(timeDelta:Float, parent:Entity) {}
 	
 	/**
 	 * Hook; renders this entity.
 	 */
-	function onDraw(alpha:Float, parent:Entity):Void {}
+	function onDraw(alpha:Float, parent:Entity) {}
 	
-	function prepareAdditions():Void
+	function prepareAdditions()
 	{
 		//preorder: change BIT_PENDING_ADD to BIT_PROCESS
 		if (_hasf(BIT_PENDING_ADD))
@@ -1003,7 +1003,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 		}
 	}
 	
-	function registerHi():Void
+	function registerHi()
 	{
 		//bottom -> up construction
 		var n = treeNode.children;
@@ -1026,7 +1026,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 		}
 	}
 	
-	function propagateOnAddAncestor(x:Entity):Void
+	function propagateOnAddAncestor(x:Entity)
 	{
 		//only for non-pending nodes
 		if (_getf(BIT_PENDING | BIT_ADD_ANCESTOR) == BIT_ADD_ANCESTOR)
@@ -1054,7 +1054,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 		}
 	}
 	
-	function propagateOnAddAncestorBackTrack(x:Entity):Void
+	function propagateOnAddAncestorBackTrack(x:Entity)
 	{
 		if (_hasf(BIT_PROCESS))
 		{
@@ -1071,7 +1071,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 		}
 	}
 	
-	function registerLo():Void
+	function registerLo()
 	{
 		//postorder: bottom -> up construction
 		var n = treeNode.children;
@@ -1093,7 +1093,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 		}
 	}
 	
-	function propagateOnAddDescendant(x:Entity):Void
+	function propagateOnAddDescendant(x:Entity)
 	{
 		if (x._getf(BIT_PENDING | BIT_ADD_DESCENDANT) == BIT_ADD_DESCENDANT)
 		{
@@ -1119,7 +1119,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 		}
 	}
 	
-	function propagateOnAddDescendantBackTrack(x:Entity):Void
+	function propagateOnAddDescendantBackTrack(x:Entity)
 	{
 		if (_hasf(BIT_PROCESS))
 		{
@@ -1136,7 +1136,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 		}
 	}
 	
-	function register():Void
+	function register()
 	{
 		//postorder
 		var n = treeNode.children;
@@ -1162,7 +1162,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 		_clrf(BIT_PROCESS);
 	}
 	
-	function propagateOnAddSibling(child:Entity):Void
+	function propagateOnAddSibling(child:Entity)
 	{
 		child._setf(BIT_ADDED);
 		var n = treeNode.children;
@@ -1184,7 +1184,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 		}
 	}
 	
-	function prepareRemovals():Void
+	function prepareRemovals()
 	{
 		if (_hasf(BIT_PENDING_REMOVE))
 		{
@@ -1199,7 +1199,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 		}
 	}
 	
-	function unregister():Void
+	function unregister()
 	{
 		var n = treeNode.children;
 		while (n != null)
@@ -1223,7 +1223,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 		}
 	}
 	
-	function propagateOnRemoveSibling(child:Entity):Void
+	function propagateOnRemoveSibling(child:Entity)
 	{
 		child._setf(BIT_REMOVED);
 		var n = treeNode.children;
@@ -1245,7 +1245,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 		}
 	}
 	
-	function unregisterHi():Void
+	function unregisterHi()
 	{
 		var n = treeNode.children;
 		while (n != null)
@@ -1265,7 +1265,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 		}
 	}
 	
-	function propagateOnRemoveAncestor(x:Entity):Void
+	function propagateOnRemoveAncestor(x:Entity)
 	{
 		if (_getf(BIT_PENDING | BIT_REMOVE_ANCESTOR) == BIT_REMOVE_ANCESTOR)
 		{
@@ -1291,7 +1291,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 		}
 	}
 	
-	function propagateOnRemoveAncestorBackTrack(x:Entity):Void
+	function propagateOnRemoveAncestorBackTrack(x:Entity)
 	{
 		if (_hasf(BIT_PROCESS))
 		{
@@ -1308,7 +1308,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 		}
 	}
 	
-	function unregisterLo():Void
+	function unregisterLo()
 	{
 		var n = treeNode.children;
 		while (n != null)
@@ -1328,7 +1328,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 		}
 	}
 	
-	function propagateOnRemoveDescendant(x:Entity):Void
+	function propagateOnRemoveDescendant(x:Entity)
 	{
 		if (x._getf(BIT_PENDING | BIT_REMOVE_DESCENDANT) == BIT_REMOVE_DESCENDANT)
 		{
@@ -1353,7 +1353,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 		}
 	}
 	
-	function propagateOnRemoveDescendantBackTrack(x:Entity):Void
+	function propagateOnRemoveDescendantBackTrack(x:Entity)
 	{
 		if (_getf(BIT_PROCESS | BIT_REMOVE_DESCENDANT) == (BIT_PROCESS | BIT_REMOVE_DESCENDANT))
 		{
@@ -1370,7 +1370,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 		}
 	}
 	
-	function removeNodes():Void
+	function removeNodes()
 	{
 		var n = treeNode.children;
 		while (n != null)
@@ -1392,7 +1392,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 		_clrf(BIT_PROCESS | BIT_COMMIT_REMOVAL | BIT_ADDED | BIT_REMOVED);
 	}
 	
-	function propagateTick(timeDelta:Float, parent:Entity):Void
+	function propagateTick(timeDelta:Float, parent:Entity)
 	{
 		#if debug
 		D.assert(treeNode != null, "treeNode != null");
@@ -1429,7 +1429,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 		}
 	}
 	
-	function propagateDraw(alpha:Float, parent:Entity):Void
+	function propagateDraw(alpha:Float, parent:Entity)
 	{
 		#if debug
 		D.assert(treeNode != null, "treeNode != null");
@@ -1468,7 +1468,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 		return a.priority - b.priority;
 	}
 	
-	function propagateFree():Void
+	function propagateFree()
 	{
 		var tmp = treeNode;
 		treeNode.postorder
@@ -1523,9 +1523,9 @@ class Entity implements IObserver implements IObservable implements Hashable
 	inline function _hasf(mask:Int):Bool
 		return _flags & mask > 0;
 	
-	inline function _setf(mask:Int):Void
+	inline function _setf(mask:Int)
 		_flags |= mask;
 	
-	inline function _clrf(mask:Int):Void
+	inline function _clrf(mask:Int)
 		_flags &= ~mask;
 }

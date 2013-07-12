@@ -128,7 +128,7 @@ class Vec2Util
 	 * (given by (<code>a</code>+<code>b</code>)/2) and is perpendicular to the vector <code>b</code>-<code>a</code>.<br/>
 	 * Equation: p(t) = 1/2 (a+b) + perp(b-a)t
 	 */
-	inline public static function perpBisecor(a:Vec2, b:Vec2, t:Float, q:Vec2):Void
+	inline public static function perpBisecor(a:Vec2, b:Vec2, t:Float, q:Vec2)
 	{
 		var ax = a.x;
 		var ay = a.y;
@@ -163,14 +163,14 @@ class Vec2Util
 	}
 	
 	/** Returns <code>q</code> = min(<code>a</code>,<code>b</code>). */
-	inline public static function min(a:Vec2, b:Vec2, q:Vec2):Void
+	inline public static function min(a:Vec2, b:Vec2, q:Vec2)
 	{
 		q.x = M.fmin(a.x, b.x);
 		q.y = M.fmin(a.y, b.y);
 	}
 	
 	/** Returns <code>q</code> = max(<code>a</code>,<code>b</code>). */
-	inline public static function max(a:Vec2, b:Vec2, q:Vec2):Void
+	inline public static function max(a:Vec2, b:Vec2, q:Vec2)
 	{
 		q.x = M.fmax(a.x, b.x);
 		q.y = M.fmax(a.y, b.y);

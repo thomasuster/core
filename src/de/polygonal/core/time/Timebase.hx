@@ -39,13 +39,13 @@ import de.polygonal.core.math.Mathematics;
  */
 class Timebase
 {
-	public static function attach(o:IObserver, mask:Int = 0):Void
+	public static function attach(o:IObserver, mask:Int = 0)
 	{
 		D.assert(_initialized, "call Timebase.init() first");
 		observable.attach(o, mask);
 	}
 	
-	public static function detach(o:IObserver, mask:Int = 0):Void
+	public static function detach(o:IObserver, mask:Int = 0)
 	{
 		D.assert(_initialized, "call Timebase.init() first");
 		observable.detach(o, mask);
@@ -138,7 +138,7 @@ class Timebase
 	static var _requestAnimFrame:Dynamic;
 	#end
 	
-	public static function init():Void
+	public static function init()
 	{
 		if (_initialized) return;
 		_initialized = true;
@@ -165,7 +165,7 @@ class Timebase
 		#if (flash || cpp)
 		flash.Lib.current.addEventListener(flash.events.Event.ENTER_FRAME, onEnterFrame);
 		#elseif js
-		_requestAnimFrame = function(cb:Dynamic):Void
+		_requestAnimFrame = function(cb:Dynamic)
 		{
 			var w:Dynamic = js.Browser.window;
 			var f:Dynamic =
@@ -195,7 +195,7 @@ class Timebase
 	 * Destroys the system by removing all registered observers and explicitly nullifying all references for GC'ing used resources.
 	 * The system is automatically reinitialized once an observer is attached.
 	 */	
-	public static function free():Void
+	public static function free()
 	{
 		if (!_initialized) return;
 		_initialized = false;
@@ -214,7 +214,7 @@ class Timebase
 	 * Sets the update rate measured in ticks per second, e.g. a value of 60 indicates that <em>TimebaseEvent.TICK</em> is fired 60 times per second (or every ~16.6ms).
 	 * @param max The accumulator limit in seconds. If omitted, <code>max</code> is set to ten times <code>ticksPerSecond</code>.
 	 */
-	public static function setTickRate(ticksPerSecond:Int, max = -1.):Void
+	public static function setTickRate(ticksPerSecond:Int, max = -1.)
 	{
 		tickRate = 1 / ticksPerSecond;
 		_accumulator = 0;
@@ -225,7 +225,7 @@ class Timebase
 	 * Stops the flow of time.<br/>
 	 * Triggers a <em>TimebaseEvent.HALT</em> update.
 	 */
-	public static function halt():Void
+	public static function halt()
 	{
 		D.assert(_initialized, "call Timebase.init() first");
 		if (!_halted)
@@ -239,7 +239,7 @@ class Timebase
 	 * Resumes the flow of time.<br/>
 	 * Triggers a <em>TimebaseEvent.RESUME</em> update.
 	 */
-	public static function resume():Void
+	public static function resume()
 	{
 		D.assert(_initialized, "call Timebase.init() first");
 		if (_halted)
@@ -255,7 +255,7 @@ class Timebase
 	 * Toggles (halt/resume) the flow of time.<br/>
 	 * Triggers a <em>TimebaseEvent.HALT</em> or em>TimebaseEvent.RESUME</em> update.
 	 */
-	public static function toggleHalt():Void
+	public static function toggleHalt()
 	{
 		_halted ? resume() : halt();
 	}
@@ -264,7 +264,7 @@ class Timebase
 	 * Freezes the flow of time for <code>x</code> seconds.<br/>
 	 * Triggers a <em>TimebaseEvent.FREEZE_BEGIN</em> update.
 	 */
-	public static function freeze(x:Float):Void
+	public static function freeze(x:Float)
 	{
 		D.assert(_initialized, "call Timebase.init() first");
 		_freezeDelay = x;
@@ -275,7 +275,7 @@ class Timebase
 	/**
 	 * Performs a manual update step.
 	 */
-	public static function manualStep():Void
+	public static function manualStep()
 	{
 		D.assert(_initialized, "call Timebase.init() first");
 		realTimeDelta = tickRate;
@@ -291,7 +291,7 @@ class Timebase
 		processedFrames++;
 	}
 	
-	static function step():Void
+	static function step()
 	{
 		#if js
 		if (_requestAnimFrame == null) return;
@@ -367,7 +367,7 @@ class Timebase
 	}
 	
 	#if (flash || cpp)
-	static function onEnterFrame(e:flash.events.Event):Void
+	static function onEnterFrame(e:flash.events.Event)
 	{
 		step();
 	}

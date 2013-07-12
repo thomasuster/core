@@ -46,23 +46,23 @@ class Delay implements TimelineListener
 		_id = Timeline.schedule(this, 0, delaySeconds);
 	}
 	
-	public function cancel():Void
+	public function cancel()
 	{
 		Timeline.cancel(_id);
 		_f = null;
 	}
 	
-	function onBlip():Void 
+	function onBlip() 
 	{
 		_f();
 		_f = null;
 	}
 	
-	function onStart():Void {}
+	function onStart() {}
 	
-	function onProgress(alpha:Float):Void {}
+	function onProgress(alpha:Float) {}
 	
-	function onEnd():Void {}
+	function onEnd() {}
 	
-	function onCancel():Void {}
+	function onCancel() {}
 }

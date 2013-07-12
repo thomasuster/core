@@ -228,7 +228,7 @@ class PropertyFile
 	}
 	
 	#if !macro
-	public static function ofFile(str:String, obj:Dynamic):Void
+	public static function ofFile(str:String, obj:Dynamic)
 	{
 		var isInst = Type.getClass(obj) != null;
 		

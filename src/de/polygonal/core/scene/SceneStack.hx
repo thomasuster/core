@@ -51,7 +51,7 @@ class SceneStack extends Entity
 		commit();
 	}
 	
-	public function setTransition(a:Dynamic, b:Dynamic, transition:Class<SceneTransition>, ?invertTransition:Class<SceneTransition>):Void
+	public function setTransition(a:Dynamic, b:Dynamic, transition:Class<SceneTransition>, ?invertTransition:Class<SceneTransition>)
 	{
 		if (transition == null)
 		{
@@ -68,17 +68,17 @@ class SceneStack extends Entity
 			_transitions.set(getKey(b, a), invertTransition);
 	}
 	
-	public function setDefaultTransition(transition:Class<SceneTransition>):Void
+	public function setDefaultTransition(transition:Class<SceneTransition>)
 	{
 		_transitions.set(getKey(null, null), transition);
 	}
 	
-	override public function add(child:Entity, priority = Limits.UINT16_MAX):Entity
+	override public function add<T:Entity>(?cl:Class<T>, ?inst:T, priority = Limits.UINT16_MAX):T
 	{
 		return throw "use push() instead";
 	}
 	
-	override function onRemoveDescendant(x:Entity):Void
+	override function onRemoveDescendant(x:Entity)
 	{
 		if (x.is(Scene))
 		{
@@ -100,7 +100,7 @@ class SceneStack extends Entity
 		}
 	}
 	
-	public function push(scene:Scene):Void
+	public function push(scene:Scene)
 	{
 		#if debug
 		D.assert(scene != null, "scene is null");
@@ -142,7 +142,7 @@ class SceneStack extends Entity
 		runTransition(a, b);
 	}
 	
-	public function pop():Void
+	public function pop()
 	{
 		var numChildren = _sceneBag.treeNode.numChildren();
 		
@@ -158,7 +158,7 @@ class SceneStack extends Entity
 	
 	
 	
-	function runTransition(a:Scene, b:Scene):Void
+	function runTransition(a:Scene, b:Scene)
 	{
 		var transition = getTransition(a, b);
 		if (transition == null)

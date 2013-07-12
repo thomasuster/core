@@ -88,7 +88,7 @@ class Mersenne extends RNG
 		setSeed(seed);
 	}
 	
-	public function free():Void
+	public function free()
 	{
 		#if (flash10 && alchemy)
 		_stateVector.free();
@@ -99,7 +99,7 @@ class Mersenne extends RNG
 		_kMag01 = null;
 	}
 	
-	override public function setSeed(seed:Int):Void
+	override public function setSeed(seed:Int)
 	{
 		super.setSeed(seed);
 		
@@ -121,7 +121,7 @@ class Mersenne extends RNG
 	/**
 	 * Initialize by an array of <code>keys</code>.
 	 */
-	public function initByArray(keys:Array<Int>):Void
+	public function initByArray(keys:Array<Int>)
 	{
 		var i = 1, j = 0;
 		

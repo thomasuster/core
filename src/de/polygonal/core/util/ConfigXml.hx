@@ -162,7 +162,7 @@ class ConfigXml
 		return xml;
 	}
 	
-	public static function ofXml(xmlString:String, target:Dynamic):Void
+	public static function ofXml(xmlString:String, target:Dynamic)
 	{
 		var fast = new haxe.xml.Fast(Xml.parse(xmlString).firstElement());
 		var names = [], values = [];

@@ -38,7 +38,7 @@ class RootSolver
 		_scratchArray = [];
 	}
 	
-	public function free():Void
+	public function free()
 	{
 		roots = null;
 		_scratchArray = null;

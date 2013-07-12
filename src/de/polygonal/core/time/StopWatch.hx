@@ -41,7 +41,7 @@ class StopWatch
 		return _nextSlot++;
 	}
 	
-	static function init():Void
+	static function init()
 	{
 		_initialized = true;
 		
@@ -52,7 +52,7 @@ class StopWatch
 		_mean.assign(Mean, [10], 32);
 	}
 	
-	public static function free():Void
+	public static function free()
 	{
 		for (i in _mean) i.free();
 		
@@ -70,7 +70,7 @@ class StopWatch
 	static var _time:DA<Float>;
 	static var _mean:DA<Mean>;
 	
-	inline public static function clock(slot:Int):Void
+	inline public static function clock(slot:Int)
 	{
 		if (!_initialized) init();
 		var now = haxe.Timer.stamp();
@@ -92,7 +92,7 @@ class StopWatch
 		return _mean.get(slot).val();
 	}
 	
-	inline public static function reset(slot:Int):Void
+	inline public static function reset(slot:Int)
 	{
 		if (!_initialized) init();
 		_bits &= ~(1 << slot);
@@ -107,7 +107,7 @@ class StopWatch
 		return t;
 	}
 	
-	inline public static function clear():Void
+	inline public static function clear()
 	{
 		if (!_initialized) init();
 		_bits = 0;

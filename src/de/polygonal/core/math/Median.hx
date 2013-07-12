@@ -59,7 +59,7 @@ class Median
 	 * Destroys this object by explicitly nullifying all references for GC'ing used resources.<br/>
 	 * <warn>Always call this method to prevent a memory leak.</warn>
 	 */
-	public function free():Void
+	public function free()
 	{
 		_set.free();
 		_set = null;
@@ -68,7 +68,7 @@ class Median
 	/**
 	 * Inserts <code>x</code> into the number set.
 	 */
-	inline public function add(x:Float):Void
+	inline public function add(x:Float)
 	{
 		_set.set(_i, x);
 		_i = (_i + 1) % _s;
@@ -120,7 +120,7 @@ class Median
 	/**
 	 * Clears all values.
 	 */
-	inline public function clear():Void
+	inline public function clear()
 	{
 		_i = 0;
 		_k = 0;

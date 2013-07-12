@@ -38,37 +38,37 @@ class Scene extends Entity
 		super(id);
 	}
 	
-	override public function free():Void
+	override public function free()
 	{
 		L.i('$id.free()');
 		super.free();
 	}
 	
-	public function onShowStart(other:Scene):Void
+	public function onShowStart(other:Scene)
 	{
 		var otherId = other != null ? other.id : "null";
 		L.i('$id.onShowStart($otherId)');
 	}
 	
-	public function onShowEnd(other:Scene):Void
+	public function onShowEnd(other:Scene)
 	{
 		var otherId = other != null ? other.id : "null";
 		L.i('$id.onShowEnd($otherId)');
 	}
 	
-	public function onHideStart(other:Scene):Void
+	public function onHideStart(other:Scene)
 	{
 		var otherId = other != null ? other.id : "null";
 		L.i('$id.onHideStart($otherId)');
 	}
 	
-	public function onHideEnd(other:Scene):Void
+	public function onHideEnd(other:Scene)
 	{
 		var otherId = other != null ? other.id : "null";
 		L.i('$id.onHideEnd($otherId)');
 	}
 	
-	override function onFree():Void
+	override function onFree()
 	{
 		L.i('$id.onFree()');
 	}
