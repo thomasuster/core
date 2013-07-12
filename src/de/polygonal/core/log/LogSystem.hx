@@ -38,7 +38,6 @@ class LogSystem
 	{
 		redirectDebugLevelToTrace: true,
 		keepDefaultTrace: false,
-		addDefaultHandler: true,
 		globalHandlers: new Array<LogHandler>(),
 		logFileName: "out.log"
 	};
@@ -54,21 +53,8 @@ class LogSystem
 		
 		log = createLog("global", false);
 		
-		if (config.addDefaultHandler)
-		{
-			var handler = createDefaultHandler();
-			handler.setFormat(handler.getFormat() & ~de.polygonal.core.log.LogHandler.NAME);
-			
-			log.addHandler(handler);
-			for (i in config.globalHandlers) log.addHandler(i);
-			
-			config.globalHandlers.push(createDefaultHandler());
-		}
-		else
-		{
-			for (i in config.globalHandlers)
-				log.addHandler(i);
-		}
+		for (i in config.globalHandlers)
+			log.addHandler(i);
 		
 		#if !no_traces
 		if (config.redirectDebugLevelToTrace)
@@ -150,22 +136,5 @@ class LogSystem
 				}
 			}
 		}
-	}
-	
-	static function createDefaultHandler():LogHandler
-	{
-		var handler = null;
-		
-		#if flash
-		handler = new de.polygonal.core.log.handler.TraceHandler();
-		#elseif js
-		handler = new de.polygonal.core.log.handler.ConsoleHandler();
-		#elseif cpp
-		handler = new de.polygonal.core.log.handler.FileHandler(config.logFileName);
-		#else
-		throw "no default log handler available.";
-		#end
-		
-		return handler;
 	}
 }
