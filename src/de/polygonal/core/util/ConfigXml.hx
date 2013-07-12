@@ -237,7 +237,7 @@ class ConfigXml
 		}
 		catch(error:Dynamic)
 		{
-			throw '@:rtti metadata required';
+			throw "@:rtti metadata required";
 			return null;
 		}
 	}

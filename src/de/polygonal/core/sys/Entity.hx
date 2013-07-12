@@ -229,7 +229,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 	{
 		if (_hasf(BIT_COMMIT_SUICIDE))
 		{
-			L.i('entity $id already freed', 'entity');
+			L.i('entity $id already freed', "entity");
 			return;
 		}
 		
@@ -337,7 +337,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 	{
 		#if debug
 		if (treeNode != treeNode.getRoot())
-			L.d('commit() called at child $id', 'entity');
+			L.d('commit() called at child $id', "entity");
 		#end
 		
 		#if profile
@@ -354,7 +354,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 		//defer update if tree is being processed
 		if (_hasf(BIT_INITIATOR))
 		{
-			L.i('postpone commit() at entity $id', 'entity');
+			L.i('postpone commit() at entity $id', "entity");
 			_setf(BIT_RECOMMIT);
 			return;
 		}
@@ -387,7 +387,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 		//recursive update?
 		if (_hasf(BIT_RECOMMIT))
 		{
-			L.i('carry out recursive commit() at entity %id', 'entity');
+			L.i('carry out recursive commit() at entity %id', "entity");
 			_clrf(BIT_RECOMMIT);
 			commit();
 		}
@@ -405,7 +405,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 		
 		if (c._hasf(BIT_PENDING_ADD))
 		{
-			L.i('entity ${c.id} already added to $id', 'entity');
+			L.i('entity ${c.id} already added to $id', "entity");
 			return cast c;
 		}
 		
@@ -423,7 +423,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 		#end
 		#if debug
 		if (treeNode.getRoot().val._hasf(BIT_INITIATOR))
-			L.i('entity ${c.id} added while updating the tree', 'entity');
+			L.i('entity ${c.id} added while updating the tree', "entity");
 		#end
 		
 		if (priority != Limits.UINT16_MAX) c.priority = priority;
@@ -458,7 +458,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 		
 		if (child._hasf(BIT_PENDING_REMOVE | BIT_COMMIT_REMOVAL))
 		{
-			L.i('entity ${child.id} already removed from $id', 'entity');
+			L.i('entity ${child.id} already removed from $id', "entity");
 			return;
 		}
 		
@@ -466,7 +466,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 		D.assert(child != this, 'given entity (${child.id}) equals this entity');
 		D.assert(treeNode.contains(child), 'given entity (${child.id}) is not a child of this entity ($id)');
 		if (treeNode.getRoot().val._hasf(BIT_INITIATOR))
-			L.d('entity ${child.id} removed during tree update', 'entity');
+			L.d('entity ${child.id} removed during tree update', "entity");
 		#end
 		
 		//put to sleep
@@ -1483,7 +1483,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 				}
 				e.treeNode = null;
 				
-				L.d('free ${e.id}', 'entity');
+				L.d('free ${e.id}', "entity");
 				EntityManager.unregisterEntity(e);
 				e.onFree();
 				return true;

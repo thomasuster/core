@@ -69,7 +69,7 @@ class Assert
 		
 		var infoStr =
 		if (hasInfo)
-			EBinop(OpAdd, info, {expr: EConst(CString(' (' + new haxe.macro.Printer().printExpr(predicate) + ')')), pos: p});
+			EBinop(OpAdd, info, {expr: EConst(CString(" (" + new haxe.macro.Printer().printExpr(predicate) + ")")), pos: p});
 		else
 			EConst(CString(new haxe.macro.Printer().printExpr(predicate)));
 		
