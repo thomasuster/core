@@ -80,4 +80,12 @@ class ClassUtil
 		else
 			throw "invalid argument";
 	}
+	
+	/**
+	 * Creates an instance of a class given by passing the fully qualified <code>name</code>.
+	 */
+	public static function createObject<T>(name:String):T
+	{
+		return Type.createEmptyInstance(Type.resolveClass(name));
+	}
 }
