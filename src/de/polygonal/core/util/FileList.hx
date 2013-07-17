@@ -37,8 +37,9 @@ import sys.FileSystem;
 
 class FileList
 {
-	macro public static function build(path:String, flat:Bool = true):Array<Field>
+	macro public static function build(path:String, flat:Bool = false):Array<Field>
 	{
+		var reName = ~/[^A-Za-z0-9]+/g;
 		var reExt = ~/(?<=\.)[a-zA-Z0-9]{3,4}/;
 		
 		Context.registerModuleDependency(Std.string(Context.getLocalClass()), path);
@@ -54,13 +55,9 @@ class FileList
 		{
 			if (!reExt.match(file)) continue;
 			
-			var ext = reExt.matched(0);
-			
-			var fieldName = StringTools.replace(file, "/", "_");
-			
-			var key = ext + "_" + fieldName.substr(0, fieldName.lastIndexOf("."));
-			
 			if (flat) file = file.substr(file.lastIndexOf("/") + 1);
+			
+			var key = reName.replace(file, "_");
 			
 			var e = {expr: EConst(CString(file)), pos: pos};
 			all.push(e);
