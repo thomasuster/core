@@ -10,7 +10,7 @@ class EntityManager
 	static var _keyLookup:StringMap<Int> = null;
 	static var _nextKey = 0;
 	static var _scratchArr:Array<Entity> = null;
-	
+
 	static var _entitiesById:IntMap<Array<Entity>> = null;
 	
 	public static function registerEntity(e:Entity)
@@ -40,11 +40,19 @@ class EntityManager
 	
 	public static function unregisterEntity(e:Entity)
 	{
-		if (!_keyLookup.exists(e.id)) return;
+		if (!_keyLookup.exists(e.id))
+			return;
+		
 		var key = _keyLookup.get(e.id);
 		var a = _entitiesById.get(key);
+		
 		var success = a.remove(e);
-		if (!success) throw "error unregistering entity";
+		D.assert(success, "error unregistering entity");
+		/*if (a.length == 0)
+		{
+			var success = _entitiesById.remove(key);
+			_keyLookup.remove(e.id);
+		}*/
 	}
 	
 	public static function resolveEntity(id:String):Entity
@@ -55,9 +63,7 @@ class EntityManager
 	
 	public static function sendMsg(sender:Entity, receiverId:String, msg:String, userData:Dynamic)
 	{
-		#if debug
 		D.assert(_keyLookup.exists(receiverId), "entity is not registered");
-		#end
 		
 		var key = _keyLookup.get(receiverId);
 		for (i in _entitiesById.get(key))

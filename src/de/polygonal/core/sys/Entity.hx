@@ -114,7 +114,18 @@ class Entity implements IObserver implements IObservable implements Hashable
 	 * The id of this entity.<br/>
 	 * The default value is the unqualified class name of this object.
 	 */
-	public var id:String;
+	public var id(get_id, set_id):String;
+	inline function get_id():String return _id;
+	function set_id(value:String):String
+	{
+		if (value != _id)
+		{
+			EntityManager.unregisterEntity(this);
+			_id = value;
+			EntityManager.registerEntity(this);
+		}
+		return value;
+	}
 	
 	/**
 	 * The processing order of this entity.<br/>
@@ -188,11 +199,12 @@ class Entity implements IObserver implements IObservable implements Hashable
 	var _flags:Int;
 	var _observable:Observable;
 	var _c:Int;
+	var _id:String;
 	var _type:Int;
 	
 	public function new(id:String = null)
 	{
-		this.id = id == null ? ClassUtil.getUnqualifiedClassName(this) : id;
+		_id = id == null ? ClassUtil.getUnqualifiedClassName(this) : id;
 		key = HashKey.next();
 		treeNode = new TreeNode<Entity>(this);
 		priority = Limits.UINT16_MAX;
@@ -1482,7 +1494,6 @@ class Entity implements IObserver implements IObservable implements Hashable
 					e._observable = null;
 				}
 				e.treeNode = null;
-				
 				L.d('free ${e.id}', "entity");
 				EntityManager.unregisterEntity(e);
 				e.onFree();

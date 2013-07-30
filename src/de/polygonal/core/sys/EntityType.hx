@@ -42,7 +42,7 @@ import haxe.macro.Type;
 class EntityType
 {
 	#if macro
-	inline static var CACHE_PATH = "tmp_entity_type_cache";
+	inline static var CACHE_PATH = "./entity_type.cache";
 	
 	static var callbackRegistered = false;
 	static var types:StringMap<Int> = null;
