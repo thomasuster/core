@@ -202,6 +202,8 @@ class Entity implements IObserver implements IObservable implements Hashable
 	var _id:String;
 	var _type:Int;
 	
+	var _timePassed:Float;
+	
 	public function new(id:String = null)
 	{
 		_id = id == null ? ClassUtil.getUnqualifiedClassName(this) : id;
@@ -230,6 +232,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 		}
 		
 		EntityManager.registerEntity(this);
+		_timePassed = 0;
 	}
 	
 	/**
@@ -1423,6 +1426,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 			if (e._hasf(BIT_TICK))
 			{
 				var c = e._c;
+				e._timePassed += timeDelta;
 				e.onTick(timeDelta, parent);
 				
 				if (c < e._c)
