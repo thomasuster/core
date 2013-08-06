@@ -95,7 +95,7 @@ class Tween implements IObservable implements IObserver implements TimelineListe
 	 */
 	public static function create(key:String = null, object:Dynamic, fields:Dynamic, ease:Ease, to:Float, duration:Float, interpolateState = false):Tween
 	{
-		return new GenericTween(key, object, fields, ease, to , duration, interpolateState).run();
+		return new GenericTween(key, object, fields, ease, to , duration, interpolateState);
 	}
 	
 	var _id:Int;
@@ -147,19 +147,32 @@ class Tween implements IObservable implements IObserver implements TimelineListe
 	
 	public function free()
 	{
-		if (_observable == null) return;
-		if (_activeTweens != null) _activeTweens.remove(this);
-		Timeline.detach(this);
-		Timeline.cancel(_id);
+		if (_id != -1)
+		{
+			Timeline.cancel(_id);
+			_id  = -1;
+		}
+		
+		if (_activeTweens != null)
+			_activeTweens.remove(this);
+		
 		if (_interpolate) Timebase.detach(this);
-		if (_key != null && _map != null) _map.remove(_key);
-		if (_observable != null) _observable.free();
-		_id         = -1;
-		_key        = null;
-		_target     = null;
-		_ease       = null;
+		
+		if (_key != null && _map != null)
+		{
+			_map.remove(_key);
+			_key = null;
+		}
+		
+		if (_observable != null)
+		{
+			_observable.free();
+			_observable = null;
+		}
+		
+		_target = null;
+		_ease = null;
 		_onComplete = null;
-		_observable = null;
 	}
 	
 	/**
@@ -283,7 +296,9 @@ class Tween implements IObservable implements IObserver implements TimelineListe
 		_target.set(M.lerp(_a, _b, alpha));
 	}
 	
-	function onBlip() {}
+	function onBlip()
+	{
+	}
 	
 	function onStart()
 	{

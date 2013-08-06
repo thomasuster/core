@@ -54,6 +54,7 @@ class Delay implements TimelineListener
 	
 	function onBlip() 
 	{
+		_id = -1;
 		_f();
 		_f = null;
 	}
