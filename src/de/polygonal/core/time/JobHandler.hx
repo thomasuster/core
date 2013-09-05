@@ -40,10 +40,11 @@ class JobHandler implements TimelineListener
 		_jobId = -1;
 	}
 	
-	public function run(job:Job = null, duration:Float, delay = 0.)
+	public function run(job:Job = null, duration:Float, delay = 0.):JobHandler
 	{
 		if (job != null) _job = job;
 		_jobId = Timeline.schedule(this, duration, delay);
+		return this;
 	}
 	
 	public function cancel()

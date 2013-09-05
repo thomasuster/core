@@ -36,7 +36,7 @@ class LogSystem
 {
 	public static var config =
 	{
-		redirectDebugLevelToTrace: true,
+		redirectTraceToDebugLog: true,
 		keepDefaultTrace: false,
 		globalHandlers: new Array<LogHandler>(),
 		logFileName: "out.log"
@@ -57,7 +57,7 @@ class LogSystem
 			log.addHandler(i);
 		
 		#if !no_traces
-		if (config.redirectDebugLevelToTrace)
+		if (config.redirectTraceToDebugLog)
 		{
 			var keepDefaultTrace = config.keepDefaultTrace;
 			var defaultTrace = haxe.Log.trace;
