@@ -164,6 +164,8 @@ class Timeline
 		if (repeatCount != 0 && repeatInterval == .0)
 			repeatInterval = delay; //use delay as interval
 		
+		_currTick = Timebase.processedTicks;	
+		
 		var delayTicks = Math.round(delay / Timebase.tickRate);
 		var ageTicks = _currTick + delayTicks;
 		var id = ++_nextId;
