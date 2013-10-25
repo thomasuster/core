@@ -123,16 +123,25 @@ class PropertyFile
 			}
 			else
 			{
-				var int = Std.parseInt(val);
-				if (int == null)
+				var re = ~/("|')([^"]+)("|')/;
+				if (re.match(val))
 				{
-					c = EConst(CString(val));
+					c = EConst(CString(re.matched(2)));
 					n = "String";
 				}
 				else
 				{
-					c = EConst(CInt(StringTools.trim(val)));
-					n = "Int";
+					var int = Std.parseInt(val);
+					if (int == null)
+					{
+						c = EConst(CString(val));
+						n = "String";
+					}
+					else
+					{
+						c = EConst(CInt(StringTools.trim(val)));
+						n = "Int";
+					}
 				}
 			}
 			
