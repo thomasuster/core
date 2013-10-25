@@ -348,7 +348,11 @@ class Timebase
 				gameTime += gameTimeDelta;
 				observable.notify(TimebaseEvent.TICK, tickRate);
 				processedTicks++;
+				
+				if (_halted) break;
 			}
+			
+			if (_halted) return;
 			
 			var alpha = _accumulator / tickRate;
 			observable.notify(TimebaseEvent.RENDER, alpha);
