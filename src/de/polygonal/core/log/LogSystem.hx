@@ -73,6 +73,7 @@ class LogSystem
 						x = x + "," + posInfos.customParams.join(",");
 				}
 				
+				//TODO cpp crashing
 				log.debug(x, posInfos);
 				
 				if (keepDefaultTrace) defaultTrace(x, posInfos);

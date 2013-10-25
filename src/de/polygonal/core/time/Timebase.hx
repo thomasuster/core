@@ -162,7 +162,7 @@ class Timebase
 		_fpsTime = 0;
 		_past = stamp();
 		
-		#if (flash || cpp)
+		#if (flash || nme)
 		flash.Lib.current.addEventListener(flash.events.Event.ENTER_FRAME, onEnterFrame);
 		#elseif js
 		_requestAnimFrame = function(cb:Dynamic)
@@ -203,7 +203,7 @@ class Timebase
 		observable.free();
 		observable = null;
 		
-		#if (flash || cpp)
+		#if (flash || nme)
 		flash.Lib.current.removeEventListener(flash.events.Event.ENTER_FRAME, onEnterFrame);
 		#elseif js
 		_requestAnimFrame = null;
@@ -370,7 +370,7 @@ class Timebase
 		}
 	}
 	
-	#if (flash || cpp)
+	#if (flash || nme)
 	static function onEnterFrame(e:flash.events.Event)
 	{
 		step();

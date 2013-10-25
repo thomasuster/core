@@ -242,6 +242,8 @@ class Entity implements IObserver implements IObservable implements Hashable
 	 */
 	public function free()
 	{
+		if (treeNode == null) return;
+		
 		if (_hasf(BIT_COMMIT_SUICIDE))
 		{
 			L.i('entity $id already freed', "entity");
