@@ -50,6 +50,15 @@ If you want to test the latest beta build, you should pull the dev branch and ad
 
 ## Changelog
 
+### 1.0.5 (dev branch)
+
+ * modified: move platform specific log handlers to polygonal-native and remove LogSystem.config.addDefaultHandler flag
+ * added: FileList class: simple macro to generate a file listing of a folder
+ * added: ClassUtil.createObject()
+ * modified: optimized NumberFormat.groupDigits
+ * fixed: Tween.free()
+ * modified: don't autorun Tween after creating with Tween.create()
+
 ### 1.0.4 (released 2013-07-08)
 
  * modified: move Sprintf to separate haxelib library (polygonal-sprintf, de.polygonal.Sprintf)
