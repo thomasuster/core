@@ -157,41 +157,38 @@ class NumberFormat
 	 */
 	public static function groupDigits(x:Int, thousandsSeparator = "."):String
 	{
-		var n:Float = x;
-		var c = 0;
-		while (n > 1)
+		var s:String = x + "";
+		
+		if (x < 1000000)
 		{
-			n /= 10;
-			c++;
+			if (x < 1000) //[0, 999]
+				return s;
+			else
+			if (x < 10000) //[1.000, 9.999]
+				return s.substr(0, 1) + thousandsSeparator + s.substr(1);
+			else
+			if (x < 100000) //[10.000, 99.999]
+				return s.substr(0, 2) + thousandsSeparator + s.substr(2);
+			else
+			if (x < 1000000) //[100.000, 999.999]
+				return s.substr(0, 3) + thousandsSeparator + s.substr(3);
 		}
-		
-		c = cast c / 3;
-		
-		var source = Std.string(x);
-		
-		if (c == 0)
-			return source;
 		else
 		{
-			var target = "";
-			
-			var i = 0;
-			var j = source.length - 1;
-			while (j >= 0)
-			{
-				if (i == 3)
-				{
-					target = source.charAt(j--) + thousandsSeparator + target;
-					i = 0;
-					c--;
-				}
-				else
-					target = source.charAt(j--) + target;
-				i++;
-			}
-			
-			return target;
+			if (x < 10000000) //[1.000.000, 9.999.999]
+				return s.substr(0, 1) + thousandsSeparator + s.substr(1, 3) + thousandsSeparator + s.substr(4);
+			else
+			if (x < 100000000) //[10.000.000, 99.999.999]
+				return s.substr(0, 2) + thousandsSeparator + s.substr(2, 3) + thousandsSeparator + s.substr(5);
+			else
+			if (x < 1000000000) //[100.000.000, 999.999.999]
+				return s.substr(0, 3) + thousandsSeparator + s.substr(3, 3) + thousandsSeparator + s.substr(6);
 		}
+		
+		if (x < 10000000000) //[1.000.000.000, 9.999.999.999]
+			return s.substr(0, 1) + thousandsSeparator + s.substr(1, 3) + thousandsSeparator + s.substr(4, 3) + thousandsSeparator + s.substr(7);
+		
+		throw "invalid value";
 	}
 	
 	/**
