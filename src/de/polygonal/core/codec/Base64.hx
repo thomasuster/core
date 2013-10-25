@@ -29,52 +29,17 @@
  */
 package de.polygonal.core.codec;
 
-import haxe.ds.Vector;
+import haxe.crypto.BaseCode;
 import haxe.io.Bytes;
 import haxe.io.BytesData;
-import haxe.io.BytesInput;
-import haxe.io.BytesOutput;
-import de.polygonal.ds.ArrayUtil;
-import de.polygonal.core.util.Assert;
 
 /**
  * <p>A Base64 encoder/decoder.</p>
  */
 class Base64
 {
-	static var _output:BytesData;
-	static var _instance:Base64 = null;
-	inline static function get():Base64
-	{
-		if (_instance == null)
-			_instance = new Base64();
-		return _instance;
-	}
-	
-	var BASE64_CHARS:String;
-	
-	var BASE64_ENCODE:Vector<Int>;
-	var BASE64_DECODE:Vector<Int>;
-	
-	var _buffer:BytesData;
-	var _tmp:BytesData;
-	
-	function new()
-	{
-		_buffer = new BytesData();
-		_output = new BytesData();
-		_tmp = new BytesData();
-		
-		BASE64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-		
-		BASE64_ENCODE = new Vector<Int>(BASE64_CHARS.length);
-		BASE64_DECODE = new Vector<Int>(127);
-		for (i in 0...BASE64_CHARS.length)
-		{
-			BASE64_ENCODE[i] = BASE64_CHARS.charCodeAt(i);
-			BASE64_DECODE[BASE64_CHARS.charCodeAt(i)] = i;
-		}
-	}
+	static var BASE64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+	static var coder = new BaseCode(Bytes.ofString(BASE64_CHARS));
 	
 	/**
 	 * Encodes a <em>BytesData</em> object into a string in Base64 notation.
@@ -85,7 +50,7 @@ class Base64
 	 */
 	inline public static function encode(source:BytesData, breakLines = false, maxLineLength = 76):String
 	{
-		return get()._encode(source, breakLines, maxLineLength);
+		return encodeBytes(Bytes.ofData(source), breakLines, maxLineLength);
 	}
 	
 	/**
@@ -97,7 +62,7 @@ class Base64
 	 */
 	inline public static function encodeString(source:String, breakLines = false, maxLineLength = 76):String
 	{
-		return get()._encodeStr(source, breakLines, maxLineLength);
+		return encodeBytes(Bytes.ofString(source), breakLines, maxLineLength);
 	}
 	
 	/**
@@ -108,9 +73,9 @@ class Base64
 	 * Use this flag if the source was encoded with <code>breakLines</code> = true.
 	 * Default is false.
 	 */
-	inline public static function decode(source:String, out:BytesData = null, breakLines = false):BytesData
+	inline public static function decode(source:String, breakLines = false):BytesData
 	{
-		return get()._decode(source, out, breakLines);
+		return decodeBytes(source, breakLines).getData();
 	}
 	
 	/**
@@ -123,208 +88,48 @@ class Base64
 	 */
 	inline public static function decodeString(source:String, breakLines = false):String
 	{
-		return get()._decodeStr(source, breakLines);
+		var bytes = decodeBytes(source, breakLines);
+		return bytes.readString(0, bytes.length);
 	}
 	
-	function _encodeStr(source:String, breakLines = false, maxLineLength = 76):String
+	inline private static function decodeBytes(source:String, breakLines = false)
 	{
-		#if flash
-		_tmp.clear();
-		_tmp.writeUTFBytes(source);
-		return _encode(_tmp, breakLines, maxLineLength);
-		#else
-		var output = new BytesOutput();
-		output.writeString(source);
-		return _encode(output.getBytes().getData(), breakLines, maxLineLength);
-		#end
-	}
-	
-	function _decodeStr(source:String, breakLines = false, maxLineLength = 76):String
-	{
-		#if flash
-		_tmp.clear();
-		#else
-		ArrayUtil.shrink(_tmp, 0);
-		#end
-		
-		_decode(source, _tmp, breakLines);
-		
-		#if flash
-		return _tmp.readUTFBytes(_tmp.length);
-		#else
-		var input = new BytesInput(Bytes.ofData(_tmp));
-		return input.readString(_tmp.length);
-		#end
-	}
-	
-	function _encode(source:BytesData, breakLines = false, maxLineLength = 76):String
-	{
-		#if flash
-		source.position = 0;
-		_buffer.length = 0;
-		#elseif js
-		ArrayUtil.shrink(_buffer, 0);
-		#elseif cpp
-		_buffer = new BytesData();
-		
-		#end
-		
-		var i = 0;
-		var p = 0;
-		var s = "";
-		var k = Std.int(source.length);
-		var remainder = k % 3;
-		k -= remainder;
-		var b = _buffer;
-		
-		//process 24bits at once (3x8bits)
-		while (p < k)
-		{
-			//convert 3 x 8bit --> 4 x 6bit
-			var byte1 = (_getByte(source, p + 0) << 24) >>> 24;
-			var byte2 = (_getByte(source, p + 1) << 24) >>> 24;
-			var byte3 = (_getByte(source, p + 2) << 24) >>> 24;
-			_setByte(b, i + 0, BASE64_ENCODE[ (byte1 & 0xfc) >> 2                ]);
-			_setByte(b, i + 1, BASE64_ENCODE[((byte1 & 0x03) << 4) | (byte2 >> 4)]);
-			_setByte(b, i + 2, BASE64_ENCODE[((byte2 & 0x0f) << 2) | (byte3 >> 6)]);
-			_setByte(b, i + 3, BASE64_ENCODE[  byte3 & 0x3f                      ]);
-			i += 4;
-			p += 3;
-		}
-		
-		if (remainder == 1)
-		{
-			//process 2 x 6bit
-			var byte1 = (_getByte(source, p) << 24) >>> 24;
-			
-			_setByte(b, i + 0, BASE64_ENCODE[(byte1 & 0xfc) >> 2]);
-			_setByte(b, i + 1, BASE64_ENCODE[(byte1 & 0x03) << 4]);
-			_setByte(b, i + 2, 61);
-			_setByte(b, i + 3, 61);
-		}
-		else
-		if (remainder == 2)
-		{
-			//process 3 x 6bit
-			var byte1 = (_getByte(source, p + 0) << 24) >>> 24;
-			var byte2 = (_getByte(source, p + 1) << 24) >>> 24;
-			_setByte(b, i + 0, BASE64_ENCODE[ (byte1 & 0xfc) >> 2                ]);
-			_setByte(b, i + 1, BASE64_ENCODE[((byte1 & 0x03) << 4) | (byte2 >> 4)]);
-			_setByte(b, i + 2, BASE64_ENCODE[ (byte2 & 0x0f) << 2                ]);
-			_setByte(b, i + 3, 61);
-		}
-		
-		#if flash
-		s = b.readUTFBytes(b.length);
-		#else
-		s = Bytes.ofData(b).readString(0, b.length);
-		#end
-		
 		if (breakLines)
-		{
-			var maxLines:Int = cast(s.length / maxLineLength);
-			remainder = s.length % maxLineLength;
-			var lines = new Array<String>();
-			k = 0;
-			for (i in 0...maxLines)
-			{
-				lines[i] = s.substr(k, maxLineLength);
-				k += maxLineLength;
-			}
-			
-			lines.push(s.substr(k));
-			s = lines.join("\n");
-		}
+			source = source.split("\n").join("");
 		
-		return s;
+		var padding = source.indexOf("=");
+		if (padding != -1)
+			source = source.substring(0, padding);
+		
+		return coder.decodeBytes(Bytes.ofString(source));
 	}
 	
-	function _decode(source:String, out:BytesData, breakLines = false):BytesData
+	inline static function pad(str:String)
 	{
-		if (out == null) out = new BytesData();
-		if (breakLines) source = ~/\n/g.replace(source, "");
-		
-		var k = source.length;
-		var i = 0;
-		var p = 0;
-		var v = BASE64_DECODE;
-		
-		#if debug
-		for (i in 0...source.length)
+		return str + switch(str.length % 4)
 		{
-			var code = source.charCodeAt(i);
-			D.assert(code == 61 || code == 43 || code == 47 || (code >= 48 && code <= 57) || (code >= 97 && code <= 122) || (code >= 65 && code <= 90), "invalid character in input string: \"" + code + "\"");
-		}
-		#end
-		
-		#if flash
-		_buffer.length = 0;
-		_buffer.writeUTFBytes(source);
-		#elseif js
-		var output = new BytesOutput();
-		output.writeString(source);
-		_buffer = output.getBytes().getData();
-		#end
-		
-		var b = _buffer;
-		
-		if (k > 4)
-		{
-			k -= 4;
-			while (p < k)
-			{
-				//char code -> position 0...64
-				var s1 = v[_getByte(b, p + 0)];
-				var s2 = v[_getByte(b, p + 1)];
-				var s3 = v[_getByte(b, p + 2)];
-				var s4 = v[_getByte(b, p + 3)];
-				
-				//convert 4 x 6bit to 3 x 8 bit
-				var byte1 = (s1 << 2) + ((s2 & 0x30) >> 4);
-				var byte2 = ((s2 & 0x0f) << 4) + ((s3 & 0x3c) >> 2);
-				var byte3 = ((s3 & 0x03) << 6) + s4;
-				
-				_setByte(out, i + 0, byte1);
-				_setByte(out, i + 1, byte2);
-				_setByte(out, i + 2, byte3);
-				
-				i += 3;
-				p += 4;
-			}
-		}
-		
-		var s1 = v[_getByte(b, p    )];
-		var s2 = v[_getByte(b, p + 1)];
-		var s3 = v[_getByte(b, p + 2)];
-		var s4 = v[_getByte(b, p + 3)];
-		
-		var byte1 = (s1 << 2) + ((s2 & 0x30) >> 4);
-		var byte2 = ((s2 & 0x0f) << 4) + ((s3 & 0x3c) >> 2);
-		var byte3 = ((s3 & 0x03) << 6) + s4;
-		
-		if (s2 == 64) return out;
-		_setByte(out, i + 0, byte1);
-		
-		if (s3 == 64) return out;
-		_setByte(out, i + 1, byte2);
-		
-		if (s4 == 64) return out;
-		_setByte(out, i + 2, byte3);
-		
-		#if flash
-		out.position = 0;
-		#end
-		
-		return out;
+			case 3:  "===";
+			case 2:  "==";
+			case 1:  "=";
+			default: "";
+		};
 	}
 	
-	inline function _getByte(b:BytesData, i:Int):Int
+	inline static function split(str:String, lineLength:Int)
 	{
-		return cast b[i];
+		var lines = [];
+		while (str.length > lineLength)
+		{
+			lines.push(str.substring(0, lineLength));
+			str = str.substring(lineLength);
+		}
+		return lines.join("\n");
 	}
 	
-	inline function _setByte(b:BytesData, i:Int, x:Int)
+	private static function encodeBytes(source:Bytes, breakLines = false, maxLineLength = 76):String
 	{
-		b[i] = cast x;
+		var bytes = coder.encodeBytes(source);
+		var result = pad(bytes.readString(0, bytes.length));
+		return breakLines ? split(result, maxLineLength) : result;
 	}
 }
