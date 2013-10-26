@@ -75,6 +75,67 @@ class EntityManager
 		//e != null && e.getInner() == inner
 	}
 	
+	public static function free(e:Entity)
+	{
+		#if verbose
+		L.d('freeing up ${e.size + 1} entities ...', "entity");
+		#end
+		
+		if (e.size < 512)
+			freeRecursive(e); //postorder traversal
+		else
+			freeIterative(e); //inverse levelorder traversal
+	}
+	
+	static function freeRecursive(e:Entity)
+	{
+		var n = e.child;
+		while (n != null)
+		{
+			freeRecursive(n);
+			n = n.sibling;
+		}
+		
+		e.onFree();
+		remove(e);
+		
+		#if verbose
+		L.d('freed $e', "entity");
+		#end
+	}
+	
+	static function freeIterative(e:Entity)
+	{
+		var k = e.size + 1;
+		var a = new Vector<Entity>(k);
+		for (i in 0...k) a[i] = null;
+		
+		var q = [e];
+		var i = 0;
+		var s = 1;
+		var j, c;
+		while (i < s)
+		{
+			j = q[i++];
+			a[--k] = j; //add in reverse order
+			c = j.child;
+			while (c != null)
+			{
+				q[s++] = c;
+				c = c.sibling;
+			}
+		}
+		
+		for (e in a)
+		{
+			e.onFree();
+			remove(e);
+			#if verbose
+			L.d('freed $e', "entity");
+			#end
+		}
+	}
+	
 	public static function changeName(e:Entity, name:String)
 	{
 		if (e.name != null)
@@ -124,6 +185,8 @@ class EntityManager
 	public static function remove(e:Entity)
 	{
 		D.assert(e.id != null);
+		
+		e.parent = e.child = e.sibling = e.preorder = null;
 		
 		var i = e.id.index;
 		

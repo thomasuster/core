@@ -71,6 +71,10 @@ class Entity
 		return (_data >> 16) & 0xff;
 	}*/
 	
+	/**
+	 * Recursively destroys the subtree rooted at this entity (including this entity) from the bottom up.<br/>
+	 * The method invokes <em>onFree()</em> on each entity, giving each entity the opportunity to perform some cleanup (e.g. free resources or unregister from listeners).<br/>
+	 */
 	public function free()
 	{
 		if (freed) return;
@@ -78,27 +82,8 @@ class Entity
 		//unlink
 		if (parent != null) remove(this);
 		
-		//free subtree
-		var e = child;
-		while (e != null)
-		{
-			var next = e.preorder;
-			e.parent = e.child = e.sibling = e.preorder = null;
-			EntityManager.remove(e);
-			#if verbose
-			L.d('free $e', "entity");
-			#end
-			e.onFree();
-			e = next;
-		}
-		
-		//free this
-		parent = child = sibling = preorder = null;
-		EntityManager.remove(this);
-		#if verbose
-		L.d('free $e', "entity");
-		#end
-		onFree();
+		//bottom-up deconstruction
+		EntityManager.free(this);
 	}
 	
 	//0: entity
