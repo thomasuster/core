@@ -34,6 +34,7 @@ class Entity
 	public var parent(default, null):Entity;
 	public var child(default, null):Entity;
 	public var sibling(default, null):Entity;
+	public var lastChild(default, null):Entity;
 	
 	public var size(default, null):Int;
 	public var numChildren(default, null):Int;
@@ -284,9 +285,6 @@ class Entity
 		
 		x.parent = this;
 		
-		//TODO set last child of this to x
-		//setTopology(TYPE_LAST_CHILD, x);
-		
 		//update #children
 		numChildren++;
 		
@@ -315,7 +313,6 @@ class Entity
 		{
 			//case 2: with children
 			//fix preorder pointers
-			var lastChild = findLastSibling(child);
 			var i = findLastLeaf(lastChild);
 			var j = findLastLeaf(x);
 			
@@ -335,6 +332,8 @@ class Entity
 			e = e.preorder;
 		}
 		
+		lastChild = x;
+		
 		x.onAdd();
 		
 		return cast x;
@@ -353,9 +352,6 @@ class Entity
 		D.assert(x != this);
 		D.assert(x.parent == this);
 		
-		//TODO set last child of this to x
-		//setTopology(TYPE_LAST_CHILD, x);
-		
 		//update #children
 		numChildren--;
 		
@@ -369,13 +365,11 @@ class Entity
 			p = p.parent;
 		}
 		
+		var isLast = x.sibling == null;
+		
 		//case 1: first child is removed
 		if (child == x)
 		{
-			//is this also the last child?
-			//if (x.sibling == null)
-				//setTopology(TYPE_LAST_CHILD, null);
-			
 			var i = findLastLeaf(x);
 			
 			preorder = i.preorder;
@@ -388,13 +382,6 @@ class Entity
 		{
 			//case 2: second to last child is removed
 			var prev = child.findPredecessor(x);
-			
-			//is this also the last child?
-			/*if (x.sibling == null)
-			{
-				//this is the last child
-				//setTopology(TYPE_LAST_CHILD, prev);
-			}*/
 			
 			D.assert(prev != null);
 			
@@ -418,14 +405,14 @@ class Entity
 			e = e.preorder;
 		}
 		
+		if (isLast) lastChild = null;
+		
 		x.onRemove();
 		x.parent = null;
 	}
 	
 	public function removeAllChildren()
 	{
-		//CLEAR LAST CHILD TOPOLOGY
-		
 		var e = child;
 		while (e != null)
 		{
@@ -440,6 +427,7 @@ class Entity
 		}
 		
 		child = null;
+		lastChild = null;
 	}
 	
 	public function ancestorByType<T:Entity>(?cl:Class<T>, inheritanceChain = false):T
@@ -683,20 +671,10 @@ class Entity
 	}
 	
 	/**
-	 * Returns the last child of this entity.
-	 */
-	public function getLastChild():Entity
-	{
-		return findLastSibling(child);
-	}
-	
-	/**
 	 * Successively swaps this entity with its next siblings until it becomes the last sibling.
 	 */
 	public function setLast():Void
 	{
-		//TOPOLOGY CHANGE
-		
 		if (parent == null || sibling == null) return; //no parent or already last?
 		
 		var c = parent.child;
@@ -717,11 +695,6 @@ class Entity
 				c = c.sibling;
 			}
 			
-			//findPredecessor(c);
-			//TODO skip to end
-			//c = c.sibling = sibling;
-			//while (c.sibling != null) c = c.sibling; //find last child
-			
 			c.sibling = c.preorder = sibling;
 			sibling.sibling = this;
 			preorder = sibling.preorder;
@@ -729,6 +702,7 @@ class Entity
 		}
 		
 		sibling = null;
+		parent.lastChild = this;
 	}
 	
 	/**
@@ -736,13 +710,15 @@ class Entity
 	 */
 	public function setFirst():Void
 	{
-		//TOPOLOGY CHANGE
-		
 		if (parent == null) return; //no parent?
 		if (parent.child == this) return; //first child?
 		
 		var c = parent.child;
 		var pre = c.findPredecessor(this);
+		
+		if (sibling == null)
+			parent.lastChild = this;
+		
 		pre.preorder = preorder;
 		pre.sibling = sibling;
 		preorder = sibling = c;
@@ -870,15 +846,7 @@ class Entity
 	inline function findLastLeaf(e:Entity):Entity
 	{
 		//find bottom-most, right-most entity in this subtree
-		while (e.child != null)
-			e = findLastSibling(e.child);
-		return e;
-	}
-	
-	inline function findLastSibling(e:Entity):Entity
-	{
-		//TODO if cached return cached value!!
-		while (e.sibling != null) e = e.sibling;
+		while (e.child != null) e = e.lastChild;
 		return e;
 	}
 }
