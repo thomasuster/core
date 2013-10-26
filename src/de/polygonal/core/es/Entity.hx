@@ -407,8 +407,8 @@ class Entity
 		
 		if (isLast) lastChild = null;
 		
-		x.onRemove();
 		x.parent = null;
+		x.onRemove(this);
 	}
 	
 	public function removeAllChildren()
@@ -810,7 +810,7 @@ class Entity
 	{
 	}
 	
-	function onRemove()
+	function onRemove(parent:Entity)
 	{
 	}
 	
