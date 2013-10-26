@@ -6,6 +6,7 @@ import de.polygonal.ds.IntHashSet;
 import de.polygonal.ds.IntIntHashTable;
 import haxe.ds.StringMap;
 import haxe.ds.Vector;
+import de.polygonal.core.util.ClassUtil;
 
 import de.polygonal.core.util.Assert;
 
@@ -134,6 +135,30 @@ class EntityManager
 			L.d('freed $e', "entity");
 			#end
 		}
+	}
+	
+	public static function prettyPrint(e:Entity):String
+	{
+		if (e.freed) return "null";
+		var s = "\n";
+		for (i in 0...e.size + 1)
+		{
+			var d = e.depth;
+			for (i in 0...d)
+			{
+				if (i == d - 1)
+					s += "|---";
+				else
+					s += "|   ";
+			}
+			
+			var type = ClassUtil.getUnqualifiedClassName(e);
+			type = type == "Entity" ? "" : ',$type';
+			
+			s += '[${e.name}$type]\n';
+			e = e.preorder;
+		}
+		return s;
 	}
 	
 	public static function changeName(e:Entity, name:String)
