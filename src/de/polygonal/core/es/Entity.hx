@@ -661,6 +661,21 @@ class Entity
 		return e;
 	}
 	
+	public function getChildIndex():Int
+	{
+		var p = parent;
+		if (p == null) return -1;
+		
+		var i = 0;
+		var e = p.child;
+		while (e != this)
+		{
+			i++;
+			e = e.sibling;
+		}
+		return i;
+	}
+	
 	/**
 	 * Successively swaps this entity with its next siblings until it becomes the last sibling.
 	 */
