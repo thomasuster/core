@@ -6,7 +6,7 @@ import de.polygonal.ds.IntHashSet;
 import haxe.ds.StringMap;
 import haxe.ds.Vector;
 
-@:access(de.polygonal.core.es.EntityManager)
+@:access(de.polygonal.core.es.EntitySystem)
 @:build(de.polygonal.core.es.EntityMacro.build())
 @:autoBuild(de.polygonal.core.es.EntityMacro.build())
 class Entity
@@ -28,27 +28,23 @@ class Entity
 	}
 	
 	public var id(default, null):EntityId;
-	
 	public var preorder(default, null):Entity;
-	
-	public var parent(default, null):Entity;
-	public var child(default, null):Entity;
-	public var sibling(default, null):Entity;
-	public var lastChild(default, null):Entity;
-	
-	public var size(default, null):Int;
-	public var numChildren(default, null):Int;
-	public var depth(default, null):Int;
 	
 	var _name:String;
 	
-	//TODO combine into single integer or store in EntityManager
-	var _bits:Int; //8 bits
-	var _type:Int; //8 bits , check < 0x100 , otherwise throw error
+	//public var parent(default, null):Entity;
+	//public var child(default, null):Entity;
+	//public var sibling(default, null):Entity;
+	//public var lastChild(default, null):Entity;
+	//public var size(default, null):Int;
+	//public var numChildren(default, null):Int;
+	//public var depth(default, null):Int;
 	
-	//var _size:Int; //16 bits sufficient 16xxx
-	//var _numChildren:Int;
-	//var _depth:Int;
+	//TODO move to global array
+	var _bits:Int; //8 bits
+	
+	//TODO move to global array
+	var _type:Int; //8 bits , check < 0x100 , otherwise throw error
 	
 	public function new(name:String = null)
 	{
@@ -58,18 +54,8 @@ class Entity
 		var c = Type.getClass(this);
 		_type = getClassType(c);
 		
-		EntityManager.add(this);
+		EntitySystem.add(this);
 	}
-	
-	/*inline function getType():Int
-	{
-		return (_data >> 8) & 0xff;
-	}*/
-	
-	/*inline function getSize():Int
-	{
-		return (_data >> 16) & 0xff;
-	}*/
 	
 	/**
 	 * Recursively destroys the subtree rooted at this entity (including this entity) from the bottom up.<br/>
@@ -83,110 +69,124 @@ class Entity
 		if (parent != null) remove(this);
 		
 		//bottom-up deconstruction
-		EntityManager.free(this);
+		EntitySystem.free(this);
 	}
 	
-	//0: entity
-	/*inline static var TYPE_PARENT   = 0;
-	inline static var TYPE_CHILD    = 1;
-	inline static var TYPE_SIBLING  = 2;
-	inline static var TYPE_LAST_CHILD = 3;
-	
-	inline function getTopology(type:Int)
+	public var parent(get_parent, set_parent):Entity;
+	inline function get_parent():Entity
 	{
-		return EntityManager._freeList[EntityManager._topology[(id.index << 3) + type]];
-		
-		//return EntityManager._freeList[(id.index << 2) + type];
+		return EntitySystem.getParent(this);
+	}
+	inline function set_parent(value:Entity)
+	{
+		EntitySystem.setParent(this, value);
+		return value;
 	}
 	
-	inline function setTopology(type:Int, value:Entity)
+	public var child(get_child, set_child):Entity;
+	inline function get_child():Entity
 	{
-		EntityManager._topology[(id.index << 3) + type] = value == null ? 0 : value.id.index;
-		
-		//EntityManager._freeList[(id.index << 2) + type] = value;
-	}*/
+		return EntitySystem.getChild(this);
+	}
+	inline function set_child(value:Entity)
+	{
+		EntitySystem.setChild(this, value);
+		return value;
+	}
 	
-	/*public var size(get_size, set_size):Int;
+	public var sibling(get_sibling, set_sibling):Entity;
+	inline function get_sibling():Entity
+	{
+		return EntitySystem.getSibling(this);
+	}
+	inline function set_sibling(value:Entity)
+	{
+		EntitySystem.setSibling(this, value);
+		return value;
+	}
+	
+	public var lastChild(get_lastChild, set_lastChild):Entity;
+	inline function get_lastChild():Entity
+	{
+		return EntitySystem.getLastChild(this);
+	}
+	inline function set_lastChild(value:Entity)
+	{
+		EntitySystem.setLastChild(this, value);
+		return value;
+	}
+	
+	public var size(get_size, set_size):Int;
 	inline function get_size():Int
 	{
-		return _size;
+		return EntitySystem.getSize(this);
 	}
 	inline function set_size(value:Int):Int
 	{
-		_size = value;
+		EntitySystem.setSize(this, value);
 		return value;
 	}
 	
 	public var depth(get_depth, set_depth):Int;
 	function get_depth():Int
 	{
-		return _depth;
+		return EntitySystem.getDepth(this);
 	}
 	function set_depth(value:Int):Int
 	{
-		_depth = value;
+		EntitySystem.setDepth(this, value);
 		return value;
 	}
 	
 	public var numChildren(get_numChildren, set_numChildren):Int;
 	inline function get_numChildren():Int
 	{
-		return _numChildren;
+		return EntitySystem.getNumChildren(this);
 	}
 	inline function set_numChildren(value:Int):Int
 	{
-		_numChildren = value;
-		return value;
-	}*/
-	
-	/*public var parent(get_parent, set_parent):Entity;
-	inline function get_parent():Entity return getTopology(TYPE_PARENT);
-	inline function set_parent(value:Entity)
-	{
-		setTopology(TYPE_PARENT, value);
+		EntitySystem.setNumChildren(this, value);
 		return value;
 	}
-	
-	public var child(get_child, set_child):Entity;
-	inline function get_child():Entity return getTopology(TYPE_CHILD);
-	inline function set_child(value:Entity)
-	{
-		setTopology(TYPE_CHILD, value);
-		return value;
-	}
-	
-	public var sibling(get_sibling, set_sibling):Entity;
-	inline function get_sibling():Entity return getTopology(TYPE_SIBLING);
-	inline function set_sibling(value:Entity)
-	{
-		setTopology(TYPE_SIBLING, value);
-		return value;
-	}*/
 	
 	public var freed(get_freed, never):Bool;
-	inline function get_freed():Bool return id == null || id.index == -1;
+	inline function get_freed():Bool
+	{
+		return id == null || id.index == -1;
+	}
 	
 	public var tick(get_tick, set_tick):Bool;
-	inline function get_tick():Bool return _bits & BIT_SKIP_TICK == 0;
+	inline function get_tick():Bool
+	{
+		return _bits & BIT_SKIP_TICK == 0;
+	}
 	function set_tick(value:Bool):Bool
 	{
+		//if (value != get_tick()) invalidate();
 		_bits = value ? (_bits & ~BIT_SKIP_TICK) : (_bits | BIT_SKIP_TICK);
 		return value;
 	}
 	
 	public var draw(get_draw, set_draw):Bool;
-	inline function get_draw():Bool return _bits & BIT_SKIP_DRAW == 0;
+	inline function get_draw():Bool
+	{
+		return _bits & BIT_SKIP_DRAW == 0;
+	}
 	function set_draw(value:Bool):Bool
 	{
+		//if (value != get_draw()) invalidate();
 		_bits = value ? (_bits & ~BIT_SKIP_DRAW) : (_bits | BIT_SKIP_DRAW);
 		return value;
 	}
 	
 	public var name(get_name, set_name):String;
-	inline function get_name():String return _name;
+	inline function get_name():String
+	{
+		return _name;
+	}
 	function set_name(value:String):String
 	{
-		EntityManager.changeName(this, value);
+		EntitySystem.changeName(this, value);
 		return value;
 	}
 	
@@ -200,7 +200,10 @@ class Entity
 	}
 	
 	public var skipSubtree(get_skipSubtree, set_skipSubtree):Bool;
-	function get_skipSubtree():Bool return _bits & BIT_SKIP_SUBTREE > 0;
+	function get_skipSubtree():Bool
+	{
+		return _bits & BIT_SKIP_SUBTREE > 0;
+	}
 	function set_skipSubtree(value:Bool):Bool
 	{
 		//if (value != get_skipSubtree()) invalidate();
@@ -209,7 +212,10 @@ class Entity
 	}
 	
 	public var skipMessages(get_skipMessages, set_skipMessages):Bool;
-	function get_skipMessages():Bool return _bits & BIT_SKIP_MSG > 0;
+	function get_skipMessages():Bool
+	{
+		return _bits & BIT_SKIP_MSG > 0;
+	}
 	function set_skipMessages(value:Bool):Bool
 	{
 		_bits = value ? (_bits | BIT_SKIP_MSG) : (_bits & ~BIT_SKIP_MSG);
@@ -422,7 +428,7 @@ class Entity
 		
 		if (inheritanceChain)
 		{
-			var t = EntityManager._types;
+			var t = EntitySystem._types;
 			while (e != null)
 			{
 				if (t.has(e._type << 16 | type)) break;
@@ -460,7 +466,7 @@ class Entity
 		
 		if (inheritanceChain)
 		{
-			var types = EntityManager._types;
+			var types = EntitySystem._types;
 			while (e != last)
 			{
 				if (types.has(e._type << 16 | type)) break;
@@ -499,7 +505,7 @@ class Entity
 		
 		if (inheritanceChain)
 		{
-			var types = EntityManager._types;
+			var types = EntitySystem._types;
 			while (e != null)
 			{
 				if (types.has(e._type << 16 | type))
@@ -545,7 +551,7 @@ class Entity
 		
 		if (inheritanceChain)
 		{
-			var types = EntityManager._types;
+			var types = EntitySystem._types;
 			while (e != null)
 			{
 				if (types.has(e._type << 16 | type)) break;
@@ -583,10 +589,10 @@ class Entity
 	 */
 	public function msgToName(name:String, type:Int)
 	{
-		var e = EntityManager.lookupByName(name);
+		var e = EntitySystem.lookupByName(name);
 		if (e == null) return;
 		
-		var q = EntityManager._msgQue;
+		var q = EntitySystem._msgQue;
 		var k = e.length;
 		while (k-- > 0)
 			q.enqueue(this, e[k], type, k);
@@ -597,7 +603,7 @@ class Entity
 	 */
 	public function msgToAncestors(type:Int)
 	{
-		var q = EntityManager._msgQue;
+		var q = EntitySystem._msgQue;
 		var e = parent;
 		var k = depth;
 		while (k-- > 0)
@@ -612,7 +618,7 @@ class Entity
 	 */
 	public function msgToDescendants(type:Int)
 	{
-		var q = EntityManager._msgQue;
+		var q = EntitySystem._msgQue;
 		var e = child;
 		var k = size;
 		while (k-- > 0)
@@ -627,7 +633,7 @@ class Entity
 	 */
 	public function msgToChildren(type:Int)
 	{
-		var q = EntityManager._msgQue;
+		var q = EntitySystem._msgQue;
 		var e = child;
 		var k = numChildren;
 		while (k-- > 0)

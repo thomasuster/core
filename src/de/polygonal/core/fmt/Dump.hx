@@ -52,25 +52,25 @@ class Dump
 			switch (Type.typeof(value))
 			{
 				case Type.ValueType.TObject:
-					s += ws + "" + field + ":";
-					s += _object(value, ws + "|    ");
+					s += '$ws$field:';
+					s += _object(value, '$ws|    ');
 				
 				case Type.ValueType.TClass(c):
 					switch (c)
 					{
 						case Array:
-							s += ws + "" + field + ":";
-							s += _object(value, ws + "|    ");
+							s += '$ws$field: [Array]';
+							s += _object(value, '$ws|    ');
 						
 						case _:
-							s += ws + Printf.format("%s: %s [%s]\n", [field, value, Type.getClassName(c)]);
+							s += '$ws$field: $value [${Type.getClassName(c)}]\n';
 					}
 				
 				case Type.ValueType.TEnum(e):
-					s += ws + Printf.format("%s: %s [Enum(%s)]\n", [field, value, Type.getEnumName(e)]);
+					s += '$ws$field: $value [Enum(${Type.getEnumName(e)})]\n';
 				
 				default:
-					s += ws + Printf.format("%s: %s [%s]\n", [field, value, Std.string(Type.typeof(value)).substr(1)]);
+					s += '$ws$field: $value [${Std.string(Type.typeof(value)).substr(1)}]\n';
 			}
 		}
 		return s;
