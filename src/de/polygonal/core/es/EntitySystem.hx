@@ -211,8 +211,9 @@ class EntitySystem
 		var n = e.child;
 		while (n != null)
 		{
+			var sibling = n.sibling;
 			freeRecursive(n);
-			n = n.sibling;
+			n = sibling;
 		}
 		
 		e.onFree();
