@@ -66,9 +66,9 @@ class StringUtil
 	{
 		var l = str.length;
 		
-		#if debug
-		D.assert(maxLength > 0, "maxLength > 0");
-		#end
+		if (l <= maxLength) return str;
+		
+		if (maxLength == 0) return useThreeDots ? "..." : "…";
 		
 		if (useThreeDots)
 			if (maxLength < 4) return "...";
@@ -106,7 +106,7 @@ class StringUtil
 					{
 						side *= -1;
 						a.splice((l >> 1) + side, 1);
-						a[(l >> 1) + side] = ".";
+						a[(l >> 1) + side * -1] = ".";
 						l--;
 					}
 				}
