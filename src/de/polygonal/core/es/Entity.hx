@@ -1,22 +1,51 @@
+/*
+ *                            _/                                                    _/
+ *       _/_/_/      _/_/    _/  _/    _/    _/_/_/    _/_/    _/_/_/      _/_/_/  _/
+ *      _/    _/  _/    _/  _/  _/    _/  _/    _/  _/    _/  _/    _/  _/    _/  _/
+ *     _/    _/  _/    _/  _/  _/    _/  _/    _/  _/    _/  _/    _/  _/    _/  _/
+ *    _/_/_/      _/_/    _/    _/_/_/    _/_/_/    _/_/    _/    _/    _/_/_/  _/
+ *   _/                            _/        _/
+ *  _/                        _/_/      _/_/
+ *
+ * POLYGONAL - A HAXE LIBRARY FOR GAME DEVELOPERS
+ * Copyright (c) 2013 Michael Baczynski, http://www.polygonal.de
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 package de.polygonal.core.es;
 
 import de.polygonal.core.util.Assert;
 import de.polygonal.core.util.ClassUtil;
 import de.polygonal.ds.IntHashSet;
-import haxe.ds.StringMap;
 import haxe.ds.Vector;
+import de.polygonal.core.es.Msg;
 
 @:access(de.polygonal.core.es.EntitySystem)
 @:build(de.polygonal.core.es.EntityMacro.build())
 @:autoBuild(de.polygonal.core.es.EntityMacro.build())
 class Entity
 {
-	inline static var BIT_GHOST            = 0x10;
-	inline static var BIT_SKIP_SUBTREE     = 0x20;
-	inline static var BIT_SKIP_MSG         = 0x40;
-	inline static var BIT_SKIP_TICK        = 0x80;
-	inline static var BIT_SKIP_DRAW        = 0x100;
-	inline static var BIT_STOP_PROPAGATION = 0x200;
+	inline static var BIT_GHOST            = 0x1;
+	inline static var BIT_SKIP_SUBTREE     = 0x2;
+	inline static var BIT_SKIP_MSG         = 0x4;
+	inline static var BIT_SKIP_TICK        = 0x8;
+	inline static var BIT_SKIP_DRAW        = 0x10;
+	inline static var BIT_STOP_PROPAGATION = 0x20;
 	
 	inline static function getClassType<T>(C:Class<T>):Int
 	{
@@ -69,7 +98,7 @@ class Entity
 		if (parent != null) remove(this);
 		
 		//bottom-up deconstruction
-		EntitySystem.free(this);
+		EntitySystem.freeEntity(this);
 	}
 	
 	public var parent(get_parent, set_parent):Entity;

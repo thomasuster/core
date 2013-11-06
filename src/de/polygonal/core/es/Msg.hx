@@ -29,13 +29,17 @@
  */
 package de.polygonal.core.es;
 
-class EntityId
+@:build(de.polygonal.core.es.MsgMacro.build([]))
+class Msg
 {
-	public var index:Int;
-	public var inner:Int;
-	
-	public function new() {}
-	
-	inline public function equals(other:EntityId):Bool
-		return index == other.index && inner == other.inner;
+	public static function name(type:Int):String
+	{
+		var meta = haxe.rtti.Meta.getType(Msg);
+		
+		if (!Reflect.hasField(meta, "names")) return 'invalid type ($type)';
+		
+		var names = meta.names[0];
+		if (type < 0 || type > names.length - 1) return 'invalid type ($type)';
+		return meta.names[0][type];
+	}
 }

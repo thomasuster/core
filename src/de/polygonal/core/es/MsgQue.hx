@@ -1,14 +1,44 @@
+/*
+ *                            _/                                                    _/
+ *       _/_/_/      _/_/    _/  _/    _/    _/_/_/    _/_/    _/_/_/      _/_/_/  _/
+ *      _/    _/  _/    _/  _/  _/    _/  _/    _/  _/    _/  _/    _/  _/    _/  _/
+ *     _/    _/  _/    _/  _/  _/    _/  _/    _/  _/    _/  _/    _/  _/    _/  _/
+ *    _/_/_/      _/_/    _/    _/_/_/    _/_/_/    _/_/    _/    _/    _/_/_/  _/
+ *   _/                            _/        _/
+ *  _/                        _/_/      _/_/
+ *
+ * POLYGONAL - A HAXE LIBRARY FOR GAME DEVELOPERS
+ * Copyright (c) 2013 Michael Baczynski, http://www.polygonal.de
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 package de.polygonal.core.es;
 
 import de.polygonal.core.util.Assert;
+import haxe.ds.Vector;
 
 @:access(de.polygonal.core.es.Entity)
-@:access(de.polygonal.core.es.EntityManager)
+@:access(de.polygonal.core.es.EntitySystem)
 class MsgQue
 {
 	static var MAX_SIZE = 1 << 15; // (alchemy) / 768KiB
 	
-	var _que:haxe.ds.Vector<Int>;
+	var _que:Vector<Int>;
 	var _capacity:Int;
 	var _size:Int;
 	var _front:Int;
@@ -24,7 +54,7 @@ class MsgQue
 		_que = new de.polygonal.ds.mem.ByteMemory(_capacity * 16, "msg_que_buffer");
 		#else
 		//768KiB @ 0x8000
-		_que = new haxe.ds.Vector<Int>(_capacity);
+		_que = new Vector<Int>(_capacity);
 		#end
 	}
 	
@@ -65,7 +95,7 @@ class MsgQue
 	
 	public function dispatch()
 	{
-		var a = EntityManager._freeList;
+		var a = EntitySystem._freeList;
 		
 		var senderIndex:Int;
 		var senderInner:Int;

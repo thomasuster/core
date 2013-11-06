@@ -834,7 +834,7 @@ class Entity implements IObserver implements IObservable implements Hashable
 	inline public function is<T>(x:Class<T>):Bool
 	{
 		#if flash
-		return untyped __is__(this, x);
+		return this != null && untyped __is__(this, x);
 		#else
 		return Std.is(this, x);
 		#end
