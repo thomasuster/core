@@ -32,10 +32,7 @@ package de.polygonal.core.es;
 #if macro
 import haxe.macro.Context;
 import haxe.macro.Expr;
-import haxe.macro.Expr.ExprDef;
-
-import haxe.ds.StringMap;
-import haxe.macro.Type;
+import sys.FileSystem;
 #end
 
 /**
@@ -44,255 +41,124 @@ import haxe.macro.Type;
 class EntityMacro
 {
 	#if macro
-	inline static var CACHE_PATH = "./entity_id.cache";
-	
-	static var callbackRegistered = false;
-	static var types:StringMap<Int> = null;
-	static var cache:String = null;
 	static var next = -1;
-	static var changed = false;
-	
-	static var allEntityNames:Array<String>;
+	#end
 	
 	macro public static function build():Array<Field>
 	{
 		if (Context.defined("display")) return null;
 		
-		//write cache file when done
-		if (!callbackRegistered)
-		{
-			callbackRegistered = true;
-			Context.onGenerate(onGenerate);
-			Context.registerModuleDependency("de.polygonal.core.es.Entity", CACHE_PATH);
-		}
-		
+		//create unique name for local classes defined in a module
 		var c = Context.getLocalClass().get();
-		/*trace("MODULE ROOT " + c.module + " " + c.name);
-		var d = c;
-		while (d.superClass != null)
-		{
-			d = d.superClass.t.get();
-			trace("      MODULE " + d.module + " " + d.name);
-		}*/
 		
-		var f = Context.getBuildFields();
+		var className = c.name;
+		var moduleName = c.module;
 		
-		//create unique name for local classes
-		var name = c.module;
-		if (c.module.indexOf(c.name) == -1)
-			name += "_" + c.name;
+		var name = moduleName;
+		name = name.substr(name.lastIndexOf(".") + 1); //make unqualified
+		if (moduleName.indexOf(className) == -1)
+			name += '_$className'; //moduleName_className
 		
-		if (cache == null)
-			if (sys.FileSystem.exists(CACHE_PATH))
-				cache = sys.io.File.getContent(CACHE_PATH);
+		next++; //increment unqiue id
 		
-		if (cache != null)
-		{
-			if (types == null)
-			{
-				//parse cache file and store in types map
-				types = new StringMap<Int>();
-				next = -1;
-				var ereg = ~/([\w.]+):(\d+)/;
-				for (i in cache.split("\n"))
-				{
-					ereg.match(i);
-					var j = Std.parseInt(ereg.matched(2));
-					if (j > next) next = j;
-					types.set(ereg.matched(1), j);
-				}
-			}
-			
-			if (types.exists(name))
-			{
-				//reuse type
-				addType(f, types.get(name), name);
-			}
-			else
-			{
-				//append type
-				next++;
-				addType(f, next, name);
-				types.set(name, next);
-				cache += "\n" + name + ":" + next;
-				changed = true;
-			}
-		}
-		else
-		{
-			//no cache file exists
-			addType(f, 1, name);
-			cache = name + ":" + 1;
-			changed = true;
-		}
-		
-		return f;
-	}
-	
-	static function addType(fields:Array<Field>, type:Int, name:String)
-	{
-		//trace("add type " + type + " " + name);
-		
-		name =
-		if (name.indexOf("_") != -1)
-		{
-			var a = name.split("_");
-			a[0].substr(a[0].lastIndexOf(".") + 1) + "_" +
-				a[1].substr(a[1].lastIndexOf(".") + 1);
-		}
-		else
-			name.substr(name.lastIndexOf(".") + 1);
-		
-		//trace('name is $name');
-		
+		var fields = Context.getBuildFields();
 		var p = Context.currentPos();
 		
-		/*if (allEntityNames == null)
+		//add unique static integer type to every class
+		//inline public stat var ___type:Int = x;
+		fields.push(
 		{
-			allEntityNames = [];
-			allEntityNames.push(name);
-		}
-		*/
-		
+			name: "___type",
+			doc: null,
+			meta: [],
+			access: [APublic, AStatic, AInline],
+			kind: FVar(TPath({pack: [], name: "Int", params: [], sub: null}), {expr: EConst(CInt(Std.string(next))), pos: p}),
+			pos: p
+		});
 		
 		//assign name and _type field in constructor
+		var constructorField:Field = null;
 		for (field in fields)
 		{
 			if (field.name == "new")
 			{
-				switch (field.kind)
-				{
-					case FFun(f):
-						switch (f.expr.expr)
-						{
-							case ExprDef.EBlock(a):
-								//position of super() expr
-								var i = 0;
-								/*var hasSuper = false;
-								while (i < a.length)
-								{
-									switch(a[i].expr)
-									{
-										case ExprDef.ECall(e, p):
-											switch (e.expr)
-											{
-												case EConst(c):
-													switch (c)
-													{
-														case CIdent(s):
-															if (s == "super")
-															{
-																hasSuper = true;
-																break;
-															}
-														case _:
-													}
-												case _:
-											}
-										case _:
-									}
-									i++;
-								}*/
-								
-								if (name == "Entity") return;
-								
-								a.unshift({expr: EBinop(
-									Binop.OpAssign,
-									{expr: EField({expr: EConst(CIdent("this")), pos: p}, "_name"), pos: p},
-									{expr: EConst(CString(name)), pos: p}
-									), pos: p});
-								
-								//assign name after super()
-								/*if (hasSuper)
-								{
-									var index = name.lastIndexOf(".");
-									if (index != -1) name = name.substr(index + 1);
-									a.insert(i + 1, assignNameExpr);
-								}
-								else
-								{
-									assignNameExpr);
-								}*/
-								
-								/*a.unshift({expr: EBinop(
-									Binop.OpAssign,
-									{expr: EField({expr: EConst(CIdent("this")), pos: p}, "_type"), pos: p},
-									{expr: EConst(CInt(Std.string(type))), pos: p}
-									), pos: p});*/
-							case _:
-						}
-					case _:
-				}
+				constructorField = field;
 				break;
 			}
 		}
 		
-		//add unique static integer type to every class
-		fields.push
-		(
+		if (name == "Entity") 
+		{
+			var fout = sys.io.File.write("./entity_macro.cache", false);
+			fout.writeString("" + Date.now());
+			fout.close();
+			
+			Context.registerModuleDependency(c.module, "./entity_macro.cache");
+			Context.onMacroContextReused(function()
 			{
-				name: "___type",
+				next = -1;
+				return false;
+			});
+			
+			return fields; //don't modifiy Entity constructor
+		}
+		
+		//add if (_type == 0) _type = x;
+		var e1 = {expr: EBinop(OpEq, {expr: EConst(CIdent("_type")), pos: p}, {expr: EConst(CInt("0")), pos: p}), pos: p};
+		var e2 = {expr: EBinop(OpAssign, {expr: EConst(CIdent("_type")), pos: p}, {expr: EConst(CInt(Std.string(next))), pos: p}), pos: p};
+		var assignType = {expr: EIf(e1, e2, null), pos: p};
+		
+		if (constructorField != null)
+		{
+			switch (constructorField.kind)
+			{
+				case FFun(f):
+					switch (f.expr.expr)
+					{
+						case ExprDef.EBlock(a):
+							//assign name before super()
+							a.unshift({expr: EBinop(
+								Binop.OpAssign,
+								{expr: EField({expr: EConst(CIdent("this")), pos: p}, "_name"), pos: p},
+								{expr: EConst(CString(name)), pos: p}
+								), pos: p});
+								
+							a.unshift(assignType);
+						case _:
+					}
+				case _:
+			}
+		}
+		else
+		{
+			var assignName = {expr: ECall(
+				{expr: EConst(CIdent("super")), pos: p },
+				[{expr: ETernary(
+					{expr: EBinop(OpEq, {expr: EConst(CIdent("name")), pos: p}, {expr: EConst(CIdent("null")), pos: p}), pos: p},
+					{expr: EConst(CString(name)), pos: p},
+					{expr: EConst(CIdent("name")), pos: p}),
+					pos: p}
+				]), pos: p};
+				
+			constructorField =
+			{
+				name: "new",
 				doc: null,
 				meta: [],
-				access: [APublic, AStatic],
-				kind: FVar(TPath({pack: [], name: "Int", params: [], sub: null}), {expr: EConst(CInt(Std.string(type))), pos: p}),
+				access: [APublic],
+				kind: FFun(
+				{
+					args: [{name: "name", type: TPath({name: "String", pack: [], params: []}), opt: false, value: {expr: EConst(CIdent("null")), pos: p}}],
+					ret: null,
+					expr: {expr: EBlock([assignType, assignName]), pos: p}
+					
+				}),
 				pos: p
 			}
-		);
+			
+			fields.push(constructorField);
+		}
+		
+		return fields;
 	}
-	
-	static function onGenerate(types:Array<haxe.macro.Type>)
-	{
-		/*var type = Context.getModule("de.polygonal.core.es.Entity")[0];
-		
-		switch (type)
-		{
-			case TInst(a, b):
-				
-			var x = a.get();
-			var statics = x.statics.get();
-			trace( "statics : " + statics );
-			
-			var field:ClassField = 
-			{
-				name: "allNames",
-				doc: null,
-				//meta: [],
-				//type: TInst(Array,[TInst(String,[])]),
-				isPublic: false,
-				params: [],
-				kind: FVar(AccNormal,AccNormal),
-				pos: Context.currentPos(),
-			}
-			
-			//typedef ClassField = {
-	//var name : String;
-	//var type : Type;
-	//var isPublic : Bool;
-	//var params : Array<{ name : String, t : Type }>;
-	//var meta : MetaAccess;
-	//var kind : FieldKind;
-	//function expr() : Null<TypedExpr>;
-	//var pos : Expr.Position;
-	//var doc : Null<String>;
-//}
-			//statics.push(
-			
-			trace( "statics : " + statics );
-			
-			case _:
-		}*/
-		
-		//TInst( t : Ref<ClassType>, params : Array<Type> );
-		
-		//type.get();
-		//type.
-		
-		
-		if (!changed) return;
-		var fout = sys.io.File.write(CACHE_PATH, false);
-		fout.writeString(cache);
-		fout.close();
-	}
-	#end
 }

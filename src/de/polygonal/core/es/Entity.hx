@@ -29,15 +29,14 @@
  */
 package de.polygonal.core.es;
 
+import de.polygonal.core.es.Msg;
 import de.polygonal.core.util.Assert;
 import de.polygonal.core.util.ClassUtil;
-import de.polygonal.ds.IntHashSet;
 import haxe.ds.Vector;
-import de.polygonal.core.es.Msg;
 
 @:access(de.polygonal.core.es.EntitySystem)
-@:build(de.polygonal.core.es.EntityMacro.build())
 @:autoBuild(de.polygonal.core.es.EntityMacro.build())
+@:build(de.polygonal.core.es.EntityMacro.build())
 class Entity
 {
 	inline static var BIT_GHOST            = 0x1;
@@ -77,12 +76,9 @@ class Entity
 	
 	public function new(name:String = null)
 	{
-		_name = name;
+		if (name != null) _name = name;
 		
-		//TODO optimize
-		var c = Type.getClass(this);
-		_type = getClassType(c);
-		
+		D.assert(EntitySystem._initialized, "call EntitySystem.init() first");
 		EntitySystem.add(this);
 	}
 	
@@ -208,6 +204,10 @@ class Entity
 		return value;
 	}
 	
+	/**
+	 * The name of this entity. Default is null.
+	 * In case of subclassing, name is set to the unqualified class name of the subclass.
+	 */
 	public var name(get_name, set_name):String;
 	inline function get_name():String
 	{
@@ -302,6 +302,7 @@ class Entity
 			x = Type.createInstance(cl, []);
 		
 		D.assert(x.parent != this);
+		D.assert(x.parent == null);
 		
 		x.parent = this;
 		

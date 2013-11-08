@@ -121,7 +121,7 @@ class EntitySystem
 		e.id = null;
 	}
 	
-	public static function free(e:Entity)
+	public static function freeEntity(e:Entity)
 	{
 		#if verbose
 		L.d('freeing up ${e.size + 1} entities ...', "entity");
@@ -168,7 +168,14 @@ class EntitySystem
 	
 	inline public static function lookupByName(name:String):Array<Entity> return _entitiesByName.get(name);
 		
-	inline public static function lookup(id:EntityId):Entity return _freeList[id.index];
+	inline public static function lookup(id:EntityId):Entity
+	{
+		var e = _freeList[id.index];
+		if (e != null)
+			return (e.id.inner == id.inner) ? e : null;
+		else
+			return null;
+	}
 	
 	public static function changeName(e:Entity, newName:String)
 	{
