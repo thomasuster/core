@@ -31,7 +31,6 @@ package de.polygonal.core.es;
 
 import de.polygonal.core.es.Msg;
 import de.polygonal.core.util.Assert;
-import de.polygonal.core.util.ClassUtil;
 import haxe.ds.Vector;
 
 @:access(de.polygonal.core.es.EntitySystem)
@@ -451,27 +450,14 @@ class Entity
 		lastChild = null;
 	}
 	
-	public function ancestorByType<T:Entity>(?cl:Class<T>, inheritanceChain = false):T
+	public function ancestorByType<T:Entity>(cl:Class<T>):T
 	{
 		var type = getClassType(cl);
 		var e = child;
-		
-		if (inheritanceChain)
+		while (e != null)
 		{
-			var t = EntitySystem._types;
-			while (e != null)
-			{
-				if (t.has(e._type << 16 | type)) break;
-				e = e.parent;
-			}
-		}
-		else
-		{
-			while (e != null)
-			{
-				if (e._type == type) break;
-				e = e.parent;
-			}
+			if (e._type == type) break;
+			e = e.parent;
 		}
 		
 		return cast e;
@@ -485,31 +471,23 @@ class Entity
 			if (e.name == name) break;
 			e = e.parent;
 		}
+		
 		return e;
 	}
 	
-	public function descendantByType<T:Entity>(?cl:Class<T>, inheritanceChain = false):T
+	public function descendantByType<T:Entity>(cl:Class<T>):T
 	{
 		var type = getClassType(cl);
-		var e = child;
-		var last = sibling;
-		
-		if (inheritanceChain)
-		{
-			var types = EntitySystem._types;
-			while (e != last)
-			{
-				if (types.has(e._type << 16 | type)) break;
-				e = e.preorder;
-			}
-		}
+		var last =
+		if (sibling != null)
+			sibling;
 		else
+			findLastLeaf(this).preorder;
+		var e = child;
+		while (e != last)
 		{
-			while (e != last)
-			{
-				if (type == e._type) break;
-				e = e.preorder;
-			}
+			if (type == e._type) break;
+			e = e.preorder;
 		}
 		
 		return cast e;
@@ -528,28 +506,14 @@ class Entity
 		return e;
 	}
 	
-	public function childByType<T:Entity>(?cl:Class<T>, inheritanceChain = false):T
+	public function childByType<T:Entity>(cl:Class<T>):T
 	{
 		var type = getClassType(cl);
 		var e = child;
-		
-		if (inheritanceChain)
+		while (e != null)
 		{
-			var types = EntitySystem._types;
-			while (e != null)
-			{
-				if (types.has(e._type << 16 | type))
-					break;
-				e = e.sibling;
-			}
-		}
-		else
-		{
-			while (e != null)
-			{
-				if (type == e._type) break;
-				e = e.sibling;
-			}
+			if (type == e._type) break;
+			e = e.sibling;
 		}
 		
 		return cast e;
@@ -572,29 +536,17 @@ class Entity
 		return (cl != null ? childByType(cl) : childByName(name)) != null;
 	}
 	
-	public function siblingByType<T:Entity>(?cl:Class<T>, inheritanceChain = false):T
+	public function siblingByType<T:Entity>(?cl:Class<T>):T
 	{
 		if (parent == null) return null;
 		
-		var e = parent.child;
 		var type = getClassType(cl);
-		
-		if (inheritanceChain)
+		var e = parent.child;
+		while (e != null)
 		{
-			var types = EntitySystem._types;
-			while (e != null)
-			{
-				if (types.has(e._type << 16 | type)) break;
-				e = e.sibling;
-			}
-		}
-		else
-		{
-			while (e != null)
-			{
-				if (e._type == type) break;
-				e = e.sibling;
-			}
+			if (e == this) continue;
+			if (e._type == type) break;
+			e = e.sibling;
 		}
 		
 		return cast e;
@@ -611,6 +563,7 @@ class Entity
 				return e;
 			e = e.sibling;
 		}
+		
 		return e;
 	}
 	
@@ -839,7 +792,8 @@ class Entity
 	
 	public function toString():String
 	{
-		return '{ Entity name: $name, type: ${ClassUtil.getUnqualifiedClassName(this)} }';
+		if (name == null) return "{ Entity }";
+		return '{ Entity $name }';
 	}
 	
 	function onAdd()

@@ -47,7 +47,6 @@ class EntitySystem
 		_next[maxEntities - 1] = -1;
 		_free = 1;
 		
-		_types = new IntHashSet(512);
 		_msgQue = new MsgQue();
 	}
 	
