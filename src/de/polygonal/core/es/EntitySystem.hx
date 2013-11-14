@@ -1,3 +1,32 @@
+/*
+ *                            _/                                                    _/
+ *       _/_/_/      _/_/    _/  _/    _/    _/_/_/    _/_/    _/_/_/      _/_/_/  _/
+ *      _/    _/  _/    _/  _/  _/    _/  _/    _/  _/    _/  _/    _/  _/    _/  _/
+ *     _/    _/  _/    _/  _/  _/    _/  _/    _/  _/    _/  _/    _/  _/    _/  _/
+ *    _/_/_/      _/_/    _/    _/_/_/    _/_/_/    _/_/    _/    _/    _/_/_/  _/
+ *   _/                            _/        _/
+ *  _/                        _/_/      _/_/
+ *
+ * POLYGONAL - A HAXE LIBRARY FOR GAME DEVELOPERS
+ * Copyright (c) 2013 Michael Baczynski, http://www.polygonal.de
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 package de.polygonal.core.es;
 
 import de.polygonal.core.util.Assert;
@@ -9,7 +38,7 @@ import haxe.ds.Vector;
 @:access(de.polygonal.core.es.Entity)
 class EntitySystem
 {
-	inline public static var MAX_SUPPORTED_ENTITIES = 0xFFFF;
+	inline public static var MAX_SUPPORTED_ENTITIES = 0xFFFE;
 	
 	//unique id, incremented every time an entity is registered
 	static var _nextInnerId = 0;
@@ -30,24 +59,36 @@ class EntitySystem
 	//circular message buffer
 	static var _msgQue:MsgQue;
 	
-	static var _types:IntHashSet;
+	static var _initialized:Bool = false;
 	
 	public static function init(maxEntities = 0x8000)
 	{
 		D.assert(maxEntities <= MAX_SUPPORTED_ENTITIES);
+		D.assert(!_initialized);
+		_initialized = true;
 		
-		//TODO overflow for 16bit!
-		_freeList = new Vector<Entity>(1 + maxEntities); //index 0 reserved for null
-		_topology = new Vector<Int>(1 + maxEntities);
+		_freeList = new Vector<Entity>(1 + maxEntities); //index 0 is reserved for null
+		_topology = new Vector<Int>((1 + maxEntities) << 3);
 		_entitiesByName = new StringMap<Array<Entity>>();
 		
 		//start from index=1 (reserved for null)
-		_next = new Vector<Int>(maxEntities);
-		for (i in 1...maxEntities - 1) _next[i] = (i + 1);
-		_next[maxEntities - 1] = -1;
+		_next = new Vector<Int>(1 + maxEntities);
+		for (i in 1...maxEntities)
+			_next[i] = (i + 1);
+		_next[maxEntities] = -1;
 		_free = 1;
 		
 		_msgQue = new MsgQue();
+	}
+	
+	public static function free()
+	{
+		_freeList = null;
+		_topology = null;
+		_entitiesByName = null;
+		_next = null;
+		_nextInnerId = 0;
+		_initialized = false;
 	}
 	
 	public static function add(e:Entity)
@@ -64,31 +105,12 @@ class EntitySystem
 		id.index = i;
 		e.id = id;
 		
-		//handle in macro??
-		var t = _types;
-		if (!t.has(e._type))
-		{
-			var type = e._type;
-			
-			t.set(type);
-			t.set(type << 16 | type);
-			
-			var s = Type.getSuperClass(Type.getClass(e));
-			while (s != null)
-			{
-				t.set(type << 16 | Entity.getClassType(s));
-				s = Type.getSuperClass(s);
-			}
-		}
-		
 		if (e.name != null) registerName(e);
 	}
 	
 	public static function remove(e:Entity)
 	{
 		D.assert(e.id != null);
-		
-		e.parent = e.child = e.sibling = e.preorder = null;
 		
 		var i = e.id.index;
 		
@@ -101,7 +123,6 @@ class EntitySystem
 		_topology[pos + 1] = 0;
 		_topology[pos + 2] = 0;
 		_topology[pos + 3] = 0;
-		
 		_topology[pos + 4] = 0;
 		_topology[pos + 5] = 0;
 		_topology[pos + 6] = 0;
@@ -136,34 +157,27 @@ class EntitySystem
 		_msgQue.dispatch();
 
 	inline public static function getParent(e:Entity):Entity return _freeList[_topology[pos(e, 0)]];
-	
 	inline public static function setParent(e:Entity, parent:Entity) _topology[pos(e, 0)] = parent == null ? 0 : parent.id.index;
 	
 	inline public static function getChild(e:Entity):Entity return _freeList[_topology[pos(e, 1)]];
-	
 	inline public static function setChild(e:Entity, child:Entity) _topology[pos(e, 1)] = child == null ? 0 : child.id.index;
 	
 	inline public static function getSibling(e:Entity):Entity return _freeList[_topology[pos(e, 2)]];
-	
 	inline public static function setSibling(e:Entity, sibling:Entity) _topology[pos(e, 2)] = sibling == null ? 0 : sibling.id.index;
 	
 	inline public static function getLastChild(e:Entity):Entity return _freeList[_topology[pos(e, 3)]];
-	
 	inline public static function setLastChild(e:Entity, lastChild:Entity) _topology[pos(e, 3)] = lastChild == null ? 0 : lastChild.id.index;
 	
 	inline public static function getSize(e:Entity):Int return _topology[pos(e, 4)];
-	
 	inline public static function setSize(e:Entity, value:Int) _topology[pos(e, 4)] = value;
 		
 	inline public static function getDepth(e:Entity):Int return _topology[pos(e, 5)];
-	
 	inline public static function setDepth(e:Entity, value:Int) _topology[pos(e, 5)] = value;
 		
 	inline public static function getNumChildren(e:Entity):Int return _topology[pos(e, 6)];
-	
 	inline public static function setNumChildren(e:Entity, value:Int) _topology[pos(e, 6)] = value;
 		
-		inline static function pos(e:Entity, shift:Int):Int return (e.id.index << 3) + shift;
+	inline static function pos(e:Entity, shift:Int):Int return (e.id.index << 3) + shift;
 	
 	inline public static function lookupByName(name:String):Array<Entity> return _entitiesByName.get(name);
 		

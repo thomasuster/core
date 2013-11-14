@@ -58,20 +58,8 @@ class Entity
 	public var preorder(default, null):Entity;
 	
 	var _name:String;
-	
-	//public var parent(default, null):Entity;
-	//public var child(default, null):Entity;
-	//public var sibling(default, null):Entity;
-	//public var lastChild(default, null):Entity;
-	//public var size(default, null):Int;
-	//public var numChildren(default, null):Int;
-	//public var depth(default, null):Int;
-	
-	//TODO move to global array
-	var _bits:Int; //8 bits
-	
-	//TODO move to global array
-	var _type:Int; //8 bits , check < 0x100 , otherwise throw error
+	var _bits:Int;
+	var _type:Int;
 	
 	public function new(name:String = null)
 	{
