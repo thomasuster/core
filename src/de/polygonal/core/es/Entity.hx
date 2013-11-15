@@ -31,7 +31,6 @@ package de.polygonal.core.es;
 
 import de.polygonal.core.es.Msg;
 import de.polygonal.core.util.Assert;
-import haxe.ds.Vector;
 
 @:access(de.polygonal.core.es.EntitySystem)
 @:autoBuild(de.polygonal.core.es.EntityMacro.build())
@@ -55,11 +54,11 @@ class Entity
 	}
 	
 	public var id(default, null):EntityId;
+	public var type(default, null):Int;
 	public var preorder(default, null):Entity;
 	
 	var _name:String;
 	var _bits:Int;
-	var _type:Int;
 	
 	public function new(name:String = null)
 	{
@@ -440,11 +439,11 @@ class Entity
 	
 	public function ancestorByType<T:Entity>(cl:Class<T>):T
 	{
-		var type = getClassType(cl);
+		var ct = getClassType(cl);
 		var e = child;
 		while (e != null)
 		{
-			if (e._type == type) break;
+			if (e.type == ct) break;
 			e = e.parent;
 		}
 		
@@ -465,7 +464,7 @@ class Entity
 	
 	public function descendantByType<T:Entity>(cl:Class<T>):T
 	{
-		var type = getClassType(cl);
+		var ct = getClassType(cl);
 		var last =
 		if (sibling != null)
 			sibling;
@@ -474,7 +473,7 @@ class Entity
 		var e = child;
 		while (e != last)
 		{
-			if (type == e._type) break;
+			if (ct == e.type) break;
 			e = e.preorder;
 		}
 		
@@ -496,11 +495,11 @@ class Entity
 	
 	public function childByType<T:Entity>(cl:Class<T>):T
 	{
-		var type = getClassType(cl);
+		var ct = getClassType(cl);
 		var e = child;
 		while (e != null)
 		{
-			if (type == e._type) break;
+			if (ct == e.type) break;
 			e = e.sibling;
 		}
 		
@@ -528,12 +527,12 @@ class Entity
 	{
 		if (parent == null) return null;
 		
-		var type = getClassType(cl);
+		var ct = getClassType(cl);
 		var e = parent.child;
 		while (e != null)
 		{
 			if (e == this) continue;
-			if (e._type == type) break;
+			if (ct == e.type) break;
 			e = e.sibling;
 		}
 		
@@ -558,7 +557,7 @@ class Entity
 	/**
 	 * Sends a message to all entities of a given name.
 	 */
-	public function msgToName(name:String, type:Int)
+	public function msgTo(name:String, msgType:Int)
 	{
 		var e = EntitySystem.lookupByName(name);
 		if (e == null) return;
@@ -566,20 +565,20 @@ class Entity
 		var q = EntitySystem._msgQue;
 		var k = e.length;
 		while (k-- > 0)
-			q.enqueue(this, e[k], type, k);
+			q.enqueue(this, e[k], msgType, k);
 	}
 	
 	/**
 	 * Sends a message to all ancestors.
 	 */
-	public function msgToAncestors(type:Int)
+	public function msgToAncestors(msgType:Int)
 	{
 		var q = EntitySystem._msgQue;
 		var e = parent;
 		var k = depth;
 		while (k-- > 0)
 		{
-			q.enqueue(this, e, type, k);
+			q.enqueue(this, e, msgType, k);
 			e = e.parent;
 		}
 	}
@@ -587,14 +586,14 @@ class Entity
 	/**
 	 * Sends a message to all descendants.
 	 */
-	public function msgToDescendants(type:Int)
+	public function msgToDescendants(msgType:Int)
 	{
 		var q = EntitySystem._msgQue;
 		var e = child;
 		var k = size;
 		while (k-- > 0)
 		{
-			q.enqueue(this, e, type, k);
+			q.enqueue(this, e, msgType, k);
 			e = e.preorder;
 		}
 	}
@@ -602,14 +601,14 @@ class Entity
 	/**
 	 * Sends a message to all children.
 	 */
-	public function msgToChildren(type:Int)
+	public function msgToChildren(msgType:Int)
 	{
 		var q = EntitySystem._msgQue;
 		var e = child;
 		var k = numChildren;
 		while (k-- > 0)
 		{
-			q.enqueue(this, e, type, k);
+			q.enqueue(this, e, msgType, k);
 			e = e.sibling;
 		}
 	}
@@ -617,9 +616,9 @@ class Entity
 	/**
 	 * Sends a message to all siblings.
 	 */
-	public function msgToSiblings(type:Int)
+	public function msgToSiblings(msgType:Int)
 	{
-		if (parent != null) parent.msgToChildren(type);
+		if (parent != null) parent.msgToChildren(msgType);
 	}
 	
 	/**
@@ -804,7 +803,7 @@ class Entity
 	{
 	}
 	
-	function onMsg(type:Int, sender:Entity)
+	function onMsg(msgType:Int, sender:Entity)
 	{
 	}
 	

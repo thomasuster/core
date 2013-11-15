@@ -76,7 +76,7 @@ class EntityMacro
 			pos: p
 		});
 		
-		//assign name and _type field in constructor
+		//assign name and type field in constructor
 		var constructorField:Field = null;
 		for (field in fields)
 		{
@@ -103,9 +103,9 @@ class EntityMacro
 			return fields; //don't modifiy Entity constructor
 		}
 		
-		//add if (_type == 0) _type = x;
-		var e1 = {expr: EBinop(OpEq, {expr: EConst(CIdent("_type")), pos: p}, {expr: EConst(CInt("0")), pos: p}), pos: p};
-		var e2 = {expr: EBinop(OpAssign, {expr: EConst(CIdent("_type")), pos: p}, {expr: EConst(CInt(Std.string(next))), pos: p}), pos: p};
+		//add if (type == 0) type = x;
+		var e1 = {expr: EBinop(OpEq, {expr: EConst(CIdent("type")), pos: p}, {expr: EConst(CInt("0")), pos: p}), pos: p};
+		var e2 = {expr: EBinop(OpAssign, {expr: EConst(CIdent("type")), pos: p}, {expr: EConst(CInt(Std.string(next))), pos: p}), pos: p};
 		var assignType = {expr: EIf(e1, e2, null), pos: p};
 		
 		if (constructorField != null)
