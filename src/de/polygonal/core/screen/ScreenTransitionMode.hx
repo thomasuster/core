@@ -27,9 +27,9 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package de.polygonal.core.scene;
+package de.polygonal.core.screen;
 
-enum SceneTransitionMode
+enum ScreenTransitionMode
 {
 	/**
 	 * Screens are processed simultaneously (e.g. cross-fade).

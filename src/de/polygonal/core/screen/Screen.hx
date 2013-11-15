@@ -27,49 +27,54 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package de.polygonal.core.scene;
+package de.polygonal.core.screen;
 
-import de.polygonal.core.sys.Entity;
+import de.polygonal.core.es.Entity;
 
-class Scene extends Entity
+class Screen extends Entity implements ScreenTransitionListener
 {
-	public function new(id:String = null)
+	public function new(name:String)
 	{
-		super(id);
+		super(name);
 	}
 	
 	override public function free()
 	{
-		L.i('$id.free()');
+		L.i('free screen $name', "screen");
 		super.free();
 	}
 	
-	public function onShowStart(other:Scene)
+	override function set_name(value:String):String
 	{
-		var otherId = other != null ? other.id : "null";
-		L.i('$id.onShowStart($otherId)');
-	}
-	
-	public function onShowEnd(other:Scene)
-	{
-		var otherId = other != null ? other.id : "null";
-		L.i('$id.onShowEnd($otherId)');
-	}
-	
-	public function onHideStart(other:Scene)
-	{
-		var otherId = other != null ? other.id : "null";
-		L.i('$id.onHideStart($otherId)');
-	}
-	
-	public function onHideEnd(other:Scene)
-	{
-		var otherId = other != null ? other.id : "null";
-		L.i('$id.onHideEnd($otherId)');
+		throw "name is immutable";
 	}
 	
 	override function onFree()
 	{
-		L.i('$id.onFree()');
+		L.i('$name.onFree()', "screen");
+	}
+	
+	function onShowStart(other:Screen)
+	{
+		var otherName = other != null ? other.name : "null";
+		L.i('$name.onShowStart($otherName)', "screen");
+	}
+	
+	function onShowEnd(other:Screen)
+	{
+		var otherName = other != null ? other.name : "null";
+		L.i('$name.onShowEnd($otherName)', "screen");
+	}
+	
+	function onHideStart(other:Screen)
+	{
+		var otherName = other != null ? other.name : "null";
+		L.i('$name.onHideStart($otherName)', "screen");
+	}
+	
+	function onHideEnd(other:Screen)
+	{
+		var otherName = other != null ? other.name : "null";
+		L.i('$name.onHideEnd($otherName)', "screen");
 	}
 }

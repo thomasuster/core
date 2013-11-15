@@ -27,66 +27,92 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package de.polygonal.core.scene;
+package de.polygonal.core.screen;
 
-import de.polygonal.core.sys.Entity;
+import de.polygonal.core.es.Entity;
 import de.polygonal.core.time.Interval;
 
-class SceneTransition extends Entity
+@:access(de.polygonal.core.screen.Screen)
+class ScreenTransition extends Entity
 {
-	public var a:Scene = null;
-	public var b:Scene = null;
+	var _a:Screen;
+	var _b:Screen;
+	var _effect:ScreenTransitionEffect<Dynamic>;
 	
 	var _interval:Interval;
-	var _mode:SceneTransitionMode;
-	var _duration:Float;
 	var _phase:Int;
 	
-	function new(mode:SceneTransitionMode, duration:Float)
+	public function new()
 	{
 		super();
 		
-		_mode = mode;
-		_duration = duration;
-		_interval = new Interval(_duration);
-		
-		if (mode == SceneTransitionMode.Sequential) _duration /= 2;
+		_interval = new Interval();
+		tick = false;
 	}
 	
 	override function onFree()
 	{
-		a = null;
-		b = null;
+		_a = null;
+		_b = null;
+		_effect = null;
 		_interval = null;
-		_mode = null;
 	}
 	
-	override function onAdd(parent:Entity)
+	/**
+	 * Applies a transition effect to screen a and b
+	 */
+	public function run<T:Screen>(effect:ScreenTransitionEffect<T>, a:T, b:T)
 	{
-		switch (_mode) 
+		_effect = effect;
+		_a = a;
+		_b = b;
+		
+		var mode = effect.getMode();
+		
+		var duration = effect.getDuration();
+		
+		if (duration == 0)
+		{
+			if (a != null)
+			{
+				a.onHideStart(b);
+				a.onHideEnd(b);
+			}
+			b.onShowStart(a);
+			b.onShowEnd(a);
+			return;
+		}
+		
+		tick = true;
+		
+		if (mode == ScreenTransitionMode.Sequential) duration /= 2;
+		_interval.duration = duration;
+		
+		switch (_effect.getMode()) 
 		{
 			case Sequential:
 				_phase = 0;
-				if (a == null)
+				if (_a == null)
 				{
 					b.onShowStart(null);
-					onStart(a, b);
-					return;
+					_effect.onStart(_a, b);
 				}
-				
-				a.onHideStart(b);
-				onStart(a, b);
+				else
+				{
+					_a.onHideStart(b);
+					_effect.onStart(_a, b);
+				}
 			
 			case Simultaneous:
-				if (a != null) a.onHideStart(b);
-				b.onShowStart(a);
-				onStart(a, b);
+				if (_a != null) _a.onHideStart(b);
+				b.onShowStart(_a);
+				_effect.onStart(_a, b);
 		}
 	}
 	
-	override function onTick(dt:Float, parent:Entity)
+	override function onTick(dt:Float)
 	{
-		switch (_mode) 
+		switch (_effect.getMode()) 
 		{
 			case Sequential:
 				var alpha = _interval.alpha;
@@ -95,30 +121,33 @@ class SceneTransition extends Entity
 				{
 					if (alpha >= 1)
 					{
-						if (a == null)
+						if (_a == null)
 						{
-							remove();
-							onAdvance(b, 1, 1);
-							onComplete(b);
-							b.onShowEnd(null);
+							tick = false;
+							
+							_effect.onAdvance(_b, 1, 1);
+							_effect.onComplete(_b);
+							_b.onShowEnd(null);
+							_b = null;
+							_effect = null;
 							return;
 						}
 						
-						onAdvance(a, 1, -1);
-						onComplete(a);
+						_effect.onAdvance(_a, 1, -1);
+						_effect.onComplete(_a);
 						
 						_phase = 1;
 						_interval.reset();
 						
-						a.onHideEnd(b);
-						b.onShowStart(a);
+						_a.onHideEnd(_b);
+						_b.onShowStart(_a);
 					}
 					else
 					{
-						if (a != null)
-							onAdvance(a, alpha, -1);
+						if (_a != null)
+							_effect.onAdvance(_a, alpha, -1);
 						else
-							onAdvance(b, alpha, 1);
+							_effect.onAdvance(_b, alpha, 1);
 					}
 				}
 				else
@@ -126,13 +155,17 @@ class SceneTransition extends Entity
 				{
 					if (alpha >= 1)
 					{
-						remove();
-						onAdvance(b, 1, 1);
-						onComplete(b);
-						b.onShowEnd(a);
+						tick = false;
+						
+						_effect.onAdvance(_b, 1, 1);
+						_effect.onComplete(_b);
+						_b.onShowEnd(_a);
+						_a = null;
+						_b = null;
+						_effect = null;
 					}
 					else
-						onAdvance(b, alpha, 1);
+						_effect.onAdvance(_b, alpha, 1);
 				}
 			
 			case Simultaneous:
@@ -140,26 +173,23 @@ class SceneTransition extends Entity
 				_interval.advance(dt);
 				if (alpha >= 1)
 				{
-					remove();
-					if (a != null)
+					tick = false;
+					if (_a != null)
 					{
-						onAdvance(a, 1, -1);
-						onComplete(a);
-						a.onHideEnd(b);
+						_effect.onAdvance(_a, 1, -1);
+						_effect.onComplete(_a);
+						_a.onHideEnd(_b);
 					}
-					onAdvance(b, 1, 1);
-					onComplete(b);
-					b.onShowEnd(a);
+					_effect.onAdvance(_b, 1, 1);
+					_effect.onComplete(_b);
+					_b.onShowEnd(_a);
+					_a = null;
+					_b = null;
+					_effect = null;
 					return;
 				}
-				if (a != null) onAdvance(a, alpha, -1);
-				onAdvance(b, alpha, 1);
+				if (_a != null) _effect.onAdvance(_a, alpha, -1);
+				_effect.onAdvance(_b, alpha, 1);
 		}
 	}
-	
-	function onStart(a:Scene, b:Scene) {}
-	
-	function onAdvance(scene:Scene, x:Float, dir:Int) {}
-	
-	function onComplete(scene:Scene) {}
 }
