@@ -32,6 +32,8 @@ package de.polygonal.core.es;
 import de.polygonal.core.es.Msg;
 import de.polygonal.core.util.Assert;
 
+import de.polygonal.core.es.EntitySystem in ES;
+
 @:access(de.polygonal.core.es.EntitySystem)
 @:autoBuild(de.polygonal.core.es.EntityMacro.build())
 @:build(de.polygonal.core.es.EntityMacro.build())
@@ -53,6 +55,9 @@ class Entity
 		#end
 	}
 	
+	/**
+	 * Every entity can be identified by a unique id.
+	 */
 	public var id(default, null):EntityId;
 	
 	/**
@@ -68,8 +73,8 @@ class Entity
 	{
 		if (name != null) _name = name;
 		
-		D.assert(EntitySystem._initialized, "call EntitySystem.init() first");
-		EntitySystem.add(this);
+		D.assert(ES._initialized, "call EntitySystem.init() first");
+		ES.add(this);
 	}
 	
 	/**
@@ -84,83 +89,83 @@ class Entity
 		if (parent != null) remove(this);
 		
 		//bottom-up deconstruction
-		EntitySystem.freeEntity(this);
+		ES.freeEntity(this);
 	}
 	
 	public var parent(get_parent, set_parent):Entity;
 	inline function get_parent():Entity
 	{
-		return EntitySystem.getParent(this);
+		return ES.getParent(this);
 	}
 	inline function set_parent(value:Entity)
 	{
-		EntitySystem.setParent(this, value);
+		ES.setParent(this, value);
 		return value;
 	}
 	
 	public var child(get_child, set_child):Entity;
 	inline function get_child():Entity
 	{
-		return EntitySystem.getChild(this);
+		return ES.getChild(this);
 	}
 	inline function set_child(value:Entity)
 	{
-		EntitySystem.setChild(this, value);
+		ES.setChild(this, value);
 		return value;
 	}
 	
 	public var sibling(get_sibling, set_sibling):Entity;
 	inline function get_sibling():Entity
 	{
-		return EntitySystem.getSibling(this);
+		return ES.getSibling(this);
 	}
 	inline function set_sibling(value:Entity)
 	{
-		EntitySystem.setSibling(this, value);
+		ES.setSibling(this, value);
 		return value;
 	}
 	
 	public var lastChild(get_lastChild, set_lastChild):Entity;
 	inline function get_lastChild():Entity
 	{
-		return EntitySystem.getLastChild(this);
+		return ES.getLastChild(this);
 	}
 	inline function set_lastChild(value:Entity)
 	{
-		EntitySystem.setLastChild(this, value);
+		ES.setLastChild(this, value);
 		return value;
 	}
 	
 	public var size(get_size, set_size):Int;
 	inline function get_size():Int
 	{
-		return EntitySystem.getSize(this);
+		return ES.getSize(this);
 	}
 	inline function set_size(value:Int):Int
 	{
-		EntitySystem.setSize(this, value);
+		ES.setSize(this, value);
 		return value;
 	}
 	
 	public var depth(get_depth, set_depth):Int;
 	function get_depth():Int
 	{
-		return EntitySystem.getDepth(this);
+		return ES.getDepth(this);
 	}
 	function set_depth(value:Int):Int
 	{
-		EntitySystem.setDepth(this, value);
+		ES.setDepth(this, value);
 		return value;
 	}
 	
 	public var numChildren(get_numChildren, set_numChildren):Int;
 	inline function get_numChildren():Int
 	{
-		return EntitySystem.getNumChildren(this);
+		return ES.getNumChildren(this);
 	}
 	inline function set_numChildren(value:Int):Int
 	{
-		EntitySystem.setNumChildren(this, value);
+		ES.setNumChildren(this, value);
 		return value;
 	}
 	
@@ -205,7 +210,7 @@ class Entity
 	}
 	function set_name(value:String):String
 	{
-		EntitySystem.changeName(this, value);
+		ES.changeName(this, value);
 		return value;
 	}
 	
@@ -560,13 +565,13 @@ class Entity
 
 	inline public function putMsgData(o:Dynamic):Entity
 	{
-		EntitySystem._msgQue.putData(o);
+		getMsgQue().putData(o);
 		return this;
 	}
 	
 	inline public function getMsgData():Dynamic
 	{
-		return EntitySystem._msgQue.getData();
+		return getMsgQue().getData();
 	}
 	
 	/**
@@ -574,10 +579,10 @@ class Entity
 	 */
 	public function msgTo(name:String, msgType:Int)
 	{
-		var e = EntitySystem.lookupByName(name);
+		var e = ES.lookupByName(name);
 		if (e == null) return;
 		
-		var q = EntitySystem._msgQue;
+		var q = getMsgQue();
 		var k = e.length;
 		while (k-- > 0)
 			q.enqueue(this, e[k], msgType, k);
@@ -588,7 +593,7 @@ class Entity
 	 */
 	public function msgToAncestors(msgType:Int)
 	{
-		var q = EntitySystem._msgQue;
+		var q = getMsgQue();
 		var e = parent;
 		var k = depth;
 		while (k-- > 0)
@@ -603,7 +608,7 @@ class Entity
 	 */
 	public function msgToDescendants(msgType:Int)
 	{
-		var q = EntitySystem._msgQue;
+		var q = getMsgQue();
 		var e = child;
 		var k = size;
 		while (k-- > 0)
@@ -618,7 +623,7 @@ class Entity
 	 */
 	public function msgToChildren(msgType:Int)
 	{
-		var q = EntitySystem._msgQue;
+		var q = getMsgQue();
 		var e = child;
 		var k = numChildren;
 		while (k-- > 0)
@@ -843,6 +848,10 @@ class Entity
 	}
 	
 	inline function getFlags() return type >>> 16;
+	
 	inline function setFlags(x:Int) type |= x;
+	
 	inline function clrFlags(x:Int) type &= ~x;
+	
+	inline function getMsgQue() return ES._msgQue;
 }
