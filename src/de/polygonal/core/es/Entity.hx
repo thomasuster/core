@@ -557,6 +557,17 @@ class Entity
 		
 		return e;
 	}
+
+	inline public function putMsgData(o:Dynamic):Entity
+	{
+		EntitySystem._msgQue.putData(o);
+		return this;
+	}
+	
+	inline public function getMsgData():Dynamic
+	{
+		return EntitySystem._msgQue.getData();
+	}
 	
 	/**
 	 * Sends a message to all entities of a given name.
