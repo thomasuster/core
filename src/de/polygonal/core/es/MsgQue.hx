@@ -67,7 +67,7 @@ class MsgQue
 		
 		var i = (_front + _size++ * 6) % _capacity;
 		
-		if (recipient._bits & (Entity.BIT_GHOST | Entity.BIT_SKIP_MSG) > 0)
+		if (recipient.getFlags() & (Entity.BIT_GHOST | Entity.BIT_SKIP_MSG) > 0)
 		{
 			_que[i] = -1;
 			return;
@@ -165,12 +165,12 @@ class MsgQue
 			
 			//notify recipient
 			recipient.onMsg(type, sender);
-			if (recipient._bits & Entity.BIT_STOP_PROPAGATION > 0)
+			if (recipient.getFlags() & Entity.BIT_STOP_PROPAGATION > 0)
 			{
 				//recipient stopped notification;
 				//reset flag and skip remaining messages in current batch
-				recipient._bits &= ~Entity.BIT_STOP_PROPAGATION;
-				f += (6 * skipCount) % c;
+				recipient.clrFlags(Entity.BIT_STOP_PROPAGATION);
+				f += (skipCount << 3) % c;
 				s -= skipCount;
 			}
 		}

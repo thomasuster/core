@@ -37,12 +37,12 @@ import de.polygonal.core.util.Assert;
 @:build(de.polygonal.core.es.EntityMacro.build())
 class Entity
 {
-	inline static var BIT_GHOST            = 0x1;
-	inline static var BIT_SKIP_SUBTREE     = 0x2;
-	inline static var BIT_SKIP_MSG         = 0x4;
-	inline static var BIT_SKIP_TICK        = 0x8;
-	inline static var BIT_SKIP_DRAW        = 0x10;
-	inline static var BIT_STOP_PROPAGATION = 0x20;
+	inline static var BIT_GHOST            = 0x10000; //lower 16 bits are reserved for class type
+	inline static var BIT_SKIP_SUBTREE     = 0x20000;
+	inline static var BIT_SKIP_MSG         = 0x40000;
+	inline static var BIT_SKIP_TICK        = 0x80000;
+	inline static var BIT_SKIP_DRAW        = 0x100000;
+	inline static var BIT_STOP_PROPAGATION = 0x200000; 
 	
 	inline static function getClassType<T>(C:Class<T>):Int
 	{
@@ -54,11 +54,15 @@ class Entity
 	}
 	
 	public var id(default, null):EntityId;
+	
+	/**
+	 * Every subclass of the Entity class is defined by a unique integer value.
+	 */
 	public var type(default, null):Int;
+	
 	public var preorder(default, null):Entity;
 	
 	var _name:String;
-	var _bits:Int;
 	
 	public function new(name:String = null)
 	{
@@ -169,24 +173,24 @@ class Entity
 	public var tick(get_tick, set_tick):Bool;
 	inline function get_tick():Bool
 	{
-		return _bits & BIT_SKIP_TICK == 0;
+		return getFlags() & BIT_SKIP_TICK == 0;
 	}
 	function set_tick(value:Bool):Bool
 	{
 		//if (value != get_tick()) invalidate();
-		_bits = value ? (_bits & ~BIT_SKIP_TICK) : (_bits | BIT_SKIP_TICK);
+		setFlags(value ? (getFlags() & ~BIT_SKIP_TICK) : (getFlags() | BIT_SKIP_TICK));
 		return value;
 	}
 	
 	public var draw(get_draw, set_draw):Bool;
 	inline function get_draw():Bool
 	{
-		return _bits & BIT_SKIP_DRAW == 0;
+		return getFlags() & BIT_SKIP_DRAW == 0;
 	}
 	function set_draw(value:Bool):Bool
 	{
 		//if (value != get_draw()) invalidate();
-		_bits = value ? (_bits & ~BIT_SKIP_DRAW) : (_bits | BIT_SKIP_DRAW);
+		setFlags(value ? (getFlags() & ~BIT_SKIP_DRAW) : (getFlags() | BIT_SKIP_DRAW));
 		return value;
 	}
 	
@@ -206,34 +210,34 @@ class Entity
 	}
 	
 	public var ghost(get_ghost, set_ghost):Bool;
-	function get_ghost():Bool return _bits & BIT_GHOST > 0;
+	function get_ghost():Bool return getFlags() & BIT_GHOST > 0;
 	function set_ghost(value:Bool):Bool
 	{
 		//if (value != get_ghost()) invalidate();
-		_bits = value ? (_bits | BIT_GHOST) : (_bits & ~BIT_GHOST);
+		setFlags(value ? (getFlags() | BIT_GHOST) : (getFlags() & ~BIT_GHOST));
 		return value;
 	}
 	
 	public var skipSubtree(get_skipSubtree, set_skipSubtree):Bool;
 	function get_skipSubtree():Bool
 	{
-		return _bits & BIT_SKIP_SUBTREE > 0;
+		return getFlags() & BIT_SKIP_SUBTREE > 0;
 	}
 	function set_skipSubtree(value:Bool):Bool
 	{
 		//if (value != get_skipSubtree()) invalidate();
-		_bits = value ? (_bits | BIT_SKIP_SUBTREE) : (_bits & ~BIT_SKIP_SUBTREE);
+		setFlags(value ? (getFlags() | BIT_SKIP_SUBTREE) : (getFlags() & ~BIT_SKIP_SUBTREE));
 		return value;
 	}
 	
 	public var skipMessages(get_skipMessages, set_skipMessages):Bool;
 	function get_skipMessages():Bool
 	{
-		return _bits & BIT_SKIP_MSG > 0;
+		return getFlags() & BIT_SKIP_MSG > 0;
 	}
 	function set_skipMessages(value:Bool):Bool
 	{
-		_bits = value ? (_bits | BIT_SKIP_MSG) : (_bits & ~BIT_SKIP_MSG);
+		setFlags(value ? (getFlags() | BIT_SKIP_MSG) : (getFlags() & ~BIT_SKIP_MSG));
 		return value;
 	}
 	
@@ -242,10 +246,10 @@ class Entity
 		var e = child;
 		while (e != null)
 		{
-			if (e._bits & (BIT_GHOST | BIT_SKIP_TICK) == 0)
+			if ((e.getFlags()) & (BIT_GHOST | BIT_SKIP_TICK) == 0)
 				e.onTick(dt);
 			
-			if (e._bits & BIT_SKIP_SUBTREE > 0)
+			if ((e.getFlags()) & BIT_SKIP_SUBTREE > 0)
 			{
 				e =
 				if (e.sibling != null)
@@ -264,10 +268,10 @@ class Entity
 		var e = child;
 		while (e != null)
 		{
-			if (e._bits & (BIT_GHOST | BIT_SKIP_DRAW) == 0)
+			if ((e.getFlags()) & (BIT_GHOST | BIT_SKIP_DRAW) == 0)
 				e.onDraw(alpha);
 				
-			if (e._bits & BIT_SKIP_SUBTREE > 0)
+			if ((e.getFlags()) & BIT_SKIP_SUBTREE > 0)
 			{
 				e =
 				if (e.sibling != null)
@@ -735,7 +739,7 @@ class Entity
 	 */
 	inline public function stop()
 	{
-		_bits |= BIT_STOP_PROPAGATION;
+		setFlags(BIT_STOP_PROPAGATION);
 	}
 	
 	/**
@@ -826,4 +830,8 @@ class Entity
 		while (e.child != null) e = e.lastChild;
 		return e;
 	}
+	
+	inline function getFlags() return type >>> 16;
+	inline function setFlags(x:Int) type |= x;
+	inline function clrFlags(x:Int) type &= ~x;
 }
