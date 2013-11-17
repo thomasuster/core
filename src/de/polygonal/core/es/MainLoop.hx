@@ -35,50 +35,21 @@ import de.polygonal.core.time.Timebase;
 import de.polygonal.core.time.TimebaseEvent;
 import de.polygonal.core.time.Timeline;
 
+@:access(de.polygonal.core.es.EntitySystem)
 class MainLoop extends Entity implements IObserver
 {
 	public var paused = false;
-	
-	//var _flatTree:Array<Entity>;
-	//var _walker:Entity;
-	//var _isCurrent:Bool;
 	
 	var _stack:Array<Entity>;
 	var _top:Int;
 	
 	public function new()
 	{
-		super("MainLoop");
+		super();
+		
+		Timebase.init();
 		Timebase.attach(this);
-		
-		/*_stack = [];
-		_top = 1;
-		
-		while (top != 0)
-		{
-			var e = stack[--top];
-			
-			//process(e);
-			
-			var children = [];
-			
-			var c = e.child;
-			while (c != null)
-			{
-				children.push(c);
-				c = c.sibling;
-			}
-			
-			//add in reverse order
-			var i = children.length;
-			while (i > 0)
-			{
-				stack[top++] = children[i];
-			}
-		}*/
-		
-		//_isCurrent = true;
-		//_flatTree = [];
+		Timeline.init();
 	}
 	
 	override function onFree()
@@ -86,29 +57,20 @@ class MainLoop extends Entity implements IObserver
 		Timebase.detach(this);
 	}
 	
-	public function onUpdate(type:Int, source:IObservable, userData:Dynamic):Void 
+	public function onUpdate(type:Int, source:IObservable, userData:Dynamic):Void
 	{
 		if (paused) return;
 		
 		if (type == TimebaseEvent.TICK)
 		{
-			//rebuild();
-			
+			//process scheduled events
 			Timeline.advance();
 			
-			/*
-			if (_isCurrent)
-			{
-				for (i in _flatTree)
-				{
-					if (i._bits & Entity.BIT_SKIP_TICK == 0)
-						i.onTick(dt);
-				}
-			}
-			else*/
+			//advance all entities
 			var dt:Float = userData;
 			propagateTick(dt);
 			
+			//dispatch buffered messages
 			EntitySystem.dispatchMessages();
 		}
 		else
@@ -118,101 +80,4 @@ class MainLoop extends Entity implements IObserver
 			propagateDraw(alpha);
 		}
 	}
-	
-	function cacheSize()
-	{
-		
-	}
-	
-	static function countPasses(r:Entity)
-	{
-		//iteratively counts the subtree size of every entity in this tree.s
-		
-		return;
-		//first pass
-		var e = r;
-		while (e != null)
-		{
-			var p = e.parent;
-			if (p != null)
-			{
-				//p._bits |= MARKED;
-				//p.marked = true;
-				//p.size++;
-			}
-			e = e.preorder;
-		}
-
-		var end = true;
-		while (true)
-		{
-			e = r;
-			end = true;
-			while (e != null)
-			{
-				
-				
-				var p = e.parent;
-				if (p != null)
-				{
-					/*if (e.marked && p.marked)
-					{
-						p.size += e.size;
-						e.marked = false;
-						
-						//set final size flag to e..
-						
-						end = false;
-					}*/
-				}
-				
-				e = e.preorder;
-			}
-			
-			if (end)
-			{
-				trace('done!');
-				break;
-			}
-		}
-	}
-	
-	/*function rebuild()
-	{
-		if (_bits & Entity.BIT_CHANGED > 0)
-		{
-			_bits &= ~Entity.BIT_CHANGED;
-			_flatTree = [];
-			_walker = child;
-			_isCurrent = false;
-		}
-			
-		if (_isCurrent) return;
-		
-		var a = _flatTree;
-		var e = _walker;
-		var i = 0;
-		var k = 10;
-		while (i++ < k && e != null)
-		{
-			e._bits &= ~Entity.BIT_CHANGED;
-			
-			if (e._bits & Entity.BIT_SKIP_SUBTREE > 0)
-			{
-				e = e.sibling != null ? e.sibling : e._preorder;
-				continue;
-			}
-			
-			if (e._bits & (Entity.BIT_GHOST) == 0)
-				a.push(e);
-			
-			e = e._preorder;
-		}
-		
-		if (e == null)
-		{
-			_isCurrent = true;
-			L.w('flat completed');
-		}
-	}*/
 }
