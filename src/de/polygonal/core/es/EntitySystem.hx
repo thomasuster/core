@@ -137,8 +137,9 @@ class EntitySystem
 		var table = _entitiesByName.get(e.name);
 		if (table != null) table.remove(e);
 		
-		//wipe id
-		e.id.inner = -1;
+		//mark as removed by setting msb to one
+		e.id.inner |= 0x80000000;
+		
 		e.id = null;
 	}
 	
