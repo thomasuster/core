@@ -63,8 +63,9 @@ class EntitySystem
 	
 	public static function init(maxEntities = 0x8000)
 	{
+		if (_initialized) return;
+		
 		D.assert(maxEntities <= MAX_SUPPORTED_ENTITIES);
-		D.assert(!_initialized);
 		_initialized = true;
 		
 		_freeList = new Vector<Entity>(1 + maxEntities); //index 0 is reserved for null
