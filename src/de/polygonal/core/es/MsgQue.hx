@@ -192,6 +192,15 @@ class MsgQue
 				i--;
 				
 				//notify recipient
+				
+				#if verbose
+				var data = _locker[_currLocker] != null ? ' ${_locker[_currLocker]}' : "";
+				
+				var senderId = sender.name == null ? Std.string(sender.id) : sender.name;
+				var recipientId = recipient.name == null ? Std.string(recipient.id) : recipient.name;
+				L.d('message from "$senderId" => "$recipientId": $type$data');
+				#end
+				
 				recipient.onMsg(type, sender);
 				if (recipient.getFlags() & Entity.BIT_STOP_PROPAGATION > 0)
 				{
