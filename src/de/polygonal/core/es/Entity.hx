@@ -487,7 +487,7 @@ class Entity
 	public function ancestorByType<T:Entity>(cl:Class<T>):T
 	{
 		var ct = getClassType(cl);
-		var e = child;
+		var e = parent;
 		while (e != null)
 		{
 			if (e.type == ct) break;
