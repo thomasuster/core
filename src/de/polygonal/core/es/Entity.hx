@@ -666,6 +666,17 @@ class Entity
 		return i;
 	}
 	
+	public function getChildAt(index:Int):Entity
+	{
+		D.assert(index >= 0 && index < numChildren, 'index $index out of range');
+		
+		var i = 0;
+		var e = child;
+		for (i in 0...index)
+			e = e.sibling;
+		return e;
+	}
+	
 	/**
 	 * Successively swaps this entity with its next siblings until it becomes the last sibling.
 	 */
