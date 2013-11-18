@@ -38,8 +38,8 @@ class MsgQue
 {
 	static var MAX_SIZE = 1 << 15; //1024KiB for ~32K messages, (alchemy ~700KiB)
 	
-	var _que:Vector<Int>;
 	var _capacity:Int;
+	var _que:Vector<Int>;
 	var _size:Int;
 	var _front:Int;
 	
@@ -50,16 +50,9 @@ class MsgQue
 	public function new()
 	{
 		_capacity = MAX_SIZE << 3;
+		_que = new Vector<Int>(_capacity);
 		_size = 0;
 		_front = 0;
-		
-		#if alchemy
-		//4 shorts and 4 ints = 16 bytes per message: 512KiB @ 0x8000
-		_que = new de.polygonal.ds.mem.ByteMemory(_capacity * 16, "msg_que_buffer");
-		#else
-		//768KiB @ 0x8000
-		_que = new Vector<Int>(_capacity);
-		#end
 		
 		_nextLocker = 0;
 		_currLocker = -1;

@@ -182,7 +182,6 @@ class Entity
 	}
 	function set_tick(value:Bool):Bool
 	{
-		//if (value != get_tick()) invalidate();
 		setFlags(value ? (getFlags() & ~BIT_SKIP_TICK) : (getFlags() | BIT_SKIP_TICK));
 		return value;
 	}
@@ -194,7 +193,6 @@ class Entity
 	}
 	function set_draw(value:Bool):Bool
 	{
-		//if (value != get_draw()) invalidate();
 		setFlags(value ? (getFlags() & ~BIT_SKIP_DRAW) : (getFlags() | BIT_SKIP_DRAW));
 		return value;
 	}
@@ -218,7 +216,6 @@ class Entity
 	function get_ghost():Bool return getFlags() & BIT_GHOST > 0;
 	function set_ghost(value:Bool):Bool
 	{
-		//if (value != get_ghost()) invalidate();
 		setFlags(value ? (getFlags() | BIT_GHOST) : (getFlags() & ~BIT_GHOST));
 		return value;
 	}
@@ -230,7 +227,6 @@ class Entity
 	}
 	function set_skipSubtree(value:Bool):Bool
 	{
-		//if (value != get_skipSubtree()) invalidate();
 		setFlags(value ? (getFlags() | BIT_SKIP_SUBTREE) : (getFlags() & ~BIT_SKIP_SUBTREE));
 		return value;
 	}
