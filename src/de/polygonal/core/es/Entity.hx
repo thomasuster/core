@@ -690,6 +690,7 @@ class Entity
 	public function getRoot():Entity
 	{
 		var e = parent;
+		if (e == null) return this;
 		while (e.parent != null) e = e.parent;
 		return e;
 	}
