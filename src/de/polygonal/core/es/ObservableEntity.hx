@@ -30,16 +30,20 @@
 package de.polygonal.core.es;
 
 import de.polygonal.ds.IntHashTable;
+import de.polygonal.ds.IntIntHashTable;
 
 @:access(de.polygonal.core.es.EntitySystem)
 class ObservableEntity extends Entity
 {
+	var _observers:Array<EntityId>;
 	var _observersByType:IntHashTable<Array<EntityId>>;
+	var _attachStatus:IntIntHashTable;
 	
 	public function new(name:String = null)
 	{
-		_observersByType = new IntHashTable<Array<EntityId>>(256, 1024);
-		
+		_observers = [];
+		_observersByType = new IntHashTable<Array<EntityId>>(256);
+		_attachStatus = new IntIntHashTable(256);
 		super(name);
 	}
 	
@@ -47,58 +51,120 @@ class ObservableEntity extends Entity
 	{
 		super.free();
 		
+		_observers = [];
 		_observersByType.free();
 		_observersByType = null;
+		_attachStatus.free();
+		_attachStatus = null;
 	}
 	
 	public function notify(type:Int)
 	{
-		var observers = _observersByType.get(type);
-		if (observers == null) return;
+		var sub = _observersByType.get(type);
+		var all = _observers;
 		
-		var q = EntitySystem._msgQue;
-		var k = observers.length;
-		while (k-- > 0)
+		var q = getMsgQue();
+		var i = sub != null ? sub.length : 0;
+		var j = _observers.length;
+		var k = i + j;
+		
+		//process filtered list
+		while (i-- > 0)
 		{
-			var id = observers[k];
-			q.enqueue(this, EntitySystem.lookup(id), type, k);
+			var id = sub[i];
+			q.enqueue(this, EntitySystem.lookup(id), type, --k);
 			if (id.inner < 0)
-				observers.pop();
-		}
-	}
-	
-	public function attach(e:Entity, type:Int):Bool
-	{
-		var observers = _observersByType.get(type);
-		if (observers == null)
-		{
-			observers = [];
-			_observersByType.set(type, observers);
-		}
-		
-		for (i in observers)
-			if (i.equals(e.id)) return false;
-		
-		observers.push(e.id);
-		
-		return true;
-	}
-	
-	public function detach(e:Entity, type:Int):Bool
-	{
-		var observers = _observersByType.get(type);
-		if (observers == null) return false;
-		var k = observers.length;
-		for (i in 0...k)
-		{
-			if (observers[i].equals(e.id))
 			{
-				observers[i] = observers[k - 1];
-				observers.pop();
-				return true;
+				sub.pop();
+				_attachStatus.clr(id.inner & 0x7fffffff);
 			}
 		}
 		
-		return false;
+		//process unfiltered list
+		while (j-- > 0)
+		{
+			var id = all[j];
+			q.enqueue(this, EntitySystem.lookup(id), type, --k);
+			if (id.inner < 0)
+			{
+				all.pop();
+				_attachStatus.clr(id.inner & 0x7fffffff);
+			}
+		}
+	}
+	
+	public function attach(e:Entity, type:Int = -1):Bool
+	{
+		var id = e.id;
+		
+		//quit if entity is invalid
+		if (id == null || id.inner < 0) return false;
+		
+		//already attached?
+		if (_attachStatus.hasKey(id.inner))
+		{
+			var existingType = _attachStatus.get(id.inner);
+			
+			//quit if nothing changed
+			if (existingType == type) return false;
+			
+			//shift entity from filtered -> unfiltered list
+			if (existingType != -1 && type == -1)
+				removeFromList(_observersByType.get(existingType), id);
+		}
+		
+		//add to observer list
+		var list = getList(type);
+		list.push(id);
+		
+		//mark as attached
+		_attachStatus.set(id.inner, type);
+		return true;
+	}
+	
+	public function detach(e:Entity, type:Int = -1):Bool
+	{
+		var id = e.id;
+		
+		//quit if entity is invalid
+		if (id == null || id.inner < 0) return false;
+		
+		//quit if entity is not attached
+		if (!_attachStatus.hasKey(id.inner))
+			return false;
+		
+		var list = getList(type);
+		removeFromList(list, id);
+		return true;
+	}
+	
+	function getList(type:Int):Array<EntityId>
+	{
+		if (type == -1)
+			return _observers;
+		else
+		{
+			var a = _observersByType.get(type);
+			if (a == null)
+			{
+				a = [];
+				_observersByType.set(type, a);
+			}
+			return a;
+		}
+	}
+	
+	function removeFromList(list:Array<EntityId>, id:EntityId)
+	{
+		var k = list.length;
+		for (i in 0...k)
+		{
+			if (list[i].equals(id))
+			{
+				list[i] = list[k - 1];
+				list.pop();
+				break;
+			}
+		}
 	}
 }
