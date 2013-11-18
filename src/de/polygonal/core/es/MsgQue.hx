@@ -121,6 +121,7 @@ class MsgQue
 		var f = _front;
 		var k = 0;
 		var i = 0;
+		var iter = 0;
 		
 		while (_size > 0)
 		{
@@ -128,6 +129,12 @@ class MsgQue
 			//process k buffered messages
 			k = _size;
 			i = k;
+			
+			#if verbose
+			L.d('iter $iter: dispatching $k messages ...');
+			iter++;
+			#end
+			
 			while (i > 0)
 			{
 				senderIndex    = q[f + 0];
@@ -187,11 +194,10 @@ class MsgQue
 				//notify recipient
 				
 				#if verbose
-				var data = _locker[_currLocker] != null ? ' ${_locker[_currLocker]}' : "";
-				
+				var data = _locker[_currLocker] != null ? ' (data: ${_locker[_currLocker]})' : "";
 				var senderId = sender.name == null ? Std.string(sender.id) : sender.name;
 				var recipientId = recipient.name == null ? Std.string(recipient.id) : recipient.name;
-				L.d('message from "$senderId" => "$recipientId": $type$data');
+				L.d('message from $senderId to $recipientId: "${Msg.name(type)}"$data');
 				#end
 				
 				recipient.onMsg(type, sender);
