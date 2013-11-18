@@ -60,13 +60,9 @@ class Entity
 	 */
 	public var id(default, null):EntityId;
 	
-	/**
-	 * Every subclass of the Entity class is defined by a unique integer value.
-	 */
-	public var type(default, null):Int;
-	
 	public var preorder(default, null):Entity;
 	
+	var _flags:Int;
 	var _name:String;
 	
 	public function new(name:String = null)
@@ -95,6 +91,15 @@ class Entity
 		
 		//bottom-up deconstruction
 		ES.freeEntity(this);
+	}
+	
+	/**
+	 * Every subclass of the Entity class is defined by a unique integer value.
+	 */
+	public var type(get_type, never):Int;
+	inline function get_type():Int
+	{
+		return _flags & 0xffff;
 	}
 	
 	public var parent(get_parent, set_parent):Entity;
@@ -908,11 +913,11 @@ class Entity
 		return e;
 	}
 	
-	inline function getFlags() return type >>> 16;
+	inline function getFlags() return _flags & 0xffff0000;
 	
-	inline function setFlags(x:Int) type |= x;
+	inline function setFlags(x:Int) _flags |= x;
 	
-	inline function clrFlags(x:Int) type &= ~x;
+	inline function clrFlags(x:Int) _flags &= ~x;
 	
 	inline function getMsgQue() return ES._msgQue;
 }
