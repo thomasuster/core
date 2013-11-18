@@ -77,6 +77,11 @@ class Entity
 		ES.add(this);
 	}
 	
+	public function commit()
+	{
+		L.e('called commit');
+	}
+	
 	/**
 	 * Recursively destroys the subtree rooted at this entity (including this entity) from the bottom up.<br/>
 	 * The method invokes <em>onFree()</em> on each entity, giving each entity the opportunity to perform some cleanup (e.g. free resources or unregister from listeners).<br/>
@@ -440,6 +445,43 @@ class Entity
 		
 		child = null;
 		lastChild = null;
+	}
+	
+	public function revealSiblings()
+	{
+		var i = child, j;
+		while (i != null)
+		{
+			j = i.sibling;
+			while (j != null)
+			{
+				i.onSibling(j);
+				j.onSibling(i);
+				j = j.sibling;
+			}
+			i = i.sibling;
+		}
+	}
+	
+	public function revealAncestors()
+	{
+		var e = parent;
+		while (e != null)
+		{
+			onAncestor(e);
+			e = e.parent;
+		}
+	}
+	
+	public function revealDescendants()
+	{
+		var e = child;
+		var k = size;
+		while (k-- > 0)
+		{
+			onDescedant(e);
+			e = e.preorder;
+		}
 	}
 	
 	public function ancestorByType<T:Entity>(cl:Class<T>):T
@@ -811,6 +853,18 @@ class Entity
 	}
 	
 	function onAdd()
+	{
+	}
+	
+	function onSibling(sibling:Entity)
+	{
+	}
+	
+	function onAncestor(ancestor:Entity)
+	{
+	}
+	
+	function onDescedant(descendant:Entity)
 	{
 	}
 	
