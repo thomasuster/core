@@ -499,19 +499,18 @@ class Entity
 	public function ancestorByType<T:Entity>(cl:Class<T>, inheritance = false):T
 	{
 		var e = parent;
+		var t = getClassType(cl);
 		if (inheritance)
 		{
-			var t = type;
 			var lut = getInheritanceLookup();
 			while (e != null)
 			{
-				if (lut.hasPair(t, e.type)) break;
+				if (lut.hasPair(e.type, t)) break;
 				e = e.parent;
 			}
 		}
 		else
 		{
-			var t = getClassType(cl);
 			while (e != null)
 			{
 				if (e.type == t) break;
@@ -541,19 +540,18 @@ class Entity
 		else
 			findLastLeaf(this).preorder;
 		var e = child;
+		var t = getClassType(cl);
 		if (inheritance)
 		{
-			var t = type;
 			var lut = getInheritanceLookup();
 			while (e != last)
 			{
-				if (lut.hasPair(t, e.type)) break;
+				if (lut.hasPair(e.type, t)) break;
 				e = e.preorder;
 			}
 		}
 		else
 		{
-			var t = getClassType(cl);
 			while (e != last)
 			{
 				if (t == e.type) break;
@@ -580,20 +578,18 @@ class Entity
 	public function childByType<T:Entity>(cl:Class<T>, inheritance = false):T
 	{
 		var e = child;
-		
+		var t = getClassType(cl);
 		if (inheritance)
 		{
-			var t = type;
 			var lut = getInheritanceLookup();
 			while (e != null)
 			{
-				if (lut.hasPair(t, e.type)) break;
+				if (lut.hasPair(e.type, t)) break;
 				e = e.sibling;
 			}
 		}
 		else
 		{
-			var t = getClassType(cl);
 			while (e != null)
 			{
 				if (t == e.type) break;
@@ -626,21 +622,20 @@ class Entity
 		if (parent == null) return null;
 		
 		var e = parent.child;
+		var t = getClassType(cl);
 		if (inheritance)
 		{
-			var t = type;
 			var lut = getInheritanceLookup();
 			while (e != null)
 			{
 				if (e != this)
-					if (lut.hasPair(t, e.type))
+					if (lut.hasPair(e.type, t))
 						break;
 				e = e.sibling;
 			}
 		}
 		else
 		{
-			var t = getClassType(cl);
 			while (e != null)
 			{
 				if (e != this)
