@@ -493,16 +493,28 @@ class Entity
 		}
 	}
 	
-	public function ancestorByType<T:Entity>(cl:Class<T>):T
+	public function ancestorByType<T:Entity>(cl:Class<T>, inheritance = false):T
 	{
-		var ct = getClassType(cl);
 		var e = parent;
-		while (e != null)
+		if (inheritance)
 		{
-			if (e.type == ct) break;
-			e = e.parent;
+			var t = type;
+			var lut = getInheritanceLookup();
+			while (e != null)
+			{
+				if (lut.hasPair(t, e.type)) break;
+				e = e.parent;
+			}
 		}
-		
+		else
+		{
+			var t = getClassType(cl);
+			while (e != null)
+			{
+				if (e.type == t) break;
+				e = e.parent;
+			}
+		}
 		return cast e;
 	}
 	
@@ -518,19 +530,32 @@ class Entity
 		return e;
 	}
 	
-	public function descendantByType<T:Entity>(cl:Class<T>):T
+	public function descendantByType<T:Entity>(cl:Class<T>, inheritance = false):T
 	{
-		var ct = getClassType(cl);
 		var last =
 		if (sibling != null)
 			sibling;
 		else
 			findLastLeaf(this).preorder;
 		var e = child;
-		while (e != last)
+		if (inheritance)
 		{
-			if (ct == e.type) break;
-			e = e.preorder;
+			var t = type;
+			var lut = getInheritanceLookup();
+			while (e != last)
+			{
+				if (lut.hasPair(t, e.type)) break;
+				e = e.preorder;
+			}
+		}
+		else
+		{
+			var t = getClassType(cl);
+			while (e != last)
+			{
+				if (t == e.type) break;
+				e = e.preorder;
+			}
 		}
 		
 		return cast e;
@@ -549,14 +574,28 @@ class Entity
 		return e;
 	}
 	
-	public function childByType<T:Entity>(cl:Class<T>):T
+	public function childByType<T:Entity>(cl:Class<T>, inheritance = false):T
 	{
-		var ct = getClassType(cl);
 		var e = child;
-		while (e != null)
+		
+		if (inheritance)
 		{
-			if (ct == e.type) break;
-			e = e.sibling;
+			var t = type;
+			var lut = getInheritanceLookup();
+			while (e != null)
+			{
+				if (lut.hasPair(t, e.type)) break;
+				e = e.sibling;
+			}
+		}
+		else
+		{
+			var t = getClassType(cl);
+			while (e != null)
+			{
+				if (t == e.type) break;
+				e = e.sibling;
+			}
 		}
 		
 		return cast e;
@@ -579,17 +618,33 @@ class Entity
 		return (cl != null ? childByType(cl) : childByName(name)) != null;
 	}
 	
-	public function siblingByType<T:Entity>(?cl:Class<T>):T
+	public function siblingByType<T:Entity>(?cl:Class<T>, inheritance = false):T
 	{
 		if (parent == null) return null;
 		
-		var ct = getClassType(cl);
 		var e = parent.child;
-		while (e != null)
+		if (inheritance)
 		{
-			if (e == this) continue;
-			if (ct == e.type) break;
-			e = e.sibling;
+			var t = type;
+			var lut = getInheritanceLookup();
+			while (e != null)
+			{
+				if (e != this)
+					if (lut.hasPair(t, e.type))
+						break;
+				e = e.sibling;
+			}
+		}
+		else
+		{
+			var t = getClassType(cl);
+			while (e != null)
+			{
+				if (e != this)
+					if (t == e.type)
+						break;
+				e = e.sibling;
+			}
 		}
 		
 		return cast e;

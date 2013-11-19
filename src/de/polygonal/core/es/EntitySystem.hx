@@ -31,7 +31,7 @@ package de.polygonal.core.es;
 
 import de.polygonal.core.util.Assert;
 import de.polygonal.core.util.ClassUtil;
-import de.polygonal.ds.IntHashSet;
+import de.polygonal.ds.IntIntHashTable;
 import haxe.ds.StringMap;
 import haxe.ds.Vector;
 
@@ -59,6 +59,9 @@ class EntitySystem
 	//circular message buffer
 	static var _msgQue:MsgQue;
 	
+	//maps class x to all superclasses of x
+	static var _inheritanceLookup:IntIntHashTable;
+	
 	static var _initialized:Bool = false;
 	
 	public static function init(maxEntities = 0x8000)
@@ -80,6 +83,8 @@ class EntitySystem
 		_free = 1;
 		
 		_msgQue = new MsgQue();
+		
+		_inheritanceLookup = new IntIntHashTable(1024);
 	}
 	
 	public static function free()
@@ -89,6 +94,8 @@ class EntitySystem
 		_entitiesByName = null;
 		_next = null;
 		_nextInnerId = 0;
+		_inheritanceLookup.free();
+		_inheritanceLookup = null;
 		_initialized = false;
 	}
 	
@@ -107,6 +114,16 @@ class EntitySystem
 		e.id = id;
 		
 		if (e.name != null) registerName(e);
+		
+		if (!_inheritanceLookup.hasKey(e.type))
+		{
+			var sc = Type.getSuperClass(Type.getClass(e));
+			while (sc != null)
+			{
+				_inheritanceLookup.set(e.type, Entity.getClassType(sc));
+				sc = Type.getSuperClass(sc);
+			}
+		}
 	}
 	
 	public static function remove(e:Entity)
