@@ -63,7 +63,7 @@ class ObservableEntity extends Entity
 		var sub = _observersByType.get(type);
 		var all = _observers;
 		
-		var q = getMsgQue();
+		var q = Entity.getMsgQue();
 		var i = sub != null ? sub.length : 0;
 		var j = _observers.length;
 		var k = i + j;

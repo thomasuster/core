@@ -44,7 +44,7 @@ class Entity
 	inline static var BIT_SKIP_MSG         = 0x40000;
 	inline static var BIT_SKIP_TICK        = 0x80000;
 	inline static var BIT_SKIP_DRAW        = 0x100000;
-	inline static var BIT_STOP_PROPAGATION = 0x200000; 
+	inline static var BIT_STOP_PROPAGATION = 0x200000;
 	
 	inline static function getClassType<T>(C:Class<T>):Int
 	{
@@ -54,6 +54,9 @@ class Entity
 		return Reflect.field(C, "___type");
 		#end
 	}
+	
+	inline static function getMsgQue() return ES._msgQue;
+	inline static function getInheritanceLookup() return ES._inheritanceLookup;
 	
 	/**
 	 * Every entity can be identified by a unique id.
@@ -978,6 +981,4 @@ class Entity
 	inline function setFlags(x:Int) _flags |= x;
 	
 	inline function clrFlags(x:Int) _flags &= ~x;
-	
-	inline function getMsgQue() return ES._msgQue;
 }
