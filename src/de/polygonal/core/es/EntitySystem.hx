@@ -236,9 +236,7 @@ class EntitySystem
 					s += "|   ";
 			}
 			
-			var type = ClassUtil.getUnqualifiedClassName(e);
-			type = type == "Entity" ? "" : ',$type';
-			
+			var type = ',' + ClassUtil.getUnqualifiedClassName(e);
 			s += '[${e.name}$type]\n';
 			e = e.preorder;
 		}
