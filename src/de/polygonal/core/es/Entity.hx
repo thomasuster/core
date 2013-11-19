@@ -49,9 +49,9 @@ class Entity
 	inline static function getClassType<T>(C:Class<T>):Int
 	{
 		#if flash
-		return untyped C.___type;
+		return untyped C.ENTITY_TYPE;
 		#else
-		return Reflect.field(C, "___type");
+		return Reflect.field(C, "ENTITY_TYPE");
 		#end
 	}
 	

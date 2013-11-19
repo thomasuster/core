@@ -46,8 +46,6 @@ class EntityMacro
 	
 	macro public static function build():Array<Field>
 	{
-		if (Context.defined("display")) return null;
-		
 		//create unique name for local classes defined in a module
 		var c = Context.getLocalClass().get();
 		
@@ -65,10 +63,10 @@ class EntityMacro
 		var p = Context.currentPos();
 		
 		//add unique static integer type to every class
-		//inline public stat var ___type:Int = x;
+		//inline public stat var ENTITY_TYPE:Int = x;
 		fields.push(
 		{
-			name: "___type",
+			name: "ENTITY_TYPE",
 			doc: null,
 			meta: [],
 			access: [APublic, AStatic, AInline],
