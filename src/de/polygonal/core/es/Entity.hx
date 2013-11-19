@@ -387,11 +387,13 @@ class Entity
 			p = p.parent;
 		}
 		
-		var isLast = x.sibling == null;
-		
 		//case 1: first child is removed
 		if (child == x)
 		{
+			//update lastChild
+			if (child.sibling == null)
+				lastChild = null;
+			
 			var i = findLastLeaf(x);
 			
 			preorder = i.preorder;
@@ -406,6 +408,10 @@ class Entity
 			var prev = child.findPredecessor(x);
 			
 			D.assert(prev != null);
+			
+			//update lastChild
+			if (x.sibling == null)
+				lastChild = prev;
 			
 			var i = findLastLeaf(prev);
 			var j = findLastLeaf(x);
@@ -426,8 +432,6 @@ class Entity
 			e.depth -= d;
 			e = e.preorder;
 		}
-		
-		if (isLast) lastChild = null;
 		
 		x.parent = null;
 		x.onRemove(this);
