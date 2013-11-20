@@ -80,4 +80,48 @@ class MainLoop extends Entity implements IObserver
 			propagateDraw(alpha);
 		}
 	}
+	
+	function propagateTick(dt:Float)
+	{
+		var e = child;
+		while (e != null)
+		{
+			if (e._flags & (Entity.BIT_GHOST | Entity.BIT_SKIP_TICK) == 0)
+				e.onTick(dt);
+			
+			if (e._flags & Entity.BIT_SKIP_SUBTREE > 0)
+			{
+				e =
+				if (e.sibling != null)
+					e.sibling;
+				else
+					findLastLeaf(e).preorder;
+				continue;
+			}
+				
+			e = e.preorder;
+		}
+	}
+	
+	function propagateDraw(alpha:Float)
+	{
+		var e = child;
+		while (e != null)
+		{
+			if (e._flags & (Entity.BIT_GHOST | Entity.BIT_SKIP_DRAW) == 0)
+				e.onDraw(alpha);
+			
+			if (e._flags & Entity.BIT_SKIP_SUBTREE > 0)
+			{
+				e =
+				if (e.sibling != null)
+					e.sibling;
+				else
+					findLastLeaf(e).preorder;
+				continue;
+			}
+			
+			e = e.preorder;
+		}
+	}
 }

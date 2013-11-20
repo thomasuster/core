@@ -39,12 +39,12 @@ import de.polygonal.core.es.EntitySystem in ES;
 @:build(de.polygonal.core.es.EntityMacro.build())
 class Entity
 {
-	inline static var BIT_GHOST            = 0x10000; //lower 16 bits are reserved for class type
-	inline static var BIT_SKIP_SUBTREE     = 0x20000;
-	inline static var BIT_SKIP_MSG         = 0x40000;
-	inline static var BIT_SKIP_TICK        = 0x80000;
-	inline static var BIT_SKIP_DRAW        = 0x100000;
-	inline static var BIT_STOP_PROPAGATION = 0x200000;
+	inline static var BIT_GHOST            = 0x1;
+	inline static var BIT_SKIP_SUBTREE     = 0x2;
+	inline static var BIT_SKIP_MSG         = 0x4;
+	inline static var BIT_SKIP_TICK        = 0x8;
+	inline static var BIT_SKIP_DRAW        = 0x10;
+	inline static var BIT_STOP_PROPAGATION = 0x20;
 	
 	inline static function getClassType<T>(C:Class<T>):Int
 	{
@@ -59,10 +59,18 @@ class Entity
 	inline static function getInheritanceLookup() return ES._inheritanceLookup;
 	
 	/**
-	 * Every entity can be identified by a unique id.
+	 * A unique identifier for this entity.
 	 */
 	public var id(default, null):EntityId;
 	
+	/**
+	 * Every subclass of the Entity class is defined by a unique integer value.
+	 */
+	public var type(default, null):Int;
+	
+	/**
+	 * A pointer to the next entity in a preorder sequence.
+	 */
 	public var preorder(default, null):Entity;
 	
 	var _flags:Int;
@@ -74,11 +82,6 @@ class Entity
 		
 		D.assert(ES._initialized, "call EntitySystem.init() first");
 		ES.add(this);
-	}
-	
-	public function commit()
-	{
-		L.e('called commit');
 	}
 	
 	/**
@@ -94,15 +97,6 @@ class Entity
 		
 		//bottom-up deconstruction
 		ES.freeEntity(this);
-	}
-	
-	/**
-	 * Every subclass of the Entity class is defined by a unique integer value.
-	 */
-	public var type(get_type, never):Int;
-	inline function get_type():Int
-	{
-		return _flags & 0xffff;
 	}
 	
 	public var parent(get_parent, set_parent):Entity;
@@ -149,6 +143,9 @@ class Entity
 		return value;
 	}
 	
+	/**
+	 * The total number of children.
+	 */
 	public var size(get_size, set_size):Int;
 	inline function get_size():Int
 	{
@@ -191,22 +188,22 @@ class Entity
 	public var tick(get_tick, set_tick):Bool;
 	inline function get_tick():Bool
 	{
-		return getFlags() & BIT_SKIP_TICK == 0;
+		return _flags & BIT_SKIP_TICK == 0;
 	}
 	function set_tick(value:Bool):Bool
 	{
-		setFlags(value ? (getFlags() & ~BIT_SKIP_TICK) : (getFlags() | BIT_SKIP_TICK));
+		_flags = value ? (_flags & ~BIT_SKIP_TICK) : (_flags | BIT_SKIP_TICK);
 		return value;
 	}
 	
 	public var draw(get_draw, set_draw):Bool;
 	inline function get_draw():Bool
 	{
-		return getFlags() & BIT_SKIP_DRAW == 0;
+		return _flags & BIT_SKIP_DRAW == 0;
 	}
 	function set_draw(value:Bool):Bool
 	{
-		setFlags(value ? (getFlags() & ~BIT_SKIP_DRAW) : (getFlags() | BIT_SKIP_DRAW));
+		_flags = value ? (_flags & ~BIT_SKIP_DRAW) : (_flags | BIT_SKIP_DRAW);
 		return value;
 	}
 	
@@ -226,77 +223,33 @@ class Entity
 	}
 	
 	public var ghost(get_ghost, set_ghost):Bool;
-	function get_ghost():Bool return getFlags() & BIT_GHOST > 0;
+	function get_ghost():Bool return _flags & BIT_GHOST > 0;
 	function set_ghost(value:Bool):Bool
 	{
-		setFlags(value ? (getFlags() | BIT_GHOST) : (getFlags() & ~BIT_GHOST));
+		_flags = value ? (_flags | BIT_GHOST) : (_flags & ~BIT_GHOST);
 		return value;
 	}
 	
 	public var skipSubtree(get_skipSubtree, set_skipSubtree):Bool;
 	function get_skipSubtree():Bool
 	{
-		return getFlags() & BIT_SKIP_SUBTREE > 0;
+		return _flags & BIT_SKIP_SUBTREE > 0;
 	}
 	function set_skipSubtree(value:Bool):Bool
 	{
-		setFlags(value ? (getFlags() | BIT_SKIP_SUBTREE) : (getFlags() & ~BIT_SKIP_SUBTREE));
+		_flags = value ? (_flags | BIT_SKIP_SUBTREE) : (_flags & ~BIT_SKIP_SUBTREE);
 		return value;
 	}
 	
 	public var skipMessages(get_skipMessages, set_skipMessages):Bool;
 	function get_skipMessages():Bool
 	{
-		return getFlags() & BIT_SKIP_MSG > 0;
+		return _flags & BIT_SKIP_MSG > 0;
 	}
 	function set_skipMessages(value:Bool):Bool
 	{
-		setFlags(value ? (getFlags() | BIT_SKIP_MSG) : (getFlags() & ~BIT_SKIP_MSG));
+		_flags = value ? (_flags | BIT_SKIP_MSG) : (_flags & ~BIT_SKIP_MSG);
 		return value;
-	}
-	
-	public function propagateTick(dt:Float)
-	{
-		var e = child;
-		while (e != null)
-		{
-			if ((e.getFlags()) & (BIT_GHOST | BIT_SKIP_TICK) == 0)
-				e.onTick(dt);
-			
-			if ((e.getFlags()) & BIT_SKIP_SUBTREE > 0)
-			{
-				e =
-				if (e.sibling != null)
-					e.sibling;
-				else
-					findLastLeaf(e).preorder;
-				continue;
-			}
-				
-			e = e.preorder;
-		}
-	}
-	
-	public function propagateDraw(alpha:Float)
-	{
-		var e = child;
-		while (e != null)
-		{
-			if ((e.getFlags()) & (BIT_GHOST | BIT_SKIP_DRAW) == 0)
-				e.onDraw(alpha);
-				
-			if ((e.getFlags()) & BIT_SKIP_SUBTREE > 0)
-			{
-				e =
-				if (e.sibling != null)
-					e.sibling;
-				else
-					findLastLeaf(e).preorder;
-				continue;
-			}
-			
-			e = e.preorder;
-		}
 	}
 	
 	public function add<T:Entity>(?cl:Class<T>, ?inst:T):T
@@ -867,7 +820,7 @@ class Entity
 	 */
 	inline public function stop()
 	{
-		setFlags(BIT_STOP_PROPAGATION);
+		_flags |= BIT_STOP_PROPAGATION;
 	}
 	
 	/**
@@ -919,6 +872,10 @@ class Entity
 	{
 	}
 	
+	function onRemove(parent:Entity)
+	{
+	}
+	
 	function onSibling(sibling:Entity)
 	{
 	}
@@ -928,10 +885,6 @@ class Entity
 	}
 	
 	function onDescedant(descendant:Entity)
-	{
-	}
-	
-	function onRemove(parent:Entity)
 	{
 	}
 	
@@ -970,10 +923,4 @@ class Entity
 		while (e.child != null) e = e.lastChild;
 		return e;
 	}
-	
-	inline function getFlags() return _flags & 0xffff0000;
-	
-	inline function setFlags(x:Int) _flags |= x;
-	
-	inline function clrFlags(x:Int) _flags &= ~x;
 }
