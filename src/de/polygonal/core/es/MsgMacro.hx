@@ -65,8 +65,12 @@ class MsgMacro
 							a.push({expr: EConst(CString(name)), pos: Context.currentPos()});
 						var ct = t.get();	
 						if (ct.meta.has("names"))
+						{
 							ct.meta.remove("names");
+							ct.meta.remove("count");
+						}
 						ct.meta.add("names", [{expr: EArrayDecl(a), pos: Context.currentPos()}], Context.currentPos());
+						ct.meta.add("count", [{expr: EConst(CString(Std.string(nextId))), pos: Context.currentPos()}], Context.currentPos());
 					case _:
 				}
 			});

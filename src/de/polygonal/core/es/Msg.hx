@@ -36,10 +36,16 @@ class Msg
 	{
 		var meta = haxe.rtti.Meta.getType(Msg);
 		
-		if (!Reflect.hasField(meta, "names")) return 'invalid type ($type)';
+		if (meta.names.length == 0) return 'invalid type ($type)';
 		
 		var names = meta.names[0];
 		if (type < 0 || type > names.length - 1) return 'invalid type ($type)';
 		return meta.names[0][type];
+	}
+	
+	public static function totalMessages():Int
+	{
+		var meta = haxe.rtti.Meta.getType(Msg);
+		return Std.parseInt(meta.count[0]);
 	}
 }
