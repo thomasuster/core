@@ -706,7 +706,7 @@ class Mat44
 	 * @param y y-axis translation (<em>m24</em>).
 	 * @param z z-axis translation (<em>m34</em>).
 	 */
-	inline public function precatTranslation(x:Float, y:Float, z:Float):Mat44
+	inline public function precatTranslate(x:Float, y:Float, z:Float):Mat44
 	{
 		//|m11 m12 m13 m14| |1 0 0 tx|
 		//|m21 m22 m23 m24| |0 1 0 ty|
