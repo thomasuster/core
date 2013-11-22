@@ -78,10 +78,8 @@ class Entity
 	
 	public function new(name:String = null)
 	{
-		if (name != null) _name = name;
-		
-		D.assert(ES._initialized, "call EntitySystem.init() first");
 		ES.add(this);
+		if (name != null) this.name = name;
 	}
 	
 	/**
@@ -218,7 +216,9 @@ class Entity
 	}
 	function set_name(value:String):String
 	{
+		if (value == name) return value;
 		ES.changeName(this, value);
+		_name = value;
 		return value;
 	}
 	

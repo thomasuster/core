@@ -101,6 +101,8 @@ class EntitySystem
 	
 	public static function add(e:Entity)
 	{
+		D.assert(_initialized, "call EntitySystem.init() first");
+		
 		var i = _free;
 		
 		D.assert(i != -1);
@@ -211,12 +213,14 @@ class EntitySystem
 	
 	public static function changeName(e:Entity, newName:String)
 	{
+		//unregister
 		if (e.name != null)
 		{
 			var table = _entitiesByName.get(e.name);
 			table.remove(e);
 		}
 		
+		//register
 		e._name = newName;
 		registerName(e);
 	}
@@ -295,6 +299,8 @@ class EntitySystem
 	
 	static function registerName(e:Entity)
 	{
+		D.assert(e.id != null, "Entity is not registered, call EntitySystem.add() before");
+		
 		var table = _entitiesByName.get(e.name);
 		if (table == null)
 		{
@@ -302,5 +308,9 @@ class EntitySystem
 			_entitiesByName.set(e.name, table);
 		}
 		table.push(e);
+		
+		#if verbose
+		L.d('registered entity by name: $e', "entity");
+		#end
 	}
 }

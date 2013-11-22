@@ -74,7 +74,7 @@ class EntityMacro
 			pos: p
 		});
 		
-		//assign name and type field in constructor
+		//assign type field in constructor
 		var constructorField:Field = null;
 		for (field in fields)
 		{
@@ -114,13 +114,7 @@ class EntityMacro
 					switch (f.expr.expr)
 					{
 						case ExprDef.EBlock(a):
-							//assign name before super()
-							a.unshift({expr: EBinop(
-								Binop.OpAssign,
-								{expr: EField({expr: EConst(CIdent("this")), pos: p}, "_name"), pos: p},
-								{expr: EConst(CString(name)), pos: p}
-								), pos: p});
-								
+							//assign type before calling super()
 							a.unshift(assignType);
 						case _:
 					}
@@ -129,15 +123,6 @@ class EntityMacro
 		}
 		else
 		{
-			var assignName = {expr: ECall(
-				{expr: EConst(CIdent("super")), pos: p },
-				[{expr: ETernary(
-					{expr: EBinop(OpEq, {expr: EConst(CIdent("name")), pos: p}, {expr: EConst(CIdent("null")), pos: p}), pos: p},
-					{expr: EConst(CString(name)), pos: p},
-					{expr: EConst(CIdent("name")), pos: p}),
-					pos: p}
-				]), pos: p};
-				
 			constructorField =
 			{
 				name: "new",
@@ -148,7 +133,7 @@ class EntityMacro
 				{
 					args: [{name: "name", type: TPath({name: "String", pack: [], params: []}), opt: false, value: {expr: EConst(CIdent("null")), pos: p}}],
 					ret: null,
-					expr: {expr: EBlock([assignType, assignName]), pos: p}
+					expr: {expr: EBlock([assignType, {expr: ECall({expr: EConst(CIdent("super")), pos: p}, [{expr: EConst(CIdent("name")), pos: p}]), pos: p}]), pos: p}
 					
 				}),
 				pos: p
