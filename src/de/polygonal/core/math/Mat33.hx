@@ -152,9 +152,9 @@ class Mat33
 	/** Set as rotation matrix, rotating by <code>angle</code> radians around x-axis. */
 	inline public function setRotateX(angle:Float):Mat33
 	{
-		_fastTrig(angle);
-		var s = sineCosine.x;
-		var c = sineCosine.y;
+		TrigApprox.sinCos(angle);
+		var s = TrigApprox.sin;
+		var c = TrigApprox.cos;
 		m11 = 1; m12 = 0; m13 = 0;
 		m21 = 0; m22 = c; m23 =-s;
 		m31 = 0; m32 = s; m33 = c;
@@ -164,9 +164,9 @@ class Mat33
 	/** Set as rotation matrix, rotating by <code>angle</code> radians around y-axis. */
 	inline public function setRotateY(angle:Float):Mat33
 	{
-		_fastTrig(angle);
-		var s = sineCosine.x;
-		var c = sineCosine.y;
+		TrigApprox.sinCos(angle);
+		var s = TrigApprox.sin;
+		var c = TrigApprox.cos;
 		m11 = c; m12 = 0; m13 = s;
 		m21 = 0; m22 = 1; m23 = 0;
 		m31 =-s; m32 = 0; m33 = c;
@@ -176,9 +176,9 @@ class Mat33
 	/** Set as rotation matrix, rotating by <code>angle</code> radians around z-axis. */
 	inline public function setRotateZ(angle:Float):Mat33
 	{
-		_fastTrig(angle);
-		var s = sineCosine.x;
-		var c = sineCosine.y;
+		TrigApprox.sinCos(angle);
+		var s = TrigApprox.sin;
+		var c = TrigApprox.cos;
 		m11 = c; m12 =-s; m13 = 0;
 		m21 = s; m22 = c; m23 = 0;
 		m31 = 0; m32 = 0; m33 = 1;
@@ -444,10 +444,5 @@ class Mat33
 			"[%-+10.4f %-+10.4f %-+10.4f]\n" +
 			"[%-+10.4f %-+10.4f %-+10.4f]\n" +
 			"[%-+10.4f %-+10.4f %-+10.4f]", [m11, m12, m13, m21, m22, m23, m31, m32, m33]);
-	}
-	
-	inline function _fastTrig(angle:Float)
-	{
-		TrigApprox.sinCos(angle, sineCosine);
 	}
 }

@@ -270,9 +270,9 @@ class Mat44
 	 */
 	inline public function setRotateX(angle:Float):Mat44
 	{
-		_fastTrig(angle);
-		var s = _sineCosine.x;
-		var c = _sineCosine.y;
+		TrigApprox.sinCos(angle);
+		var s = TrigApprox.sin;
+		var c = TrigApprox.cos;
 		m11 = 1; m12 = 0; m13 = 0; m14 = 0;
 		m21 = 0; m22 = c; m23 =-s; m24 = 0;
 		m31 = 0; m32 = s; m33 = c; m34 = 0;
@@ -286,9 +286,9 @@ class Mat44
 	 */
 	inline public function setRotateY(angle:Float):Mat44
 	{
-		_fastTrig(angle);
-		var s = _sineCosine.x;
-		var c = _sineCosine.y;
+		TrigApprox.sinCos(angle);
+		var s = TrigApprox.sin;
+		var c = TrigApprox.cos;
 		m11 = c; m12 = 0; m13 = s; m14 = 0;
 		m21 = 0; m22 = 1; m23 = 0; m24 = 0;
 		m31 =-s; m32 = 0; m33 = c; m34 = 0;
@@ -302,9 +302,9 @@ class Mat44
 	 */
 	inline public function setRotateZ(angle:Float):Mat44
 	{
-		_fastTrig(angle);
-		var s = _sineCosine.x;
-		var c = _sineCosine.y;
+		TrigApprox.sinCos(angle);
+		var s = TrigApprox.sin;
+		var c = TrigApprox.cos;
 		m11 = c; m12 =-s; m13 = 0; m14 = 0;
 		m21 = s; m22 = c; m23 = 0; m24 = 0;
 		m31 = 0; m32 = 0; m33 = 1; m34 = 0;
@@ -315,15 +315,15 @@ class Mat44
 	/** Sets the matrix to a rotation matrix by euler angles. */
 	public function setRotationEulerAngles(zAngle:Float, yAngle:Float, xAngle:Float)
 	{
-		_fastTrig(xAngle);
-		var sx = _sineCosine.x;
-		var cx = _sineCosine.y;
-		_fastTrig(yAngle);
-		var sy = _sineCosine.x;
-		var cy = _sineCosine.y;
-		_fastTrig(zAngle);
-		var sz = _sineCosine.x;
-		var cz = _sineCosine.y;
+		TrigApprox.sinCos(xAngle);
+		var sx = TrigApprox.sin;
+		var cx = TrigApprox.cos;
+		TrigApprox.sinCos(yAngle);
+		var sy = TrigApprox.sin;
+		var cy = TrigApprox.cos;
+		TrigApprox.sinCos(zAngle);
+		var sz = TrigApprox.sin;
+		var cz = TrigApprox.cos;
 		m11 = (cy * cz);
 		m12 =-(cy * sz);
 		m13 = sy;
@@ -397,9 +397,9 @@ class Mat44
 	/** Post-concatenate a x-axis rotation matrix, rotating by <code>angle</code> radians around x-axis. */
 	inline public function catRotateX(angle:Float):Mat44
 	{
-		_fastTrig(angle);
-		var s = _sineCosine.x;
-		var c = _sineCosine.y;
+		TrigApprox.sinCos(angle);
+		var s = TrigApprox.sin;
+		var c = TrigApprox.cos;
 		var t = m21;
 		var u = m31;
 		m21 = c * t - s * u;
@@ -425,9 +425,9 @@ class Mat44
 	/** Pre-concatenate a x-axis rotation matrix, rotating by <code>angle</code> radians around x-axis. */
 	inline public function precatRotateX(angle:Float):Mat44
 	{
-		_fastTrig(angle);
-		var s = _sineCosine.x;
-		var c = _sineCosine.y;
+		TrigApprox.sinCos(angle);
+		var s = TrigApprox.sin;
+		var c = TrigApprox.cos;
 		var t = m12, u = m13;
 		m12 = t * c + u * s;
 		m13 = t *-s + u * c;
@@ -447,9 +447,9 @@ class Mat44
 	/** Post-concatenate a y-axis rotation matrix, rotating by <code>angle</code> radians around y-axis. */
 	inline public function catRotateY(angle:Float):Mat44
 	{
-		_fastTrig(angle);
-		var s = _sineCosine.x;
-		var c = _sineCosine.y;
+		TrigApprox.sinCos(angle);
+		var s = TrigApprox.sin;
+		var c = TrigApprox.cos;
 		var t = m11;
 		var u = m31;
 		m11 = c * t + s * u;
@@ -475,9 +475,9 @@ class Mat44
 	/** Pre-concatenate a y-axis rotation matrix, rotating by <code>angle</code> radians around y-axis. */
 	inline public function precatRotateY(angle:Float):Mat44
 	{
-		_fastTrig(angle);
-		var s = _sineCosine.x;
-		var c = _sineCosine.y;
+		TrigApprox.sinCos(angle);
+		var s = TrigApprox.sin;
+		var c = TrigApprox.cos;
 		var t = m11;
 		var u = m13;
 		m11 = t * c + u *-s;
@@ -498,9 +498,9 @@ class Mat44
 	/** Post-concatenate a z-axis rotation matrix, rotating by <code>angle</code> radians around z-axis. */
 	inline public function catRotateZ(angle:Float):Mat44
 	{
-		_fastTrig(angle);
-		var s = _sineCosine.x;
-		var c = _sineCosine.y;
+		TrigApprox.sinCos(angle);
+		var s = TrigApprox.sin;
+		var c = TrigApprox.cos;
 		var t = m11;
 		var u = m21;
 		m11 = c * t - s * u;
@@ -527,9 +527,9 @@ class Mat44
 		var t11 = m11; var t12 = m12; var t13 = m13; var t14 = m14;
 		var t21 = m21; var t22 = m22; var t23 = m23; var t24 = m24;
 		var t31 = m31; var t32 = m32; var t33 = m33; var t34 = m34;
-		_fastTrig(angle);
-		var s = _sineCosine.x;
-		var c = _sineCosine.y;
+		TrigApprox.sinCos(angle);
+		var s = TrigApprox.sin;
+		var c = TrigApprox.cos;
 		m11 = t11 *   c + t12 * s;
 		m12 = t11 *  -s + t12 * c;
 		m14 = t11 * t14 + t12 * t24 + t13 * t34;
@@ -948,10 +948,5 @@ class Mat44
 			"[%-+10.4f %-+10.4f %-+10.4f %-+10.4f]\n" +
 			"[%-+10.4f %-+10.4f %-+10.4f %-+10.4f]\n" +
 			"[%-+10.4f %-+10.4f %-+10.4f %-+10.4f]", [m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44]);
-	}
-	
-	inline function _fastTrig(angle:Float)
-	{
-		TrigApprox.sinCos(angle, _sineCosine);
 	}
 }
