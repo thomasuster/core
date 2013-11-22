@@ -66,7 +66,7 @@ class Entity
 	/**
 	 * Every subclass of the Entity class is defined by a unique integer value.
 	 */
-	public var type(default, null):Int;
+	public var type(default, never):Int;
 	
 	/**
 	 * A pointer to the next entity in a preorder sequence.
