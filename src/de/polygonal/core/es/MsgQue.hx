@@ -29,7 +29,9 @@
  */
 package de.polygonal.core.es;
 
+import de.polygonal.core.fmt.StringUtil;
 import de.polygonal.core.util.Assert;
+import de.polygonal.Printf;
 import haxe.ds.Vector;
 
 @:access(de.polygonal.core.es.Entity)
@@ -81,11 +83,24 @@ class MsgQue
 		var i = (_front + (_size << 3)) % _capacity;
 		_size++;
 		
-		if (recipient.getFlags() & (Entity.BIT_GHOST | Entity.BIT_SKIP_MSG) > 0)
+		if (recipient._flags & (Entity.BIT_GHOST | Entity.BIT_SKIP_MSG) > 0)
 		{
 			_que[i] = -1;
 			return;
 		}
+		
+		#if verbose
+		var senderId = sender.name == null ? Std.string(sender.id) : sender.name;
+		var recipientId = recipient.name == null ? Std.string(recipient.id) : recipient.name;
+		
+		if (senderId.length > 30) senderId = StringUtil.ellipsis(senderId, 30, 1, true);
+		if (recipientId.length > 30) recipientId = StringUtil.ellipsis(recipientId, 30, 1, true);
+		
+		var msgName = Msg.name(type);
+		if (msgName.length > 20) msgName = StringUtil.ellipsis(msgName, 20, 1, true);
+		
+		L.d(Printf.format('enqueue message %30s -> %-30s: %-20s (remaining: $remaining)', [senderId, recipientId, msgName]));
+		#end
 		
 		var senderId = sender.id;
 		var recipientId = recipient.id;
@@ -194,18 +209,25 @@ class MsgQue
 				//notify recipient
 				
 				#if verbose
-				var data = _locker[_currLocker] != null ? ' (data: ${_locker[_currLocker]})' : "";
+				var data = _locker[_currLocker] != null ? '${_locker[_currLocker]}' : "";
 				var senderId = sender.name == null ? Std.string(sender.id) : sender.name;
 				var recipientId = recipient.name == null ? Std.string(recipient.id) : recipient.name;
-				L.d('message from $senderId to $recipientId: "${Msg.name(type)}"$data');
+				
+				if (senderId.length > 30) senderId = StringUtil.ellipsis(senderId, 30, 1, true);
+				if (recipientId.length > 30) recipientId = StringUtil.ellipsis(recipientId, 30, 1, true);
+				
+				var msgName = Msg.name(type);
+				if (msgName.length > 20) msgName = StringUtil.ellipsis(msgName, 20, 1, true);
+				
+				L.d(Printf.format('message %30s -> %-30s: %-20s $data', [senderId, recipientId, msgName]));
 				#end
 				
 				recipient.onMsg(type, sender);
-				if (recipient.getFlags() & Entity.BIT_STOP_PROPAGATION > 0)
+				if (recipient._flags & Entity.BIT_STOP_PROPAGATION > 0)
 				{
 					//recipient stopped notification;
 					//reset flag and skip remaining messages in current batch
-					recipient.clrFlags(Entity.BIT_STOP_PROPAGATION);
+					recipient._flags |= ~Entity.BIT_STOP_PROPAGATION;
 					f += (skipCount << 3) % c;
 					i -= skipCount;
 				}
