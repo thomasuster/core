@@ -164,49 +164,68 @@ class TrigApprox
 	}
 	
 	/**
-	 * Returns the floating-point sine and cosine of the argument <code>a</code>.<br/>
+	 * Computes the floating-point sine and cosine of the argument <code>a</code>.<br/>
+	 * The result is stored in TrigApprox.sin and TrigApprox.cos.
 	 * This method uses a polynomial approximation.<br/>
 	 * Borrowed from the book ESSENTIAL MATHEMATICS FOR GAMES & INTERACTIVE APPLICATIONS
 	 * Copyright (C) 2008 by Elsevier, Inc. All rights reserved.
-	 * @param out a vector storing the result, where <code>out</code>.x equals sine and <code>out</code>.y equals cosine.
 	 */
 	inline static var INV_PIHALF = 0.6366197723675814;
 	inline static var CONST_A = 1.5703125; //201 / 128
-	inline public static function sinCos(a:Float, out:Vec2):Vec2
+	
+	public static var sin:Float;
+	public static var cos:Float;
+	
+	inline public static function sinCos(a:Float)
 	{
-		var negate = false;
 		if (a < 0.)
 		{
-			a = -a;
-			negate = true;
+			var fa = (-INV_PIHALF) * a;
+			var ia:Int = cast fa;
+			fa = ((-a) - CONST_A * ia) - 4.8382679e-4 * ia;
+			switch (ia & 3)
+			{
+				case 0:
+					sin =-IvPolynomialSinQuadrant(fa);
+					cos = IvPolynomialSinQuadrant(-((fa - CONST_A) - 4.8382679e-4));
+				
+				case 1:
+					sin =-IvPolynomialSinQuadrant(-((fa - CONST_A) - 4.8382679e-4));
+					cos = IvPolynomialSinQuadrant(-fa);
+				
+				case 2:
+					sin =-IvPolynomialSinQuadrant(-fa);
+					cos = IvPolynomialSinQuadrant(((fa - CONST_A) - 4.8382679e-4));
+				
+				case 3:
+					sin =-IvPolynomialSinQuadrant(((fa - CONST_A) - 4.8382679e-4));
+					cos = IvPolynomialSinQuadrant(fa);
+			}
 		}
-		
-		var fa = INV_PIHALF * a;
-		var ia = Std.int(fa);
-		fa = (a - CONST_A * ia) - 4.8382679e-4 * ia;
-		
-		switch (ia & 3)
+		else
 		{
-			case 0:
-				out.x = IvPolynomialSinQuadrant(fa);
-				out.y = IvPolynomialSinQuadrant(-((fa - CONST_A) - 4.8382679e-4));
-			
-			case 1:
-				out.x = IvPolynomialSinQuadrant(-((fa - CONST_A) - 4.8382679e-4));
-				out.y = IvPolynomialSinQuadrant(-fa);
-			
-			case 2:
-				out.x = IvPolynomialSinQuadrant(-fa);
-				out.y = IvPolynomialSinQuadrant(((fa - CONST_A) - 4.8382679e-4));
-			
-			case 3:
-				out.x = IvPolynomialSinQuadrant(((fa - CONST_A) - 4.8382679e-4));
-				out.y = IvPolynomialSinQuadrant(fa);
+			var fa = INV_PIHALF * a;
+			var ia:Int = cast fa;
+			fa = (a - CONST_A * ia) - 4.8382679e-4 * ia;
+			switch (ia & 3)
+			{
+				case 0:
+					sin = IvPolynomialSinQuadrant(fa);
+					cos = IvPolynomialSinQuadrant(-((fa - CONST_A) - 4.8382679e-4));
+				
+				case 1:
+					sin = IvPolynomialSinQuadrant(-((fa - CONST_A) - 4.8382679e-4));
+					cos = IvPolynomialSinQuadrant(-fa);
+				
+				case 2:
+					sin = IvPolynomialSinQuadrant(-fa);
+					cos = IvPolynomialSinQuadrant(((fa - CONST_A) - 4.8382679e-4));
+				
+				case 3:
+					sin = IvPolynomialSinQuadrant(((fa - CONST_A) - 4.8382679e-4));
+					cos = IvPolynomialSinQuadrant(fa);
+			}
 		}
-		
-		if (negate) out.x = -out.x;
-		
-		return out;
 	}
 	
 	inline static function IvPolynomialSinQuadrant(a:Float)
