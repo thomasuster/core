@@ -40,10 +40,6 @@ import sys.FileSystem;
  */
 class EntityMacro
 {
-	#if macro
-	static var next = -1;
-	#end
-	
 	macro public static function build():Array<Field>
 	{
 		//create unique name for local classes defined in a module
@@ -62,8 +58,7 @@ class EntityMacro
 		var fields = Context.getBuildFields();
 		var p = Context.currentPos();
 		
-		//add unique static integer type to every class
-		//inline public stat var ENTITY_TYPE:Int = x;
+		//inline public static var ENTITY_TYPE:Int = x;
 		fields.push(
 		{
 			name: "ENTITY_TYPE",
@@ -71,6 +66,21 @@ class EntityMacro
 			meta: [],
 			access: [APublic, AStatic, AInline],
 			kind: FVar(TPath({pack: [], name: "Int", params: [], sub: null}), {expr: EConst(CInt(Std.string(next))), pos: p}),
+			pos: p
+		});
+		
+		var superClass:String = null;
+		if (c.superClass != null) superClass = c.superClass.t.get().module;
+		if (superClass == null) superClass = "null";
+		
+		//public static var SUPER_CLASS = x;
+		fields.push(
+		{
+			name: "SUPER_CLASS",
+			doc: null,
+			meta: [],
+			access: [APublic, AStatic],
+			kind: field(superClass),
 			pos: p
 		});
 		
@@ -144,4 +154,17 @@ class EntityMacro
 		
 		return fields;
 	}
+	
+	#if macro
+	static var next = -1;
+	
+	static function field(pkg:String)
+	{
+		var p = Context.currentPos();
+		var a = pkg.split(".");
+		var e = {expr: EConst(CIdent(a[0])), pos: p};
+		for (i in 1...a.length) e = {expr: EField(e, a[i]), pos: p};
+		return FVar(null, e);
+	}
+	#end
 }

@@ -117,13 +117,19 @@ class EntitySystem
 		
 		if (e.name != null) registerName(e);
 		
-		if (!_inheritanceLookup.hasKey(e.type))
+		var lut = _inheritanceLookup;
+		if (!lut.hasKey(e.type))
 		{
-			var sc = Type.getSuperClass(Type.getClass(e));
-			while (sc != null)
+			var t = e.type;
+			lut.set(t, t);
+			untyped
 			{
-				_inheritanceLookup.set(e.type, Entity.getClassType(sc));
-				sc = Type.getSuperClass(sc);
+				var sc:Class<Dynamic> = Type.getClass(e).SUPER_CLASS;
+				while (sc != null)
+				{
+					_inheritanceLookup.set(t, Entity.getClassType(sc));
+					sc = sc.SUPER_CLASS;
+				}
 			}
 		}
 	}
