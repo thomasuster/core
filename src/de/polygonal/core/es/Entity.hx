@@ -78,7 +78,7 @@ class Entity
 	
 	public function new(name:String = null)
 	{
-		ES.add(this);
+		ES.register(this);
 		if (name != null) this.name = name;
 	}
 	
@@ -90,10 +90,10 @@ class Entity
 	{
 		if (freed) return;
 		
-		//unlink
+		//disconnect subtree rooted at this entity
 		if (parent != null) remove(this);
 		
-		//bottom-up deconstruction
+		//bottom-up deconstruction (calls onFree())
 		ES.freeEntity(this);
 	}
 	
@@ -223,7 +223,7 @@ class Entity
 	}
 	
 	public var ghost(get_ghost, set_ghost):Bool;
-	function get_ghost():Bool return _flags & BIT_GHOST > 0;
+	inline function get_ghost():Bool return _flags & BIT_GHOST > 0;
 	function set_ghost(value:Bool):Bool
 	{
 		_flags = value ? (_flags | BIT_GHOST) : (_flags & ~BIT_GHOST);
@@ -231,7 +231,7 @@ class Entity
 	}
 	
 	public var skipSubtree(get_skipSubtree, set_skipSubtree):Bool;
-	function get_skipSubtree():Bool
+	inline function get_skipSubtree():Bool
 	{
 		return _flags & BIT_SKIP_SUBTREE > 0;
 	}
@@ -242,7 +242,7 @@ class Entity
 	}
 	
 	public var skipMessages(get_skipMessages, set_skipMessages):Bool;
-	function get_skipMessages():Bool
+	inline function get_skipMessages():Bool
 	{
 		return _flags & BIT_SKIP_MSG > 0;
 	}

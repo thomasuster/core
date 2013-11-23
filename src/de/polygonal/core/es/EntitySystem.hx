@@ -99,9 +99,10 @@ class EntitySystem
 		_initialized = false;
 	}
 	
-	public static function add(e:Entity)
+	public static function register(e:Entity)
 	{
 		D.assert(_initialized, "call EntitySystem.init() first");
+		D.assert(e.id == null && e._flags == 0, "Entity has been registered");
 		
 		var i = _free;
 		
@@ -134,7 +135,7 @@ class EntitySystem
 		}
 	}
 	
-	public static function remove(e:Entity)
+	public static function unregister(e:Entity)
 	{
 		D.assert(e.id != null);
 		
@@ -164,8 +165,13 @@ class EntitySystem
 		
 		//mark as removed by setting msb to one
 		e.id.inner |= 0x80000000;
-		
 		e.id = null;
+		
+		//mark as freed
+		e._flags = Entity.BIT_FREED;
+		
+		//don't forget to nullify preorder pointer
+		e.preorder = null;
 	}
 	
 	public static function freeEntity(e:Entity)
@@ -264,7 +270,7 @@ class EntitySystem
 		}
 		
 		e.onFree();
-		remove(e);
+		unregister(e);
 		
 		#if verbose
 		L.d('freed $e', "entity");
@@ -296,7 +302,7 @@ class EntitySystem
 		for (e in a)
 		{
 			e.onFree();
-			remove(e);
+			unregister(e);
 			#if verbose
 			L.d('freed $e', "entity");
 			#end
@@ -305,7 +311,7 @@ class EntitySystem
 	
 	static function registerName(e:Entity)
 	{
-		D.assert(e.id != null, "Entity is not registered, call EntitySystem.add() before");
+		D.assert(e.id != null, "Entity is not registered, call EntitySystem.register() before");
 		
 		var table = _entitiesByName.get(e.name);
 		if (table == null)
