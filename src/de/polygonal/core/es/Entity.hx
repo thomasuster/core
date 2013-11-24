@@ -73,8 +73,8 @@ class Entity
 	 */
 	public var preorder(default, null):Entity;
 	
-	var _flags:Int;
-	var _name:String;
+	@:noCompletion var _flags:Int;
+	@:noCompletion var _name:String;
 	
 	public function new(name:String = null)
 	{
@@ -98,44 +98,44 @@ class Entity
 	}
 	
 	public var parent(get_parent, set_parent):Entity;
-	inline function get_parent():Entity
+	@:noCompletion inline function get_parent():Entity
 	{
 		return ES.getParent(this);
 	}
-	inline function set_parent(value:Entity)
+	@:noCompletion inline function set_parent(value:Entity)
 	{
 		ES.setParent(this, value);
 		return value;
 	}
 	
 	public var child(get_child, set_child):Entity;
-	inline function get_child():Entity
+	@:noCompletion inline function get_child():Entity
 	{
 		return ES.getChild(this);
 	}
-	inline function set_child(value:Entity)
+	@:noCompletion inline function set_child(value:Entity)
 	{
 		ES.setChild(this, value);
 		return value;
 	}
 	
 	public var sibling(get_sibling, set_sibling):Entity;
-	inline function get_sibling():Entity
+	@:noCompletion inline function get_sibling():Entity
 	{
 		return ES.getSibling(this);
 	}
-	inline function set_sibling(value:Entity)
+	@:noCompletion inline function set_sibling(value:Entity)
 	{
 		ES.setSibling(this, value);
 		return value;
 	}
 	
 	public var lastChild(get_lastChild, set_lastChild):Entity;
-	inline function get_lastChild():Entity
+	@:noCompletion inline function get_lastChild():Entity
 	{
 		return ES.getLastChild(this);
 	}
-	inline function set_lastChild(value:Entity)
+	@:noCompletion inline function set_lastChild(value:Entity)
 	{
 		ES.setLastChild(this, value);
 		return value;
@@ -145,61 +145,61 @@ class Entity
 	 * The total number of children.
 	 */
 	public var size(get_size, set_size):Int;
-	inline function get_size():Int
+	@:noCompletion inline function get_size():Int
 	{
 		return ES.getSize(this);
 	}
-	inline function set_size(value:Int):Int
+	@:noCompletion inline function set_size(value:Int):Int
 	{
 		ES.setSize(this, value);
 		return value;
 	}
 	
 	public var depth(get_depth, set_depth):Int;
-	function get_depth():Int
+	@:noCompletion function get_depth():Int
 	{
 		return ES.getDepth(this);
 	}
-	function set_depth(value:Int):Int
+	@:noCompletion function set_depth(value:Int):Int
 	{
 		ES.setDepth(this, value);
 		return value;
 	}
 	
 	public var numChildren(get_numChildren, set_numChildren):Int;
-	inline function get_numChildren():Int
+	@:noCompletion inline function get_numChildren():Int
 	{
 		return ES.getNumChildren(this);
 	}
-	inline function set_numChildren(value:Int):Int
+	@:noCompletion inline function set_numChildren(value:Int):Int
 	{
 		ES.setNumChildren(this, value);
 		return value;
 	}
 	
 	public var freed(get_freed, never):Bool;
-	inline function get_freed():Bool
+	@:noCompletion inline function get_freed():Bool
 	{
 		return id == null || id.index == -1;
 	}
 	
 	public var tick(get_tick, set_tick):Bool;
-	inline function get_tick():Bool
+	@:noCompletion inline function get_tick():Bool
 	{
 		return _flags & BIT_SKIP_TICK == 0;
 	}
-	function set_tick(value:Bool):Bool
+	@:noCompletion function set_tick(value:Bool):Bool
 	{
 		_flags = value ? (_flags & ~BIT_SKIP_TICK) : (_flags | BIT_SKIP_TICK);
 		return value;
 	}
 	
 	public var draw(get_draw, set_draw):Bool;
-	inline function get_draw():Bool
+	@:noCompletion inline function get_draw():Bool
 	{
 		return _flags & BIT_SKIP_DRAW == 0;
 	}
-	function set_draw(value:Bool):Bool
+	@:noCompletion function set_draw(value:Bool):Bool
 	{
 		_flags = value ? (_flags & ~BIT_SKIP_DRAW) : (_flags | BIT_SKIP_DRAW);
 		return value;
@@ -210,11 +210,11 @@ class Entity
 	 * In case of subclassing, name is set to the unqualified class name of the subclass.
 	 */
 	public var name(get_name, set_name):String;
-	inline function get_name():String
+	@:noCompletion inline function get_name():String
 	{
 		return _name;
 	}
-	function set_name(value:String):String
+	@:noCompletion function set_name(value:String):String
 	{
 		if (value == name) return value;
 		ES.changeName(this, value);
@@ -223,30 +223,30 @@ class Entity
 	}
 	
 	public var ghost(get_ghost, set_ghost):Bool;
-	inline function get_ghost():Bool return _flags & BIT_GHOST > 0;
-	function set_ghost(value:Bool):Bool
+	@:noCompletion inline function get_ghost():Bool return _flags & BIT_GHOST > 0;
+	@:noCompletion function set_ghost(value:Bool):Bool
 	{
 		_flags = value ? (_flags | BIT_GHOST) : (_flags & ~BIT_GHOST);
 		return value;
 	}
 	
 	public var skipSubtree(get_skipSubtree, set_skipSubtree):Bool;
-	inline function get_skipSubtree():Bool
+	@:noCompletion inline function get_skipSubtree():Bool
 	{
 		return _flags & BIT_SKIP_SUBTREE > 0;
 	}
-	function set_skipSubtree(value:Bool):Bool
+	@:noCompletion function set_skipSubtree(value:Bool):Bool
 	{
 		_flags = value ? (_flags | BIT_SKIP_SUBTREE) : (_flags & ~BIT_SKIP_SUBTREE);
 		return value;
 	}
 	
 	public var skipMessages(get_skipMessages, set_skipMessages):Bool;
-	inline function get_skipMessages():Bool
+	@:noCompletion inline function get_skipMessages():Bool
 	{
 		return _flags & BIT_SKIP_MSG > 0;
 	}
-	function set_skipMessages(value:Bool):Bool
+	@:noCompletion function set_skipMessages(value:Bool):Bool
 	{
 		_flags = value ? (_flags | BIT_SKIP_MSG) : (_flags & ~BIT_SKIP_MSG);
 		return value;
@@ -648,6 +648,7 @@ class Entity
 	{
 		var q = getMsgQue();
 		var e = parent;
+		if (e == null) return;
 		var k = depth;
 		while (k-- > 0)
 		{
@@ -663,6 +664,7 @@ class Entity
 	{
 		var q = getMsgQue();
 		var e = child;
+		if (e == null) return;
 		var k = size;
 		while (k-- > 0)
 		{
@@ -678,6 +680,7 @@ class Entity
 	{
 		var q = getMsgQue();
 		var e = child;
+		if (e == null) return;
 		var k = numChildren;
 		while (k-- > 0)
 		{
@@ -868,43 +871,31 @@ class Entity
 		return '{ Entity $name }';
 	}
 	
-	function onAdd()
+	@:noCompletion function onAdd()
 	{
 	}
 	
-	function onRemove(parent:Entity)
+	@:noCompletion function onRemove(parent:Entity)
 	{
 	}
 	
-	function onSibling(sibling:Entity)
+	@:noCompletion function onFree()
 	{
 	}
 	
-	function onAncestor(ancestor:Entity)
+	@:noCompletion function onTick(dt:Float)
 	{
 	}
 	
-	function onDescedant(descendant:Entity)
+	@:noCompletion function onDraw(alpha:Float)
 	{
 	}
 	
-	function onFree()
+	@:noCompletion function onMsg(msgType:Int, sender:Entity)
 	{
 	}
 	
-	function onTick(dt:Float)
-	{
-	}
-	
-	function onDraw(alpha:Float)
-	{
-	}
-	
-	function onMsg(msgType:Int, sender:Entity)
-	{
-	}
-	
-	inline function findPredecessor(e:Entity):Entity
+	@:noCompletion inline function findPredecessor(e:Entity):Entity
 	{
 		D.assert(parent == e.parent);
 		 
@@ -917,10 +908,19 @@ class Entity
 		return i;
 	}
 	
-	inline function findLastLeaf(e:Entity):Entity
+	@:noCompletion inline function findLastLeaf(e:Entity):Entity
 	{
 		//find bottom-most, right-most entity in this subtree
 		while (e.child != null) e = e.lastChild;
 		return e;
+	}
+	
+	@:noCompletion inline function nextSubtree():Entity
+	{
+		return
+		if (sibling != null)
+			sibling;
+		else
+			findLastLeaf(this).preorder;
 	}
 }
