@@ -84,6 +84,17 @@ class EntityMacro
 			pos: p
 		});
 		
+		//public static var ENTITY_NAME:String = x;
+		fields.push(
+		{
+			name: "ENTITY_NAME",
+			doc: null,
+			meta: [],
+			access: [APublic, AStatic],
+			kind: FVar(TPath({pack: [], name: "String", params: [], sub: null}), {expr: EConst(CString(name)), pos: p}),
+			pos: p
+		});
+		
 		//assign type field in constructor
 		var constructorField:Field = null;
 		for (field in fields)
