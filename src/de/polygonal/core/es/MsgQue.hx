@@ -232,7 +232,7 @@ class MsgQue
 				{
 					//recipient stopped notification;
 					//reset flag and skip remaining messages in current batch
-					recipient._flags |= ~E.BIT_STOP_PROPAGATION;
+					recipient._flags &= ~E.BIT_STOP_PROPAGATION;
 					f += (skipCount << 3) % c;
 					i -= skipCount;
 				}
