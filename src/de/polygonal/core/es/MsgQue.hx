@@ -41,7 +41,7 @@ import de.polygonal.core.es.EntitySystem in ES;
 @:access(de.polygonal.core.es.EntitySystem)
 class MsgQue
 {
-	static var MAX_SIZE = 1 << 15; //1024KiB for ~32K messages, (alchemy ~700KiB)
+	static var MAX_SIZE = 1 << 15;
 	
 	var _capacity:Int;
 	var _que:Vector<Int>;
