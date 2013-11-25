@@ -139,6 +139,10 @@ class EntitySystem
 	{
 		D.assert(e.id != null);
 		
+		#if verbose
+		L.d('$e is gone', "entity");
+		#end
+		
 		var i = e.id.index;
 		
 		//nullify for gc
@@ -236,7 +240,6 @@ class EntitySystem
 	
 	public static function prettyPrint(e:Entity):String
 	{
-		if (e.freed) return "null";
 		var s = "\n";
 		for (i in 0...e.size + 1)
 		{
@@ -268,10 +271,6 @@ class EntitySystem
 		
 		e.onFree();
 		unregister(e);
-		
-		#if verbose
-		L.d('freed $e', "entity");
-		#end
 	}
 	
 	static function freeIterative(e:Entity)
@@ -300,9 +299,6 @@ class EntitySystem
 		{
 			e.onFree();
 			unregister(e);
-			#if verbose
-			L.d('freed $e', "entity");
-			#end
 		}
 	}
 	

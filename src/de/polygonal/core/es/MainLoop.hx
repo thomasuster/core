@@ -48,7 +48,7 @@ class MainLoop extends E implements IObserver
 	
 	public function new()
 	{
-		super("MainLoop");
+		super(MainLoop.ENTITY_NAME);
 		
 		Timebase.init();
 		Timebase.attach(this);
