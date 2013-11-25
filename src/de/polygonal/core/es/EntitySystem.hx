@@ -97,7 +97,7 @@ class EntitySystem
 		_next = new ShortMemory(1 + maxEntities);
 		for (i in 1...maxEntities)
 			_next.set(i, i + 1);
-		_next.set(maxEntities, = -1);
+		_next.set(maxEntities, -1);
 		#else
 		_next = new Vector<Int>(1 + maxEntities);
 		for (i in 1...maxEntities)
