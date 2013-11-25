@@ -217,9 +217,14 @@ class EntitySystem
 		
 	inline public static function lookup(id:EntityId):Entity
 	{
-		var e = _freeList[id.index];
-		if (e != null)
-			return (e.id.inner == id.inner) ? e : null;
+		if (id.index > 0)
+		{
+			var e = _freeList[id.index];
+			if (e != null)
+				return (e.id.inner == id.inner) ? e : null;
+			else
+				return null;
+		}
 		else
 			return null;
 	}
