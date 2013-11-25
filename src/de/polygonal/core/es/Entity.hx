@@ -701,14 +701,6 @@ class Entity
 	}
 	
 	/**
-	 * Sends a message to all siblings.
-	 */
-	public function msgToSiblings(msgType:Int)
-	{
-		if (parent != null) parent.msgToChildren(msgType);
-	}
-	
-	/**
 	 * Returns the root entity.
 	 */
 	public function getRoot():Entity
