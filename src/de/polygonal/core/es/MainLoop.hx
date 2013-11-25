@@ -35,12 +35,15 @@ import de.polygonal.core.time.Timebase;
 import de.polygonal.core.time.TimebaseEvent;
 import de.polygonal.core.time.Timeline;
 
+import de.polygonal.core.es.Entity in E;
+import de.polygonal.core.es.EntitySystem in ES;
+
 @:access(de.polygonal.core.es.EntitySystem)
-class MainLoop extends Entity implements IObserver
+class MainLoop extends E implements IObserver
 {
 	public var paused = false;
 	
-	var _stack:Array<Entity>;
+	var _stack:Array<E>;
 	var _top:Int;
 	
 	public function new()
@@ -70,58 +73,100 @@ class MainLoop extends Entity implements IObserver
 			var dt:Float = userData;
 			propagateTick(dt);
 			
+			//remove or free marked entities
+			commitBufferedChanges();
+			
 			//dispatch buffered messages
 			EntitySystem.dispatchMessages();
+			
+			//alter topology
+			EntitySystem.commitBufferedChange();
 		}
 		else
 		if (type == TimebaseEvent.RENDER)
 		{
+			//draw all entities
 			var alpha:Float = userData;
+			alpha = 1;
 			propagateDraw(alpha);
 		}
 	}
 	
-	function propagateTick(dt:Float)
+	public function propagateTick(dt:Float)
 	{
+		//invoke onTick() on all entities in this tree
 		var e = child;
 		while (e != null)
 		{
-			if (e._flags & (Entity.BIT_GHOST | Entity.BIT_SKIP_TICK) == 0)
-				e.onTick(dt);
+			if (e._flags & (E.BIT_GHOST | E.BIT_SKIP_TICK | E.BIT_MARK_FREE) == 0) e.onTick(dt);
 			
-			if (e._flags & Entity.BIT_SKIP_SUBTREE > 0)
+			if (e._flags & (E.BIT_SKIP_SUBTREE | E.BIT_MARK_REMOVE) > 0)
 			{
-				e =
-				if (e.sibling != null)
-					e.sibling;
-				else
-					findLastLeaf(e).preorder;
+				e = e.nextSubtree();
 				continue;
 			}
-				
 			e = e.preorder;
 		}
 	}
 	
 	function propagateDraw(alpha:Float)
 	{
+		//invoke onDraw() on all entities in this tree
 		var e = child;
 		while (e != null)
 		{
-			if (e._flags & (Entity.BIT_GHOST | Entity.BIT_SKIP_DRAW) == 0)
-				e.onDraw(alpha);
+			if (e._flags & (E.BIT_GHOST | E.BIT_SKIP_DRAW | E.BIT_MARK_FREE) == 0) e.onDraw(dt);
 			
-			if (e._flags & Entity.BIT_SKIP_SUBTREE > 0)
+			if (e._flags & (E.BIT_SKIP_SUBTREE | E.BIT_MARK_REMOVE) > 0)
 			{
-				e =
-				if (e.sibling != null)
-					e.sibling;
-				else
-					findLastLeaf(e).preorder;
+				e = e.nextSubtree();
 				continue;
 			}
-			
 			e = e.preorder;
+		}
+	}
+	
+	function commitBufferedChanges()
+	{
+		//remove or free marked entities; this is done in a separate step because iterating and modifiying
+		//a tree at the same time is complex and error-prone.
+		var e = child, p, next;
+		while (e != null)
+		{
+			next = e.preorder;
+			
+			if (e._flags & (E.BIT_MARK_REMOVE | E.BIT_MARK_FREE) > 0)
+			{
+				if (e._flags & E.BIT_MARK_REMOVE > 0)
+				{
+					//remember parent
+					var p = e.parent;
+					
+					//force removal by setting commit flag
+					e._flags |= E.BIT_COMMIT_REMOVE;
+					p.remove(e);
+					
+					#if verbose
+					L.d('entity $e was removed');
+					#end
+					
+					//skip subtree of e
+					next = p.preorder;
+				}
+				else
+				if (e._flags & E.BIT_MARK_FREE > 0)
+				{
+					next = e.nextSubtree();
+					
+					//disconnect subtree rooted at this entity
+					e.parent.remove(e);
+					
+					//bottom-up deconstruction (calls onFree() on all descendants)
+					EntitySystem.freeEntity(e);
+				}
+			}
+			
+			e = next;
 		}
 	}
 }

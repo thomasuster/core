@@ -34,6 +34,9 @@ import de.polygonal.core.util.Assert;
 import de.polygonal.Printf;
 import haxe.ds.Vector;
 
+import de.polygonal.core.es.Entity in E;
+import de.polygonal.core.es.EntitySystem in ES;
+
 @:access(de.polygonal.core.es.Entity)
 @:access(de.polygonal.core.es.EntitySystem)
 class MsgQue
@@ -73,7 +76,7 @@ class MsgQue
 		return _locker[_currLocker];
 	}
 	
-	public function enqueue(sender:Entity, recipient:Entity, type:Int, remaining:Int)
+	public function enqueue(sender:E, recipient:E, type:Int, remaining:Int)
 	{
 		D.assert(sender != null);
 		D.assert(recipient != null);
@@ -83,8 +86,10 @@ class MsgQue
 		var i = (_front + (_size << 3)) % _capacity;
 		_size++;
 		
-		if (recipient._flags & (Entity.BIT_GHOST | Entity.BIT_SKIP_MSG) > 0)
+		if (recipient._flags & (E.BIT_GHOST | E.BIT_SKIP_MSG | E.BIT_MARK_FREE | E.BIT_MARK_REMOVE) > 0)
 		{
+			//enqueue message even if recipient doesn't want it;
+			//this is required for properly stopping a message propagation (when an entity calls stop())
 			_que[i] = -1;
 			return;
 		}
@@ -122,7 +127,7 @@ class MsgQue
 	
 	public function dispatch()
 	{
-		var a = EntitySystem._freeList;
+		var a = ES._freeList;
 		
 		var senderIndex:Int;
 		var senderInner:Int;
@@ -186,17 +191,17 @@ class MsgQue
 					continue;
 				}
 				
-				if (sender.id.inner != senderInner)
+				if (sender.id == null || sender.id.inner != senderInner)
 				{
-					//skip message if sender was removed+replaced
+					//skip message if sender was freed/replaced
 					f = (f + 8) % c;
 					i--;
 					continue;
 				}
 				
-				if (recipient.id.inner != recipientInner)
+				if (recipient.id == null || recipient.id.inner != recipientInner)
 				{
-					//skip message if recipient was removed+replaced
+					//skip message if recipient was freed/replaced
 					f = (f + 8) % c;
 					i--;
 					continue;
@@ -223,11 +228,11 @@ class MsgQue
 				#end
 				
 				recipient.onMsg(type, sender);
-				if (recipient._flags & Entity.BIT_STOP_PROPAGATION > 0)
+				if (recipient._flags & E.BIT_STOP_PROPAGATION > 0)
 				{
 					//recipient stopped notification;
 					//reset flag and skip remaining messages in current batch
-					recipient._flags |= ~Entity.BIT_STOP_PROPAGATION;
+					recipient._flags |= ~E.BIT_STOP_PROPAGATION;
 					f += (skipCount << 3) % c;
 					i -= skipCount;
 				}

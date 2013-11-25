@@ -167,9 +167,6 @@ class EntitySystem
 		e.id.inner |= 0x80000000;
 		e.id = null;
 		
-		//mark as freed
-		e._flags = Entity.BIT_FREED;
-		
 		//don't forget to nullify preorder pointer
 		e.preorder = null;
 	}

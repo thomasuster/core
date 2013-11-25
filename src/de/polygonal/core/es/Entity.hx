@@ -45,6 +45,9 @@ class Entity
 	inline static var BIT_SKIP_TICK        = 0x8;
 	inline static var BIT_SKIP_DRAW        = 0x10;
 	inline static var BIT_STOP_PROPAGATION = 0x20;
+	inline static var BIT_MARK_FREE        = 0x40;
+	inline static var BIT_MARK_REMOVE      = 0x80;
+	inline static var BIT_COMMIT_REMOVE    = 0x100;
 	
 	inline static function getClassType<T>(C:Class<T>):Int
 	{
@@ -88,13 +91,16 @@ class Entity
 	 */
 	public function free()
 	{
-		if (freed) return;
+		if (_flags & BIT_MARK_FREE > 0) return;
 		
-		//disconnect subtree rooted at this entity
-		if (parent != null) remove(this);
-		
-		//bottom-up deconstruction (calls onFree())
-		ES.freeEntity(this);
+		var e = this;
+		var k = size + 1;
+		while (k-- > 0)
+		{
+			e._flags |= BIT_MARK_FREE;
+			e._flags &= ~BIT_MARK_REMOVE;
+			e = e.preorder;
+		}
 	}
 	
 	public var parent(get_parent, set_parent):Entity;
@@ -177,12 +183,6 @@ class Entity
 		return value;
 	}
 	
-	public var freed(get_freed, never):Bool;
-	@:noCompletion inline function get_freed():Bool
-	{
-		return id == null || id.index == -1;
-	}
-	
 	public var tick(get_tick, set_tick):Bool;
 	@:noCompletion inline function get_tick():Bool
 	{
@@ -257,6 +257,8 @@ class Entity
 		var x:Entity = inst;
 		if (x == null)
 			x = Type.createInstance(cl, []);
+		else
+			x._flags &= ~(BIT_MARK_REMOVE | BIT_COMMIT_REMOVE);
 		
 		D.assert(x.parent != this);
 		D.assert(x.parent == null);
@@ -321,6 +323,7 @@ class Entity
 	{
 		if (x == null || x == this)
 		{
+			//remove myself
 			D.assert(parent != null);
 			parent.remove(this);
 			return;
@@ -329,6 +332,14 @@ class Entity
 		D.assert(x.parent != null);
 		D.assert(x != this);
 		D.assert(x.parent == this);
+		
+		if (x._flags & BIT_COMMIT_REMOVE == 0)
+		{
+			x._flags |= BIT_MARK_REMOVE;
+			return;
+		}
+		
+		x._flags &= ~(BIT_COMMIT_REMOVE | BIT_MARK_REMOVE);
 		
 		//update #children
 		numChildren--;
