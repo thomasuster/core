@@ -423,43 +423,6 @@ class Entity
 		lastChild = null;
 	}
 	
-	public function revealSiblings()
-	{
-		var i = child, j;
-		while (i != null)
-		{
-			j = i.sibling;
-			while (j != null)
-			{
-				i.onSibling(j);
-				j.onSibling(i);
-				j = j.sibling;
-			}
-			i = i.sibling;
-		}
-	}
-	
-	public function revealAncestors()
-	{
-		var e = parent;
-		while (e != null)
-		{
-			onAncestor(e);
-			e = e.parent;
-		}
-	}
-	
-	public function revealDescendants()
-	{
-		var e = child;
-		var k = size;
-		while (k-- > 0)
-		{
-			onDescedant(e);
-			e = e.preorder;
-		}
-	}
-	
 	public function ancestorByType<T:Entity>(cl:Class<T>, inheritance = false):T
 	{
 		var e = parent;
