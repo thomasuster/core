@@ -78,9 +78,6 @@ class MainLoop extends E implements IObserver
 			
 			//dispatch buffered messages
 			EntitySystem.dispatchMessages();
-			
-			//alter topology
-			EntitySystem.commitBufferedChange();
 		}
 		else
 		if (type == TimebaseEvent.RENDER)
@@ -115,7 +112,7 @@ class MainLoop extends E implements IObserver
 		var e = child;
 		while (e != null)
 		{
-			if (e._flags & (E.BIT_GHOST | E.BIT_SKIP_DRAW | E.BIT_MARK_FREE) == 0) e.onDraw(dt);
+			if (e._flags & (E.BIT_GHOST | E.BIT_SKIP_DRAW | E.BIT_MARK_FREE) == 0) e.onDraw(alpha);
 			
 			if (e._flags & (E.BIT_SKIP_SUBTREE | E.BIT_MARK_REMOVE) > 0)
 			{
