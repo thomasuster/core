@@ -192,7 +192,7 @@ class EntitySystem
 		D.assert(e.id != null);
 		
 		#if verbose
-		L.d('$e is gone', "entity");
+		L.d('$e is gone', "es");
 		#end
 		
 		var i = e.id.index;
@@ -231,7 +231,7 @@ class EntitySystem
 	public static function freeEntity(e:Entity)
 	{
 		#if verbose
-		L.d('freeing up ${e.size + 1} entities ...', "entity");
+		L.d('freeing up ${e.size + 1} entities ...', "es");
 		#end
 		
 		if (e.size < 512)
@@ -392,7 +392,7 @@ class EntitySystem
 		table.push(e);
 		
 		#if verbose
-		L.d('registered entity by name: $e', "entity");
+		L.d('registered entity by name: $e', "es");
 		#end
 	}
 }

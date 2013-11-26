@@ -151,7 +151,7 @@ class MsgQue
 			i = k;
 			
 			#if verbose
-			L.d('iter $iter: dispatching $k messages ...');
+			L.d('iter $iter: dispatching $k messages ...', "es");
 			iter++;
 			#end
 			
@@ -224,7 +224,7 @@ class MsgQue
 				var msgName = Msg.name(type);
 				if (msgName.length > 20) msgName = StringUtil.ellipsis(msgName, 20, 1, true);
 				
-				L.d(Printf.format('message %30s -> %-30s: %-20s $data', [senderId, recipientId, msgName]));
+				L.d(Printf.format('message %30s -> %-30s: %-20s $data', [senderId, recipientId, msgName]), "es");
 				#end
 				
 				recipient.onMsg(type, sender);
