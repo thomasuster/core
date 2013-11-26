@@ -156,6 +156,8 @@ class MainLoop extends E implements IObserver
 					next = e.nextSubtree();
 					
 					//disconnect subtree rooted at this entity
+					//force removal by setting commit flag
+					e._flags |= E.BIT_COMMIT_REMOVE;
 					e.parent.remove(e);
 					
 					//bottom-up deconstruction (calls onFree() on all descendants)
