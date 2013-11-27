@@ -128,7 +128,7 @@ class MsgQue
 			return;
 		}
 		
-		#if verbose
+		#if (verbose == "extra")
 		var senderId = sender.name == null ? Std.string(sender.id) : sender.name;
 		var recipientId = recipient.name == null ? Std.string(recipient.id) : recipient.name;
 		
@@ -190,6 +190,11 @@ class MsgQue
 		var i = 0;
 		var iter = 0;
 		
+		#if verbose
+		var numSkippedMessages = 0;
+		var numDispatchedMessages = 0;
+		#end
+		
 		while (_size > 0)
 		{
 			//while there are buffered messages
@@ -197,7 +202,7 @@ class MsgQue
 			k = _size;
 			i = k;
 			
-			#if verbose
+			#if (verbose == "extra")
 			L.d('iter $iter: dispatching $k messages ...', "es");
 			iter++;
 			#end
@@ -226,6 +231,10 @@ class MsgQue
 				//ignore message?
 				if (senderInner == -1)
 				{
+					#if verbose
+					numSkippedMessages++;
+					#end
+					
 					f = (f + MSG_SIZE) % c;
 					i--;
 					continue;
@@ -241,7 +250,7 @@ class MsgQue
 				f = (f + MSG_SIZE) % c;
 				i--;
 				
-				#if verbose
+				#if (verbose == "extra")
 				var data = _locker[_currLocker] != null ? '${_locker[_currLocker]}' : "";
 				var senderId = sender.name == null ? Std.string(sender.id) : sender.name;
 				var recipientId = recipient.name == null ? Std.string(recipient.id) : recipient.name;
@@ -257,7 +266,19 @@ class MsgQue
 				
 				//notify recipient
 				if (recipient._flags & (E.BIT_GHOST | E.BIT_SKIP_MSG | E.BIT_MARK_FREE | E.BIT_MARK_REMOVE) == 0)
+				{
 					recipient.onMsg(type, sender);
+					
+					#if verbose
+					numDispatchedMessages++;
+					#end
+				}
+				else
+				{
+					#if verbose
+					numSkippedMessages++;
+					#end
+				}
 				
 				if (recipient._flags & E.BIT_STOP_PROPAGATION > 0)
 				{
@@ -271,6 +292,10 @@ class MsgQue
 			_size -= k;
 			_front = f;
 		}
+		
+		#if verbose
+		L.d('dispatched $numDispatchedMessages messages (skipped: $numSkippedMessages)');
+		#end
 		
 		//empty locker
 		for (i in 0..._nextLocker)
