@@ -117,12 +117,13 @@ class EntitySystem
 			#if alchemy
 			bytesUsed += _topology.size * 2;
 			bytesUsed += _next.size * 2;
+			bytesUsed += _msgQue._que.size;
 			#else
 			bytesUsed += _topology.length * 4;
 			bytesUsed += _next.length * 4;
+			bytesUsed += _msgQue._que.length * 4;
 			#end
 			
-			bytesUsed += _msgQue._que.length * 4;
 			bytesUsed += _freeList.length * 4;
 			
 			L.d('using ${bytesUsed >> 10} KiB for managing $maxEntities entities and buffering ${MsgQue.MAX_SIZE} messages.');

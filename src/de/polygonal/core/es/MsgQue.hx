@@ -43,8 +43,25 @@ class MsgQue
 {
 	static var MAX_SIZE = 1 << 15;
 	
+	inline static var MSG_SIZE =
+	#if alchemy
+	//sender+recipient inner: 2*4 bytes
+	//sender+recipient index: 2*2 bytes
+	//type, skip count, locker index: 3*2 bytes
+	18; //bytes
+	#else
+	7; //32bit ints
+	#end
+	
 	var _capacity:Int;
-	var _que:Vector<Int>;
+	
+	var _que:
+	#if alchemy
+	de.polygonal.ds.mem.ByteMemory;
+	#else
+	Vector<Int>;
+	#end
+	
 	var _size:Int;
 	var _front:Int;
 	
@@ -54,8 +71,21 @@ class MsgQue
 	
 	public function new()
 	{
-		_capacity = MAX_SIZE << 3;
-		_que = new Vector<Int>(_capacity);
+		_capacity = MAX_SIZE * MSG_SIZE;
+		_que =
+		#if alchemy
+		//id.inner for sender: 4 bytes
+		//id.inner for recipient: 4 bytes
+		//id.index for sender: 2 bytes
+		//id.index for recipient: 2 bytes
+		//type: 2 bytes
+		//remaining: 2 bytes
+		//locker index: 2 bytes
+		new de.polygonal.ds.mem.ByteMemory(_capacity);
+		#else
+		new Vector<Int>(_capacity);
+		#end
+		
 		_size = 0;
 		_front = 0;
 		
@@ -83,14 +113,18 @@ class MsgQue
 		D.assert(type >= 0 && type <= 0xffff);
 		D.assert(_size < MAX_SIZE, "message queue exhausted");
 		
-		var i = (_front + (_size << 3)) % _capacity;
+		var i = (_front + (_size * MSG_SIZE)) % _capacity;
 		_size++;
 		
 		if (recipient._flags & (E.BIT_GHOST | E.BIT_SKIP_MSG | E.BIT_MARK_FREE | E.BIT_MARK_REMOVE) > 0)
 		{
 			//enqueue message even if recipient doesn't want it;
 			//this is required for properly stopping a message propagation (when an entity calls stop())
+			#if alchemy
+			flash.Memory.setI32(i, -1);
+			#else
 			_que[i] = -1;
+			#end
 			return;
 		}
 		
@@ -110,13 +144,24 @@ class MsgQue
 		var senderId = sender.id;
 		var recipientId = recipient.id;
 		
-		_que[i + 0] = senderId.index;
-		_que[i + 1] = recipientId.index;
-		_que[i + 2] = senderId.inner;
-		_que[i + 3] = recipientId.inner;
+		#if alchemy
+		var addr = _que.getAddr(i);
+		flash.Memory.setI32(addr     , senderId.inner);
+		flash.Memory.setI32(addr +  4, recipientId.inner);
+		flash.Memory.setI16(addr +  8, senderId.index);
+		flash.Memory.setI16(addr + 10, recipientId.index);
+		flash.Memory.setI16(addr + 12, type);
+		flash.Memory.setI16(addr + 14, remaining);
+		flash.Memory.setI16(addr + 16, _nextLocker);
+		#else
+		_que[i    ] = senderId.inner;
+		_que[i + 1] = recipientId.inner;
+		_que[i + 2] = senderId.index;
+		_que[i + 3] = recipientId.index;
 		_que[i + 4] = type;
 		_que[i + 5] = remaining;
 		_que[i + 6] = _nextLocker;
+		#end
 		
 		if (remaining == 0)
 		{
@@ -157,18 +202,29 @@ class MsgQue
 			
 			while (i > 0)
 			{
-				senderIndex    = q[f + 0];
-				recipientIndex = q[f + 1];
-				senderInner    = q[f + 2];
-				recipientInner = q[f + 3];
+				#if alchemy
+				var addr       = _que.getAddr(f);
+				senderInner    = flash.Memory.getI32(addr);
+				recipientInner = flash.Memory.getI32(addr  +  4);
+				senderIndex    = flash.Memory.getUI16(addr +  8);
+				recipientIndex = flash.Memory.getUI16(addr + 10);
+				type           = flash.Memory.getUI16(addr + 12);
+				skipCount      = flash.Memory.getUI16(addr + 14);
+				_currLocker    = flash.Memory.getUI16(addr + 16);
+				#else
+				senderInner    = q[f    ];
+				recipientInner = q[f + 1];
+				senderIndex    = q[f + 2];
+				recipientIndex = q[f + 3];
 				type           = q[f + 4];
 				skipCount      = q[f + 5];
 				_currLocker    = q[f + 6];
+				#end
 				
 				//ignore message?
-				if (senderIndex == -1)
+				if (senderInner == -1)
 				{
-					f = (f + 8) % c;
+					f = (f + MSG_SIZE) % c;
 					i--;
 					continue;
 				}
@@ -177,7 +233,7 @@ class MsgQue
 				if (sender == null)
 				{
 					//skip message if sender was removed
-					f = (f + 8) % c;
+					f = (f + MSG_SIZE) % c;
 					i--;
 					continue;
 				}
@@ -186,7 +242,7 @@ class MsgQue
 				if (recipient == null)
 				{
 					//skip message if recipient was removed
-					f = (f + 8) % c;
+					f = (f + MSG_SIZE) % c;
 					i--;
 					continue;
 				}
@@ -194,7 +250,7 @@ class MsgQue
 				if (sender.id == null || sender.id.inner != senderInner)
 				{
 					//skip message if sender was freed/replaced
-					f = (f + 8) % c;
+					f = (f + MSG_SIZE) % c;
 					i--;
 					continue;
 				}
@@ -202,13 +258,13 @@ class MsgQue
 				if (recipient.id == null || recipient.id.inner != recipientInner)
 				{
 					//skip message if recipient was freed/replaced
-					f = (f + 8) % c;
+					f = (f + MSG_SIZE) % c;
 					i--;
 					continue;
 				}
 				
 				//dequeue
-				f = (f + 8) % c;
+				f = (f + MSG_SIZE) % c;
 				i--;
 				
 				//notify recipient
@@ -233,7 +289,7 @@ class MsgQue
 					//recipient stopped notification;
 					//reset flag and skip remaining messages in current batch
 					recipient._flags &= ~E.BIT_STOP_PROPAGATION;
-					f += (skipCount << 3) % c;
+					f += (skipCount * MSG_SIZE) % c;
 					i -= skipCount;
 				}
 			}
