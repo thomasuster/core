@@ -125,6 +125,11 @@ class MainLoop extends E implements IObserver
 	
 	function commitBufferedChanges()
 	{
+		#if verbose
+		var removeCount = 0;
+		var freeCount = 0;
+		#end
+
 		//remove or free marked entities; this is done in a separate step because iterating and modifiying
 		//a tree at the same time is complex and error-prone.
 		var e = child, p, next;
@@ -145,6 +150,7 @@ class MainLoop extends E implements IObserver
 					
 					#if verbose
 					L.d('entity $e was removed');
+					removeCount++;
 					#end
 					
 					//skip subtree of e
@@ -162,10 +168,19 @@ class MainLoop extends E implements IObserver
 					
 					//bottom-up deconstruction (calls onFree() on all descendants)
 					EntitySystem.freeEntity(e);
+					
+					#if verbose
+					freeCount++;
+					#end
 				}
 			}
 			
 			e = next;
 		}
+		
+		#if verbose
+		if (removeCount > 0) L.e('removed $removeCount entities', "es");
+		if (freeCount > 0) L.d('freed $freeCount entity subtrees', "es");
+		#end
 	}
 }
