@@ -92,6 +92,10 @@ class MsgQue
 		_nextLocker = 0;
 		_currLocker = -1;
 		_locker = new Array<Dynamic>();
+		
+		#if verbose
+		L.d('found ${Msg.totalMessages()} message types');
+		#end
 	}
 	
 	public function putData(o:Dynamic)
@@ -294,7 +298,8 @@ class MsgQue
 		}
 		
 		#if verbose
-		L.d('dispatched $numDispatchedMessages messages (skipped: $numSkippedMessages)');
+		if (numDispatchedMessages + numSkippedMessages > 0)
+			L.d('dispatched $numDispatchedMessages messages (skipped: $numSkippedMessages)');
 		#end
 		
 		//empty locker
