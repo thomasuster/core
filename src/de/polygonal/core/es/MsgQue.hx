@@ -180,6 +180,8 @@ class MsgQue
 		var recipientInner:Int;
 		var type:Int;
 		var skipCount:Int;
+		var sender:Entity;
+		var recipient:Entity;
 		
 		var q = _que;
 		var c = _capacity;
@@ -229,45 +231,15 @@ class MsgQue
 					continue;
 				}
 				
-				var sender = a[senderIndex];
-				if (sender == null)
-				{
-					//skip message if sender was removed
-					f = (f + MSG_SIZE) % c;
-					i--;
-					continue;
-				}
+				sender = a[senderIndex];
+				D.assert(sender != null);
 				
-				var recipient = a[recipientIndex];
-				if (recipient == null)
-				{
-					//skip message if recipient was removed
-					f = (f + MSG_SIZE) % c;
-					i--;
-					continue;
-				}
-				
-				if (sender.id == null || sender.id.inner != senderInner)
-				{
-					//skip message if sender was freed/replaced
-					f = (f + MSG_SIZE) % c;
-					i--;
-					continue;
-				}
-				
-				if (recipient.id == null || recipient.id.inner != recipientInner)
-				{
-					//skip message if recipient was freed/replaced
-					f = (f + MSG_SIZE) % c;
-					i--;
-					continue;
-				}
+				recipient = a[recipientIndex];
+				D.assert(recipient != null);
 				
 				//dequeue
 				f = (f + MSG_SIZE) % c;
 				i--;
-				
-				//notify recipient
 				
 				#if verbose
 				var data = _locker[_currLocker] != null ? '${_locker[_currLocker]}' : "";
@@ -283,7 +255,10 @@ class MsgQue
 				L.d(Printf.format('message %30s -> %-30s: %-20s $data', [senderId, recipientId, msgName]), "es");
 				#end
 				
-				recipient.onMsg(type, sender);
+				//notify recipient
+				if (recipient._flags & (E.BIT_GHOST | E.BIT_SKIP_MSG | E.BIT_MARK_FREE | E.BIT_MARK_REMOVE) == 0)
+					recipient.onMsg(type, sender);
+				
 				if (recipient._flags & E.BIT_STOP_PROPAGATION > 0)
 				{
 					//recipient stopped notification;
@@ -297,6 +272,7 @@ class MsgQue
 			_front = f;
 		}
 		
+		//empty locker
 		for (i in 0..._nextLocker)
 			_locker[i] = null;
 		_nextLocker = 0;

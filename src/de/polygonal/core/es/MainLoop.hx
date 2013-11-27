@@ -73,11 +73,11 @@ class MainLoop extends E implements IObserver
 			var dt:Float = userData;
 			propagateTick(dt);
 			
-			//remove or free marked entities
-			commitBufferedChanges();
-			
 			//dispatch buffered messages
 			EntitySystem.dispatchMessages();
+			
+			//remove or free marked entities
+			commitBufferedChanges();
 		}
 		else
 		if (type == TimebaseEvent.RENDER)
