@@ -29,7 +29,7 @@
  */
 package de.polygonal.core.es;
 
-@:build(de.polygonal.core.es.MsgMacro.build([]))
+@:build(de.polygonal.core.es.MsgMacro.addMeta())
 class Msg
 {
 	public static function name(type:Int):String

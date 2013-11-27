@@ -39,47 +39,12 @@ class MsgMacro
 	#if macro
 	static var nextId:Int = 0;
 	static var names:Array<String> = [];
-	static var callbackRegistered:Bool = false;
 	#end
 	
 	macro static function build(e:Expr):Array<Field>
 	{
-		Context.onMacroContextReused(function()
-		{
-			nextId = 0;
-			names = [];
-			return false;
-		});
-		
-		if (!callbackRegistered)
-		{
-			callbackRegistered = true;
-			Context.onGenerate(function(_)
-			{
-				//add names array meta data to Msg class
-				switch (Context.getModule("de.polygonal.core.es.Msg")[0])
-				{
-					case TInst(t, params):
-						var a = [];
-						for (name in names)
-							a.push({expr: EConst(CString(name)), pos: Context.currentPos()});
-						var ct = t.get();	
-						if (ct.meta.has("names"))
-						{
-							ct.meta.remove("names");
-							ct.meta.remove("count");
-						}
-						ct.meta.add("names", [{expr: EArrayDecl(a), pos: Context.currentPos()}], Context.currentPos());
-						ct.meta.add("count", [{expr: EConst(CString(Std.string(nextId))), pos: Context.currentPos()}], Context.currentPos());
-					case _:
-				}
-			});
-		}
-		
 		var pos = Context.currentPos();
 		var fields = Context.getBuildFields();
-		
-		var firstId = nextId;
 		
 		switch (e.expr)
 		{
@@ -111,34 +76,33 @@ class MsgMacro
 			case _: Context.error("unsupported declaration", pos);
 		}
 		
-		/*var cases = new Array<Case>();
+		return fields;
+	}
+	
+	macro static function addMeta():Array<Field>
+	{
+		var pos = Context.currentPos();
 		
-		for (name in names)
+		Context.onGenerate(function(_)
 		{
-			cases.push(
+			switch (Context.getModule("de.polygonal.core.es.Msg")[0])
 			{
-				values: [{expr: EConst(CInt(Std.string(firstId))), pos: pos}],
-				expr: {expr: EBlock([ {expr: EReturn({expr: EConst(CString(name)), pos: pos}), pos: pos} ]), pos: pos}
-			});
-			
-			firstId++;
-		}
-		
-		cases.push(
-		{
-			values: [{expr: EConst(CIdent("_")), pos: pos}],
-			expr: {expr: EBlock([ {expr: EReturn({expr: EConst(CString("unknown")), pos: pos}), pos: pos} ]), pos: pos}
+				case TInst(t, params):
+					var a = [];
+					for (name in names)
+						a.push({expr: EConst(CString(name)), pos: pos});
+					var ct = t.get();	
+					if (ct.meta.has("names"))
+					{
+						ct.meta.remove("names");
+						ct.meta.remove("count");
+					}
+					ct.meta.add("names", [{expr: EArrayDecl(a), pos: pos}], pos);
+					ct.meta.add("count", [{expr: EConst(CString(Std.string(nextId))), pos: pos}], pos);
+				case _:
+			}
 		});
 		
-		var f =
-		{
-			args: [{name: "type", opt: false, type: TPath({pack: [], name: "Int", params: [], sub: null}), value: null}],
-			ret: TPath({pack: [], name: "String", params: [], sub: null}),
-			expr: {expr: EBlock([{expr: ESwitch({expr: EParenthesis({expr: EConst(CIdent('type')), pos: pos}), pos: pos}, cases, null), pos: pos}]), pos: pos},
-			params: []
-		}
-		fields.push({name: "name", doc: null, meta: [], access: [AStatic, APublic], kind: FFun(f), pos: pos});*/
-		
-		return fields;
+		return Context.getBuildFields();
 	}
 }
