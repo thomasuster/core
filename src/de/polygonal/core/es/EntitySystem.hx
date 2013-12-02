@@ -36,6 +36,8 @@ import haxe.ds.IntMap;
 import haxe.ds.StringMap;
 import haxe.ds.Vector;
 
+typedef ES = EntitySystem;
+
 @:access(de.polygonal.core.es.Entity)
 @:access(de.polygonal.core.es.MsgQue)
 class EntitySystem

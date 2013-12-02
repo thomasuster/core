@@ -50,7 +50,7 @@ class Entity
 	inline static var BIT_MARK_REMOVE      = 0x80;
 	inline static var BIT_COMMIT_REMOVE    = 0x100;
 	
-	inline static function getClassType<T>(C:Class<T>):Int
+	inline static function getEntityType<T:Entity>(C:Class<T>):Int
 	{
 		#if flash
 		return untyped C.ENTITY_TYPE;

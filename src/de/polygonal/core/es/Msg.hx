@@ -36,10 +36,10 @@ class Msg
 	{
 		var meta = haxe.rtti.Meta.getType(Msg);
 		
-		if (meta.names.length == 0) return 'invalid type ($type)';
+		if (meta.names.length == 0) return 'unknown type ($type)';
 		
 		var names = meta.names[0];
-		if (type < 0 || type > names.length - 1) return 'invalid type ($type)';
+		if (type < 0 || type > names.length - 1) return 'unknown type ($type)';
 		return meta.names[0][type];
 	}
 	
