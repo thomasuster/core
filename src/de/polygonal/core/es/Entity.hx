@@ -47,8 +47,6 @@ class Entity
 	inline static var BIT_SKIP_DRAW        = 0x10;
 	inline static var BIT_STOP_PROPAGATION = 0x20;
 	inline static var BIT_MARK_FREE        = 0x40;
-	inline static var BIT_MARK_REMOVE      = 0x80;
-	inline static var BIT_COMMIT_REMOVE    = 0x100;
 	
 	inline static function getEntityType<T:Entity>(C:Class<T>):Int
 	{
@@ -99,7 +97,6 @@ class Entity
 		while (k-- > 0)
 		{
 			e._flags |= BIT_MARK_FREE;
-			e._flags &= ~BIT_MARK_REMOVE;
 			e = e.preorder;
 		}
 	}
@@ -261,8 +258,6 @@ class Entity
 		var x:Entity = inst;
 		if (x == null)
 			x = Type.createInstance(cl, []);
-		else
-			x._flags &= ~(BIT_MARK_REMOVE | BIT_COMMIT_REMOVE);
 		
 		D.assert(x.parent != this);
 		D.assert(x.parent == null);
@@ -336,14 +331,6 @@ class Entity
 		D.assert(x.parent != null);
 		D.assert(x != this);
 		D.assert(x.parent == this);
-		
-		if (x._flags & BIT_COMMIT_REMOVE == 0)
-		{
-			x._flags |= BIT_MARK_REMOVE;
-			return;
-		}
-		
-		x._flags &= ~(BIT_COMMIT_REMOVE | BIT_MARK_REMOVE);
 		
 		//update #children
 		numChildren--;

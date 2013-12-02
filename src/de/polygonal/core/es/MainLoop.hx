@@ -34,17 +34,20 @@ import de.polygonal.core.event.IObserver;
 import de.polygonal.core.time.Timebase;
 import de.polygonal.core.time.TimebaseEvent;
 import de.polygonal.core.time.Timeline;
+import haxe.ds.Vector;
 
 import de.polygonal.core.es.Entity in E;
 import de.polygonal.core.es.EntitySystem in ES;
 
 @:access(de.polygonal.core.es.EntitySystem)
-class MainLoop extends E implements IObserver
+class MainLoop extends Entity implements IObserver
 {
 	public var paused = false;
 	
 	var _stack:Array<E>;
 	var _top:Int;
+	var _scratchList:Vector<E>;
+	var _maxSize:Int;
 	
 	public function new()
 	{
@@ -53,6 +56,9 @@ class MainLoop extends E implements IObserver
 		Timebase.init();
 		Timebase.attach(this);
 		Timeline.init();
+		
+		_scratchList = new Vector<E>(ES.MAX_SUPPORTED_ENTITIES);
+		_maxSize = 0;
 	}
 	
 	override function onFree()
@@ -84,42 +90,58 @@ class MainLoop extends E implements IObserver
 		{
 			//draw all entities
 			var alpha:Float = userData;
-			alpha = 1;
 			propagateDraw(alpha);
+			
+			//prune scratch list for gc at regular intervals
+			if (Timebase.processedFrames % 60 == 0)
+			{
+				var k = _maxSize;
+				_maxSize = 0;
+				var list = _scratchList;
+				for (i in 0...k) list[i] = null;
+			}
 		}
 	}
 	
 	public function propagateTick(dt:Float)
 	{
-		//invoke onTick() on all entities in this tree
+		var list = _scratchList;
+		var k = 0;
 		var e = child;
 		while (e != null)
 		{
-			if (e._flags & (E.BIT_GHOST | E.BIT_SKIP_TICK | E.BIT_MARK_FREE) == 0) e.onTick(dt);
-			
-			if (e._flags & (E.BIT_SKIP_SUBTREE | E.BIT_MARK_REMOVE) > 0)
-			{
-				e = e.nextSubtree();
-				continue;
-			}
+			list[k++] = e;
 			e = e.preorder;
+		}
+		
+		if (k > _maxSize) _maxSize = k;
+		
+		for (i in 0...k)
+		{
+			e = list[i];
+			if (e._flags & (E.BIT_GHOST | E.BIT_SKIP_TICK | E.BIT_MARK_FREE) == 0)
+				e.onTick(dt);
 		}
 	}
 	
 	function propagateDraw(alpha:Float)
 	{
-		//invoke onDraw() on all entities in this tree
+		var list = _scratchList;
+		var k = 0;
 		var e = child;
 		while (e != null)
 		{
-			if (e._flags & (E.BIT_GHOST | E.BIT_SKIP_DRAW | E.BIT_MARK_FREE) == 0) e.onDraw(alpha);
-			
-			if (e._flags & (E.BIT_SKIP_SUBTREE | E.BIT_MARK_REMOVE) > 0)
-			{
-				e = e.nextSubtree();
-				continue;
-			}
+			list[k++] = e;
 			e = e.preorder;
+		}
+		
+		if (k > _maxSize) _maxSize = k;
+		
+		for (i in 0...k)
+		{
+			e = list[i];
+			if (e._flags & (E.BIT_GHOST | E.BIT_SKIP_DRAW | E.BIT_MARK_FREE) == 0)
+				e.onDraw(alpha);
 		}
 	}
 	
@@ -137,49 +159,27 @@ class MainLoop extends E implements IObserver
 		{
 			next = e.preorder;
 			
-			if (e._flags & (E.BIT_MARK_REMOVE | E.BIT_MARK_FREE) > 0)
+			if (e._flags & E.BIT_MARK_FREE > 0)
 			{
-				if (e._flags & E.BIT_MARK_REMOVE > 0)
-				{
-					//remember parent
-					var p = e.parent;
-					
-					//force removal by setting commit flag
-					e._flags |= E.BIT_COMMIT_REMOVE;
-					p.remove(e);
-					
-					#if verbose
-					L.d('entity $e was removed');
-					removeCount++;
-					#end
-					
-					//skip subtree of e
-					next = p.preorder;
-				}
-				else
-				if (e._flags & E.BIT_MARK_FREE > 0)
-				{
-					next = e.nextSubtree();
-					
-					//disconnect subtree rooted at this entity
-					//force removal by setting commit flag
-					e._flags |= E.BIT_COMMIT_REMOVE;
-					e.parent.remove(e);
-					
-					//bottom-up deconstruction (calls onFree() on all descendants)
-					EntitySystem.freeEntity(e);
-					
-					#if verbose
-					freeCount++;
-					#end
-				}
+				next = e.nextSubtree();
+				
+				//disconnect subtree rooted at this entity
+				//force removal by setting commit flag
+				if (e.parent != null) e.parent.remove(e);
+				
+				//bottom-up deconstruction (calls onFree() on all descendants)
+				EntitySystem.freeEntity(e);
+				
+				#if verbose
+				freeCount++;
+				#end
 			}
 			
 			e = next;
 		}
 		
 		#if verbose
-		if (removeCount > 0) L.e('removed $removeCount entities', "es");
+		if (removeCount > 0) L.d('removed $removeCount entities', "es");
 		if (freeCount > 0) L.d('freed $freeCount entity subtrees', "es");
 		#end
 	}
