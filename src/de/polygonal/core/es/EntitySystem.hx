@@ -68,7 +68,7 @@ class EntitySystem
 	#end
 	
 	//name => [entities by name]
-	static var _entitiesByName:StringMap<Array<Entity>> = null;
+	static var _entitiesByName:StringMap<Entity> = null;
 	
 	//circular message buffer
 	static var _msgQue:MsgQue;
@@ -90,7 +90,7 @@ class EntitySystem
 		_topology = new Vector<Int>((1 + maxEntities) << 3);
 		#end
 		
-		_entitiesByName = new StringMap<Array<Entity>>();
+		_entitiesByName = new StringMap<Entity>();
 		
 		//start from index=1 (reserved for null)
 		#if alchemy
@@ -215,8 +215,8 @@ class EntitySystem
 		_free = i;
 		
 		//remove from name => entity mapping
-		var table = _entitiesByName.get(e.name);
-		if (table != null) table.remove(e);
+		if (e._flags & Entity.BIT_GLOBAL_NAME > 0)
+			_entitiesByName.remove(e.name);
 		
 		//mark as removed by setting msb to one
 		e.id.inner |= 0x80000000;
@@ -283,7 +283,9 @@ class EntitySystem
 		
 	inline static function pos(e:Entity, shift:Int):Int return (e.id.index << 3) + shift;
 	
-	inline public static function lookupByName(name:String):Array<Entity> return _entitiesByName.get(name);
+	inline public static function existsByName(name:String):Bool return _entitiesByName.exists(name);
+	
+	inline public static function lookupByName(name:String):Entity return cast _entitiesByName.get(name);
 		
 	inline public static function lookup(id:EntityId):Entity
 	{
@@ -301,14 +303,8 @@ class EntitySystem
 	
 	public static function changeName(e:Entity, newName:String)
 	{
-		//unregister
 		if (e.name != null)
-		{
-			var table = _entitiesByName.get(e.name);
-			table.remove(e);
-		}
-		
-		//register
+			_entitiesByName.remove(e.name);
 		e._name = newName;
 		registerName(e);
 	}
@@ -379,13 +375,10 @@ class EntitySystem
 	{
 		D.assert(e.id != null, "Entity is not registered, call EntitySystem.register() before");
 		
-		var table = _entitiesByName.get(e.name);
-		if (table == null)
-		{
-			table = [];
-			_entitiesByName.set(e.name, table);
-		}
-		table.push(e);
+		if (_entitiesByName.exists(e.name))
+			throw '${e.name} already registered to ${_entitiesByName.get(e.name)}';
+		
+		_entitiesByName.set(e.name, e);
 		
 		#if verbose
 		L.d('registered entity by name: $e', "es");

@@ -47,6 +47,7 @@ class Entity
 	inline static var BIT_SKIP_DRAW        = 0x10;
 	inline static var BIT_STOP_PROPAGATION = 0x20;
 	inline static var BIT_MARK_FREE        = 0x40;
+	inline static var BIT_GLOBAL_NAME      = 0x80;
 	
 	inline static function getEntityType<T:Entity>(C:Class<T>):Int
 	{
@@ -218,9 +219,19 @@ class Entity
 	@:noCompletion function set_name(value:String):String
 	{
 		if (value == name) return value;
-		ES.changeName(this, value);
+		if (_flags & BIT_GLOBAL_NAME > 0)
+			ES.changeName(this, value);
 		_name = value;
 		return value;
+	}
+	
+	public function exposeName()
+	{
+		if (_flags & BIT_GLOBAL_NAME == 0)
+		{
+			_flags |= BIT_GLOBAL_NAME;
+			ES.changeName(this, _name);
+		}
 	}
 	
 	public var ghost(get_ghost, set_ghost):Bool;
@@ -593,17 +604,14 @@ class Entity
 	}
 	
 	/**
-	 * Sends a message to all entities of a given name.
+	 * Sends a message to an entity called name.
 	 */
 	public function msgTo(name:String, msgType:Int)
 	{
 		var e = ES.lookupByName(name);
 		if (e == null) return;
-		
 		var q = getMsgQue();
-		var k = e.length;
-		while (k-- > 0)
-			q.enqueue(this, e[k], msgType, k);
+		q.enqueue(this, e, msgType, 0);
 	}
 	
 	/**
