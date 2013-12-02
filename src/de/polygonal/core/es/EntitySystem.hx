@@ -31,12 +31,10 @@ package de.polygonal.core.es;
 
 import de.polygonal.core.util.Assert;
 import de.polygonal.core.util.ClassUtil;
-import de.polygonal.ds.IntHashTable;
 import de.polygonal.ds.IntIntHashTable;
-import de.polygonal.ds.mem.ShortMemory;
+import haxe.ds.IntMap;
 import haxe.ds.StringMap;
 import haxe.ds.Vector;
-
 
 @:access(de.polygonal.core.es.Entity)
 @:access(de.polygonal.core.es.MsgQue)
@@ -51,7 +49,7 @@ class EntitySystem
 	static var _freeList:Vector<Entity>;
 	
 	#if alchemy
-	static var _next:ShortMemory;
+	static var _next:de.polygonal.ds.mem.ShortMemory;
 	#else
 	static var _next:Vector<Int>;
 	#end
@@ -85,7 +83,7 @@ class EntitySystem
 		_freeList = new Vector<Entity>(1 + maxEntities); //index 0 is reserved for null
 		
 		#if alchemy
-		_topology = new ShortMemory((1 + maxEntities) << 3, "topology");
+		_topology = new de.polygonal.ds.mem.ShortMemory((1 + maxEntities) << 3, "topology");
 		#else
 		_topology = new Vector<Int>((1 + maxEntities) << 3);
 		#end
@@ -94,7 +92,7 @@ class EntitySystem
 		
 		//start from index=1 (reserved for null)
 		#if alchemy
-		_next = new ShortMemory(1 + maxEntities);
+		_next = new de.polygonal.ds.mem.ShortMemory(1 + maxEntities);
 		for (i in 1...maxEntities)
 			_next.set(i, i + 1);
 		_next.set(maxEntities, -1);
@@ -176,14 +174,11 @@ class EntitySystem
 		{
 			var t = e.type;
 			lut.set(t, t);
-			untyped
+			var sc:Class<Entity> = Reflect.field(Type.getClass(e), "SUPER_CLASS");
+			while (sc != null)
 			{
-				var sc:Class<Dynamic> = Type.getClass(e).SUPER_CLASS;
-				while (sc != null)
-				{
-					_inheritanceLookup.set(t, Entity.getClassType(sc));
-					sc = sc.SUPER_CLASS;
-				}
+				_inheritanceLookup.set(t, Entity.getEntityType(sc));
+				sc = Reflect.field(sc, "SUPER_CLASS");
 			}
 		}
 	}
@@ -329,9 +324,7 @@ class EntitySystem
 				else
 					s += "|   ";
 			}
-			
-			var type = ',' + ClassUtil.getUnqualifiedClassName(e);
-			s += '[${e.name}$type]\n';
+			s += '[${e.name},${ClassUtil.getClassName(e)}]\n';
 			e = e.preorder;
 		}
 		return s;

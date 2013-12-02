@@ -31,6 +31,7 @@ package de.polygonal.core.es;
 
 import de.polygonal.core.es.Msg;
 import de.polygonal.core.util.Assert;
+import de.polygonal.core.util.ClassUtil;
 
 import de.polygonal.core.es.EntitySystem in ES;
 
@@ -148,7 +149,7 @@ class Entity
 	}
 	
 	/**
-	 * The total number of children.
+	 * The total number of descendants.
 	 */
 	public var size(get_size, set_size):Int;
 	@:noCompletion inline function get_size():Int
@@ -172,6 +173,9 @@ class Entity
 		return value;
 	}
 	
+	/**
+	 * The total number of children.
+	 */
 	public var numChildren(get_numChildren, set_numChildren):Int;
 	@:noCompletion inline function get_numChildren():Int
 	{
@@ -426,7 +430,7 @@ class Entity
 	public function ancestorByType<T:Entity>(cl:Class<T>, inheritance = false):T
 	{
 		var e = parent;
-		var t = getClassType(cl);
+		var t = getEntityType(cl);
 		if (inheritance)
 		{
 			var lut = getInheritanceLookup();
@@ -467,7 +471,7 @@ class Entity
 		else
 			findLastLeaf(this).preorder;
 		var e = child;
-		var t = getClassType(cl);
+		var t = getEntityType(cl);
 		if (inheritance)
 		{
 			var lut = getInheritanceLookup();
@@ -505,7 +509,7 @@ class Entity
 	public function childByType<T:Entity>(cl:Class<T>, inheritance = false):T
 	{
 		var e = child;
-		var t = getClassType(cl);
+		var t = getEntityType(cl);
 		if (inheritance)
 		{
 			var lut = getInheritanceLookup();
@@ -549,7 +553,7 @@ class Entity
 		if (parent == null) return null;
 		
 		var e = parent.child;
-		var t = getClassType(cl);
+		var t = getEntityType(cl);
 		if (inheritance)
 		{
 			var lut = getInheritanceLookup();
@@ -833,33 +837,23 @@ class Entity
 	
 	public function toString():String
 	{
-		if (name == null) return "{ Entity }";
+		if (name == null) name = '[${ClassUtil.getClassName(this)}]';
 		return '{ Entity $name }';
 	}
 	
-	@:noCompletion function onAdd()
-	{
-	}
+	@:noCompletion function onAddChild(child:Entity) {}
 	
-	@:noCompletion function onRemove(parent:Entity)
-	{
-	}
+	@:noCompletion function onAdd() {}
 	
-	@:noCompletion function onFree()
-	{
-	}
+	@:noCompletion function onRemove(parent:Entity) {}
 	
-	@:noCompletion function onTick(dt:Float)
-	{
-	}
+	@:noCompletion function onFree() {}
 	
-	@:noCompletion function onDraw(alpha:Float)
-	{
-	}
+	@:noCompletion function onTick(dt:Float) {}
 	
-	@:noCompletion function onMsg(msgType:Int, sender:Entity)
-	{
-	}
+	@:noCompletion function onDraw(alpha:Float) {}
+	
+	@:noCompletion function onMsg(msgType:Int, sender:Entity) {}
 	
 	@:noCompletion inline function findPredecessor(e:Entity):Entity
 	{
