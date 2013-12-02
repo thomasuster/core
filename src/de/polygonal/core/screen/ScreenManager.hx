@@ -38,13 +38,26 @@ import de.polygonal.ds.LinkedQueue;
 import de.polygonal.ds.LinkedStack;
 import haxe.ds.StringMap;
 
+private class ScreenPair
+{
+	public var a:Screen;
+	public var b:Screen;
+	
+	public function new(a:Screen, b:Screen)
+	{
+		this.a = a;
+		this.b = b;
+	}
+}
+
+
 class ScreenManager extends Entity
 {
 	var _transitionEffectLookup:StringMap<ScreenTransitionEffect<Dynamic>>;
 	
 	var _screenStack:LinkedStack<Screen>;
 	
-	var _transitionQue:LinkedQueue<{a:Screen, b:Screen}>;
+	var _transitionQue:LinkedQueue<ScreenPair>;
 	var _transitionInProgress:Bool;
 	
 	public function new()
@@ -63,9 +76,9 @@ class ScreenManager extends Entity
 		});
 		
 		add(ScreenTransition);
-		_screenStack = new LinkedStack<Screen>();
 		
-		_transitionQue = new LinkedQueue();
+		_screenStack = new LinkedStack<Screen>();
+		_transitionQue = new LinkedQueue<ScreenPair>();
 	}
 	
 	override function onFree()
@@ -79,13 +92,13 @@ class ScreenManager extends Entity
 		
 		if (_transitionQue.size() > 0)
 		{
-			var o = _transitionQue.dequeue();
+			var pair = _transitionQue.dequeue();
 			_transitionInProgress = true;
 			
 			var intermediate = !_transitionQue.isEmpty();
 			
-			var effect = lookupEffect(o.a, o.b);
-			childByType(ScreenTransition).run(effect, o.a, o.b);
+			var effect = lookupEffect(pair.a, pair.b);
+			childByType(ScreenTransition).run(effect, pair.a, pair.b);
 		}
 	}
 	
@@ -105,7 +118,7 @@ class ScreenManager extends Entity
 		if (b.parent == null) add(b);
 		_screenStack.push(screen);
 		
-		_transitionQue.enqueue({a: a, b: b});
+		_transitionQue.enqueue(new ScreenPair(a, b));
 		processQue();
 	}
 	
@@ -123,7 +136,7 @@ class ScreenManager extends Entity
 		_screenStack.push(b);
 		if (b.parent == null) add(b);
 		
-		_transitionQue.enqueue({a: a, b: b});
+		_transitionQue.enqueue(new ScreenPair(a, b));
 		processQue();
 	}
 	
@@ -135,7 +148,7 @@ class ScreenManager extends Entity
 		{
 			var a = _screenStack.pop();
 			var b = _screenStack.top();
-			_transitionQue.enqueue({a: a, b: b});
+			_transitionQue.enqueue(new ScreenPair(a, b));
 		}
 		
 		processQue();
