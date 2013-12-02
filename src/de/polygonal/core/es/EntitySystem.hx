@@ -76,6 +76,9 @@ class EntitySystem
 	//maps class x to all superclasses of x
 	static var _inheritanceLookup:IntIntHashTable;
 	
+	//entities can store optional (key, value) pairs
+	static var _properties = new IntMap<StringMap<Dynamic>>();
+	
 	public static function init(maxEntities = 0x8000)
 	{
 		if (_freeList != null) return;
@@ -218,6 +221,10 @@ class EntitySystem
 		if (e._flags & Entity.BIT_GLOBAL_NAME > 0)
 			_entitiesByName.remove(e.name);
 		
+		//wipe all properties
+		if (e._flags & Entity.BIT_HAS_PROPERTIES > 0)
+			_properties.remove(e.id.inner);
+		
 		//mark as removed by setting msb to one
 		e.id.inner |= 0x80000000;
 		e.id = null;
@@ -326,6 +333,44 @@ class EntitySystem
 			e = e.preorder;
 		}
 		return s;
+	}
+	
+	public static function hasProperty(e:Entity, key:String):Bool
+	{
+		var i = e.id.inner;
+		if (_properties.exists(i))
+			return _properties.get(i).exists(key);
+		return false;
+	}
+	
+	public static function getProperty(e:Entity, key:String):Dynamic
+	{
+		var i = e.id.inner;
+		if (_properties.exists(i))
+			return _properties.get(i).get(key);
+		return null;
+	}
+	
+	public static function setProperty(e:Entity, key:String, value:Dynamic)
+	{
+		e._flags |= Entity.BIT_HAS_PROPERTIES;
+		
+		var i = e.id.inner;
+		if (_properties.exists(i))
+			_properties.get(i).set(key, value);
+		else
+		{
+			var map = new StringMap<Dynamic>();
+			map.set(key, value);
+			_properties.set(i, map);
+		}
+	}
+	
+	public static function clrProperty(e:Entity, key:String)
+	{
+		var i = e.id.inner;
+		if (_properties.exists(i))
+			_properties.get(i).remove(key);
 	}
 	
 	static function freeRecursive(e:Entity)

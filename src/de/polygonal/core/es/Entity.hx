@@ -48,6 +48,7 @@ class Entity
 	inline static var BIT_STOP_PROPAGATION = 0x20;
 	inline static var BIT_MARK_FREE        = 0x40;
 	inline static var BIT_GLOBAL_NAME      = 0x80;
+	inline static var BIT_HAS_PROPERTIES   = 0x100;
 	
 	inline static function getEntityType<T:Entity>(C:Class<T>):Int
 	{
@@ -829,6 +830,14 @@ class Entity
 				return true;
 		return false;
 	}
+	
+	inline public function hasProperty(key:String) return ES.hasProperty(this, key);
+	
+	inline public function getProperty(key:String):Dynamic return ES.getProperty(this, key);
+	
+	inline public function setProperty(key:String, value:Dynamic) ES.setProperty(this, key, value);
+	
+	inline public function clrProperty(key:String) ES.clrProperty(this, key);
 	
 	public function toString():String
 	{
