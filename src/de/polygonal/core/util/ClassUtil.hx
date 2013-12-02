@@ -34,6 +34,20 @@ import haxe.rtti.CType.TypeTree;
 class ClassUtil
 {
 	/**
+	 * Returns the qualified class name of <code>x</code>.
+	 */
+	public static function getClassName(x:Dynamic):String
+	{
+		if (Std.is(x, Class))
+			return Type.getClassName(x);
+		else
+		if (Type.getClass(x) != null)
+			return getClassName(Type.getClass(x));
+		else
+			return "";
+	}
+	
+	/**
 	 * Returns the unqualified class name of <code>x</code>.
 	 */
 	public static function getUnqualifiedClassName(x:Dynamic):String
@@ -84,8 +98,9 @@ class ClassUtil
 	/**
 	 * Creates an instance of a class given by passing the fully qualified <code>name</code>.
 	 */
-	public static function createObject<T>(name:String):T
+	public static function createObject<T>(name:String, ?args:Array<Dynamic>):T
 	{
-		return Type.createEmptyInstance(Type.resolveClass(name));
+		if (args == null) args = [];
+		return Type.createInstance(Type.resolveClass(name), args);
 	}
 }
