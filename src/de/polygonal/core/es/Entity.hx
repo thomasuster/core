@@ -325,6 +325,7 @@ class Entity
 		
 		lastChild = x;
 		
+		onAddChild(x);
 		x.onAdd();
 		
 		return cast x;

@@ -120,7 +120,7 @@ class MsgQue
 		var i = (_front + (_size * MSG_SIZE)) % _capacity;
 		_size++;
 		
-		if (recipient._flags & (E.BIT_GHOST | E.BIT_SKIP_MSG | E.BIT_MARK_FREE | E.BIT_MARK_REMOVE) > 0)
+		if (recipient._flags & (E.BIT_GHOST | E.BIT_SKIP_MSG | E.BIT_MARK_FREE) > 0)
 		{
 			//enqueue message even if recipient doesn't want it;
 			//this is required for properly stopping a message propagation (when an entity calls stop())
@@ -245,10 +245,16 @@ class MsgQue
 				}
 				
 				sender = a[senderIndex];
+				
 				D.assert(sender != null);
+				D.assert(sender.id != null);
+				D.assert(sender.id.inner == senderInner);
 				
 				recipient = a[recipientIndex];
+				
 				D.assert(recipient != null);
+				D.assert(recipient.id != null);
+				D.assert(recipient.id.inner == recipientInner);
 				
 				//dequeue
 				f = (f + MSG_SIZE) % c;
@@ -269,7 +275,7 @@ class MsgQue
 				#end
 				
 				//notify recipient
-				if (recipient._flags & (E.BIT_GHOST | E.BIT_SKIP_MSG | E.BIT_MARK_FREE | E.BIT_MARK_REMOVE) == 0)
+				if (recipient._flags & (E.BIT_GHOST | E.BIT_SKIP_MSG | E.BIT_MARK_FREE) == 0)
 				{
 					recipient.onMsg(type, sender);
 					
