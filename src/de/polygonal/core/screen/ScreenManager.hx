@@ -31,41 +31,114 @@ package de.polygonal.core.screen;
 
 import de.polygonal.core.es.Entity;
 import de.polygonal.core.es.EntitySystem;
+import de.polygonal.core.screen.ScreenTransition;
 import de.polygonal.core.util.Assert;
+import de.polygonal.core.util.ClassUtil;
+import de.polygonal.ds.LinkedQueue;
+import de.polygonal.ds.LinkedStack;
 import haxe.ds.StringMap;
 
 class ScreenManager extends Entity
 {
 	var _transitionEffectLookup:StringMap<ScreenTransitionEffect<Dynamic>>;
-	var _currentScreen:Screen;
+	
+	var _screenStack:LinkedStack<Screen>;
+	
+	var _transitionQue:LinkedQueue<{a:Screen, b:Screen}>;
+	var _transitionInProgress:Bool;
 	
 	public function new()
 	{
-		super();
+		super(ScreenManager.ENTITY_NAME);
+		exposeName();
 		
 		_transitionEffectLookup = new StringMap();
-		_transitionEffectLookup.set("null", new NullTransition());
+		_transitionEffectLookup.set("null",
+		{
+			onStart: function(a:Screen, b:Screen):Void {},
+			onAdvance: function(screen:Screen, progress:Float, direction:Int):Void {},
+			onComplete: function(screen:Screen):Void {},
+			getMode: function() return ScreenTransitionMode.Simultaneous,
+			getDuration: function() return 0
+		});
+		
 		add(ScreenTransition);
+		_screenStack = new LinkedStack<Screen>();
+		
+		_transitionQue = new LinkedQueue();
 	}
 	
 	override function onFree()
-	{	
+	{
 		_transitionEffectLookup = null;
-		_currentScreen = null;
 	}
 	
-	public function show(screenName:String)
+	function processQue()
 	{
-		var a = _currentScreen;
+		if (_transitionInProgress) return;
 		
-		var tmp = EntitySystem.lookupByName(screenName);
-		D.assert(tmp != null && tmp.length == 1, 'no screen with name $screenName found');
-		var b:Screen = cast tmp[0];
+		if (_transitionQue.size() > 0)
+		{
+			var o = _transitionQue.dequeue();
+			_transitionInProgress = true;
+			
+			var intermediate = !_transitionQue.isEmpty();
+			
+			var effect = lookupEffect(o.a, o.b);
+			childByType(ScreenTransition).run(effect, o.a, o.b);
+		}
+	}
+	
+	public function onTransitionComplete()
+	{
+		_transitionInProgress = false;
+		processQue();
+	}
+	
+	public function switchTo(screen:Screen)
+	{
+		var a = _screenStack.pop();
+		var b = screen;
 		
-		_currentScreen = b;
+		b.zIndex = _screenStack.size();
 		
-		var effect = lookupEffect(a, b);
-		childByType(ScreenTransition).run(effect, a, b);
+		if (b.parent == null) add(b);
+		_screenStack.push(screen);
+		
+		_transitionQue.enqueue({a: a, b: b});
+		processQue();
+	}
+	
+	public function hasPendingTransitions():Bool
+	{
+		return _transitionQue.size() > 0;
+	}
+	
+	public function push(screen:Screen)
+	{
+		var a = _screenStack.isEmpty() ? null : _screenStack.top();
+		var b = screen;
+		
+		b.zIndex = _screenStack.size();
+		_screenStack.push(b);
+		if (b.parent == null) add(b);
+		
+		_transitionQue.enqueue({a: a, b: b});
+		processQue();
+	}
+	
+	public function pop(count:Int)
+	{
+		if (count < 0) count = _screenStack.size() - 1;
+		
+		for (i in 0...count)
+		{
+			var a = _screenStack.pop();
+			var b = _screenStack.top();
+			_transitionQue.enqueue({a: a, b: b});
+		}
+		
+		processQue();
 	}
 	
 	public function defineDefaultTransitionEffect<T:Screen>(style:ScreenTransitionEffect<T>)
@@ -73,40 +146,36 @@ class ScreenManager extends Entity
 		_transitionEffectLookup.set("default", style);
 	}
 	
-	public function defineTransition<T:Screen>(a:T, b:T, effect:Class<ScreenTransitionEffect<T>>, ?reverseEffect:Class<ScreenTransitionEffect<T>>)
+	public function defineTransition<A:Screen, B:Screen>(a:Class<A>, b:Class<B>, style:ScreenTransitionEffect<A>, ?reverseStyle:ScreenTransitionEffect<B>)
 	{
-		_transitionEffectLookup.set(getKey(a, b), cast effect);
-		if (reverseEffect != null) _transitionEffectLookup.set(getKey(b, a), cast reverseEffect);
+		var as:String = Type.getClassName(a);
+		
+		var keyA = a == null ? "null" : Type.getClassName(a);
+		var keyB = b == null ? "null" : Type.getClassName(b);
+		
+		_transitionEffectLookup.set(keyA + keyB, style);
+		if (reverseStyle != null) _transitionEffectLookup.set(keyB + keyA, reverseStyle);
 	}
 	
-	function lookupEffect(a:Screen, b:Screen):ScreenTransitionEffect<Dynamic>
+	function lookupEffect<T:Screen>(a:T, b:T):ScreenTransitionEffect<T>
 	{
-		var effect = _transitionEffectLookup.get(getKey(a, b));
+		var key = "";
+		key += a == null ? "null" : a.name;
+		key += b == null ? "null" : b.name;
 		
-		if (effect == null) //no effect registered for this screen pair
-			effect = _transitionEffectLookup.get("default"); //fallback to default effect
-			
-		if (effect == null) //skip transition effect
-			effect = _transitionEffectLookup.get("null");
-			
+		var effect = _transitionEffectLookup.get(key);
+		
+		if (effect == null)
+		{
+			if (_transitionEffectLookup.exists(key))
+				effect = _transitionEffectLookup.get("null"); //null transition
+			else
+			{
+				effect = _transitionEffectLookup.get("default"); //fallback to default effect
+				if (effect == null) effect = _transitionEffectLookup.get("null");
+			}
+		}
+		
 		return effect;
 	}
-	
-	function getKey(a:Screen, b:Screen):String
-		return (a == null ? "null" : a.name) + (b == null ? "null" : b.name);
-}
-
-private class NullTransition implements ScreenTransitionEffect<Dynamic>
-{
-	public function new() {}
-	
-	public function onStart(a:Screen, b:Screen):Void {}
-	
-	public function onAdvance(screen:Screen, progress:Float, direction:Int):Void {}
-	
-	public function onComplete(screen:Screen):Void {}
-	
-	public function getMode():ScreenTransitionMode return ScreenTransitionMode.Simultaneous;
-	
-	public function getDuration():Float return 0;
 }

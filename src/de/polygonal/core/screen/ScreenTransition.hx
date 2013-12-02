@@ -30,7 +30,10 @@
 package de.polygonal.core.screen;
 
 import de.polygonal.core.es.Entity;
+import de.polygonal.core.fmt.StringUtil;
 import de.polygonal.core.time.Interval;
+import de.polygonal.Printf;
+import de.polygonal.core.util.Assert;
 
 @:access(de.polygonal.core.screen.Screen)
 class ScreenTransition extends Entity
@@ -50,6 +53,11 @@ class ScreenTransition extends Entity
 		tick = false;
 	}
 	
+	override function onAdd()
+	{
+		D.assert(parent.is(ScreenManager));
+	}
+	
 	override function onFree()
 	{
 		_a = null;
@@ -59,10 +67,12 @@ class ScreenTransition extends Entity
 	}
 	
 	/**
-	 * Applies a transition effect to screen a and b
+	 * Applies a transition effect to go from screen a to b.
 	 */
 	public function run<T:Screen>(effect:ScreenTransitionEffect<T>, a:T, b:T)
 	{
+		log("run", a, b);
+		
 		_effect = effect;
 		_a = a;
 		_b = b;
@@ -75,11 +85,18 @@ class ScreenTransition extends Entity
 		{
 			if (a != null)
 			{
+				log("onHideStart", a, b);
 				a.onHideStart(b);
+				log("onHideEnd", a, b);
 				a.onHideEnd(b);
 			}
+			
+			log("onShowStart", a, b);
 			b.onShowStart(a);
+			log("onShowEnd", a, b);
 			b.onShowEnd(a);
+			
+			parent.as(ScreenManager).onTransitionComplete();
 			return;
 		}
 		
@@ -94,17 +111,25 @@ class ScreenTransition extends Entity
 				_phase = 0;
 				if (_a == null)
 				{
+					log("onShowStart", _a, b);
 					b.onShowStart(null);
 					_effect.onStart(_a, b);
 				}
 				else
 				{
+					log("onHideStart", _a, b);
 					_a.onHideStart(b);
 					_effect.onStart(_a, b);
 				}
 			
 			case Simultaneous:
-				if (_a != null) _a.onHideStart(b);
+				if (_a != null)
+				{
+					log("onHideStart", _a, b);
+					_a.onHideStart(b);
+				}
+				
+				log("onShowStart", _a, b);
 				b.onShowStart(_a);
 				_effect.onStart(_a, b);
 		}
@@ -127,9 +152,14 @@ class ScreenTransition extends Entity
 							
 							_effect.onAdvance(_b, 1, 1);
 							_effect.onComplete(_b);
+							
+							log("onShowEnd", null, _b);
 							_b.onShowEnd(null);
+							
 							_b = null;
 							_effect = null;
+							
+							parent.as(ScreenManager).onTransitionComplete();
 							return;
 						}
 						
@@ -139,7 +169,10 @@ class ScreenTransition extends Entity
 						_phase = 1;
 						_interval.reset();
 						
+						log("onHideEnd", _a, _b);
 						_a.onHideEnd(_b);
+						
+						log("onShowStart", _a, _b);
 						_b.onShowStart(_a);
 					}
 					else
@@ -159,10 +192,14 @@ class ScreenTransition extends Entity
 						
 						_effect.onAdvance(_b, 1, 1);
 						_effect.onComplete(_b);
+						
+						log("onShowEnd", _a, _b);
 						_b.onShowEnd(_a);
 						_a = null;
 						_b = null;
 						_effect = null;
+						
+						parent.as(ScreenManager).onTransitionComplete();
 					}
 					else
 						_effect.onAdvance(_b, alpha, 1);
@@ -178,18 +215,35 @@ class ScreenTransition extends Entity
 					{
 						_effect.onAdvance(_a, 1, -1);
 						_effect.onComplete(_a);
+						
+						log("onHideEnd", _a, _b);
 						_a.onHideEnd(_b);
 					}
 					_effect.onAdvance(_b, 1, 1);
 					_effect.onComplete(_b);
+					
+					log("onShowEnd", _a, _b);
 					_b.onShowEnd(_a);
 					_a = null;
 					_b = null;
 					_effect = null;
+					
+					parent.as(ScreenManager).onTransitionComplete();
 					return;
 				}
 				if (_a != null) _effect.onAdvance(_a, alpha, -1);
 				_effect.onAdvance(_b, alpha, 1);
 		}
+	}
+	
+	function log(s:String, a:Screen, b:Screen)
+	{
+		var nameA = "none";
+		if (a != null) nameA = StringUtil.ellipsis('${a.name}[${a.zIndex}]', 20, 0);
+		
+		var nameB = "none";
+		if (b != null) nameB = StringUtil.ellipsis('${b.name}[${b.zIndex}]', 20, 0);
+		
+		L.d(Printf.format("%-12s %-30s => %-30s", [s, nameA, nameB]), "screen");
 	}
 }

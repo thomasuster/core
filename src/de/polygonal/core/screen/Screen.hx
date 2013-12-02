@@ -31,50 +31,52 @@ package de.polygonal.core.screen;
 
 import de.polygonal.core.es.Entity;
 
-class Screen extends Entity implements ScreenTransitionListener
+class Screen extends Entity
 {
-	public function new(name:String)
+	/**
+	 * Bottommost 0, above 1;
+	 */
+	public var zIndex:Int;
+	
+	function new()
 	{
-		super(name);
+		super(Type.getClassName(Type.getClass(this)));
+		exposeName();
 	}
 	
-	override public function free()
+	override public function toString():String
 	{
-		L.i('free screen $name', "screen");
-		super.free();
+		return super.toString() + ', zIndex=$zIndex';
 	}
 	
 	override function set_name(value:String):String
 	{
-		throw "name is immutable";
+		if (_name != null)
+			throw "screen name is immutable";
+		return super.set_name(value);
 	}
 	
-	override function onFree()
-	{
-		L.i('$name.onFree()', "screen");
-	}
+	/**
+	 * A transition effect starts to show this screen and hide the other one ((e.g. a fade-in begins).
+	 * Invoked by ScreenTransition.
+	 */
+	function onShowStart(other:Screen):Void {}
 	
-	function onShowStart(other:Screen)
-	{
-		var otherName = other != null ? other.name : "null";
-		L.i('$name.onShowStart($otherName)', "screen");
-	}
+	/**
+	 * Called after a transition effect has shown this screen and has hidden other ((e.g. a fade-in complete).
+	 * Invoked by ScreenTransition.
+	 */
+	function onShowEnd(other:Screen):Void {}
 	
-	function onShowEnd(other:Screen)
-	{
-		var otherName = other != null ? other.name : "null";
-		L.i('$name.onShowEnd($otherName)', "screen");
-	}
+	/**
+	 * Called once a transition effect starts to hide this screen and show other ((e.g. a fade-out begins).
+	 * Invoked by ScreenTransition.
+	 */
+	function onHideStart(other:Screen):Void {}
 	
-	function onHideStart(other:Screen)
-	{
-		var otherName = other != null ? other.name : "null";
-		L.i('$name.onHideStart($otherName)', "screen");
-	}
-	
-	function onHideEnd(other:Screen)
-	{
-		var otherName = other != null ? other.name : "null";
-		L.i('$name.onHideEnd($otherName)', "screen");
-	}
+	/**
+	 * Called after a transition effect has hidden this screen and has shown other ((e.g. a fade-out complete).
+	 * Invoked by ScreenTransition.
+	 */
+	function onHideEnd(other:Screen):Void {}
 }

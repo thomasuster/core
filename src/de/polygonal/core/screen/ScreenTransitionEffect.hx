@@ -29,7 +29,9 @@
  */
 package de.polygonal.core.screen;
 
-interface ScreenTransitionEffect<T:Screen>
+import de.polygonal.core.screen.ScreenTransition.ScreenTransitionMode;
+
+typedef ScreenTransitionEffect<T:Screen> =
 {
 	function onStart(a:T, b:T):Void;
 	
@@ -38,7 +40,7 @@ interface ScreenTransitionEffect<T:Screen>
 	 * @param x the progress in the range [0,1]
 	 * @param direction > 0 if screen is shown, < 0 if screen is hidden
 	 */
-	function onAdvance(screen:T, progress:Float, direction:Int):Void;
+	function onAdvance(screen:T, progress:Float, state:Int):Void;
 	
 	/**
 	 * Called once the transition effect is complete.
