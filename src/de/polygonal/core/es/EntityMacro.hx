@@ -91,7 +91,7 @@ class EntityMacro
 			doc: null,
 			meta: [],
 			access: [APublic, AStatic],
-			kind: FVar(TPath({pack: [], name: "String", params: [], sub: null}), {expr: EConst(CString(name)), pos: p}),
+			kind: FVar(TPath({pack: [], name: "String", params: [], sub: null}), {expr: EConst(CString('E$name')), pos: p}),
 			pos: p
 		});
 		
