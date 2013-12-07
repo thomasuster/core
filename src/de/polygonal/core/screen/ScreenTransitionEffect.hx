@@ -44,8 +44,9 @@ typedef ScreenTransitionEffect<T:Screen> =
 	
 	/**
 	 * Called once the transition effect is complete.
+	 * @param half true if the transition is halfway through (sequential transitions only).
 	 */
-	function onComplete(screen:T):Void;
+	function onComplete(screen:T, half:Bool):Void;
 	
 	/**
 	 * The transition mode.

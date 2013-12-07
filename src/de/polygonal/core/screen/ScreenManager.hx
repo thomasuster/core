@@ -70,7 +70,7 @@ class ScreenManager extends Entity
 		{
 			onStart: function(a:Screen, b:Screen):Void {},
 			onAdvance: function(screen:Screen, progress:Float, direction:Int):Void {},
-			onComplete: function(screen:Screen):Void {},
+			onComplete: function(screen:Screen, half:Bool):Void {},
 			getMode: function() return ScreenTransitionMode.Simultaneous,
 			getDuration: function() return 0
 		});
@@ -173,8 +173,8 @@ class ScreenManager extends Entity
 	function lookupEffect<T:Screen>(a:T, b:T):ScreenTransitionEffect<T>
 	{
 		var key = "";
-		key += a == null ? "null" : a.name;
-		key += b == null ? "null" : b.name;
+		key += a == null ? "null" : Type.getClassName(Type.getClass(a));
+		key += b == null ? "null" : Type.getClassName(Type.getClass(b));
 		
 		var effect = _transitionEffectLookup.get(key);
 		

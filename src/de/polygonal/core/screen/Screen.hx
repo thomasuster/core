@@ -38,9 +38,10 @@ class Screen extends Entity
 	 */
 	public var zIndex:Int;
 	
-	function new()
+	function new(name:String = null)
 	{
-		super(Type.getClassName(Type.getClass(this)));
+		if (name == null) name = Type.getClassName(Type.getClass(this));
+		super(name);
 		exposeName();
 	}
 	

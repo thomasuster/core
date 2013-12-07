@@ -151,7 +151,7 @@ class ScreenTransition extends Entity
 							tick = false;
 							
 							_effect.onAdvance(_b, 1, 1);
-							_effect.onComplete(_b);
+							_effect.onComplete(_b, false);
 							
 							log("onShowEnd", null, _b);
 							_b.onShowEnd(null);
@@ -164,7 +164,7 @@ class ScreenTransition extends Entity
 						}
 						
 						_effect.onAdvance(_a, 1, -1);
-						_effect.onComplete(_a);
+						_effect.onComplete(_a, true);
 						
 						_phase = 1;
 						_interval.reset();
@@ -191,7 +191,7 @@ class ScreenTransition extends Entity
 						tick = false;
 						
 						_effect.onAdvance(_b, 1, 1);
-						_effect.onComplete(_b);
+						_effect.onComplete(_b, false);
 						
 						log("onShowEnd", _a, _b);
 						_b.onShowEnd(_a);
@@ -214,13 +214,13 @@ class ScreenTransition extends Entity
 					if (_a != null)
 					{
 						_effect.onAdvance(_a, 1, -1);
-						_effect.onComplete(_a);
+						_effect.onComplete(_a, false);
 						
 						log("onHideEnd", _a, _b);
 						_a.onHideEnd(_b);
 					}
 					_effect.onAdvance(_b, 1, 1);
-					_effect.onComplete(_b);
+					_effect.onComplete(_b, false);
 					
 					log("onShowEnd", _a, _b);
 					_b.onShowEnd(_a);
