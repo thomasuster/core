@@ -408,6 +408,12 @@ class Entity
 		x.onRemove(this);
 	}
 	
+	public function removeByType<T:Entity>(cl:Class<T>, inheritance = false)
+	{
+		var child = childByType(cl, inheritance);
+		if (child != null) remove(child);
+	}
+	
 	public function removeAllChildren()
 	{
 		var e = child;
