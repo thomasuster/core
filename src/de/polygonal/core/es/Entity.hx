@@ -45,10 +45,11 @@ class Entity
 	inline static var BIT_SKIP_MSG         = 0x4;
 	inline static var BIT_SKIP_TICK        = 0x8;
 	inline static var BIT_SKIP_DRAW        = 0x10;
-	inline static var BIT_STOP_PROPAGATION = 0x20;
-	inline static var BIT_MARK_FREE        = 0x40;
-	inline static var BIT_GLOBAL_NAME      = 0x80;
-	inline static var BIT_HAS_PROPERTIES   = 0x100;
+	inline static var BIT_SKIP_UPDATE      = 0x20;
+	inline static var BIT_STOP_PROPAGATION = 0x40;
+	inline static var BIT_MARK_FREE        = 0x80;
+	inline static var BIT_GLOBAL_NAME      = 0x100;
+	inline static var BIT_HAS_PROPERTIES   = 0x200;
 	
 	inline static function getEntityType<T:Entity>(C:Class<T>):Int
 	{
@@ -205,6 +206,17 @@ class Entity
 	@:noCompletion function set_draw(value:Bool):Bool
 	{
 		_flags = value ? (_flags & ~BIT_SKIP_DRAW) : (_flags | BIT_SKIP_DRAW);
+		return value;
+	}
+	
+	public var skipUpdate(get_skipUpdate, set_skipUpdate):Bool;
+	@:noCompletion inline function get_skipUpdate():Bool
+	{
+		return _flags & BIT_SKIP_UPDATE > 0;
+	}
+	@:noCompletion function set_skipUpdate(value:Bool):Bool
+	{
+		_flags = value ? (_flags | BIT_SKIP_UPDATE) : (_flags & ~BIT_SKIP_UPDATE);
 		return value;
 	}
 	

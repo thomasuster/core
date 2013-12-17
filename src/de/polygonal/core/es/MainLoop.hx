@@ -119,7 +119,7 @@ class MainLoop extends Entity implements IObserver
 		for (i in 0...k)
 		{
 			e = list[i];
-			if (e._flags & (E.BIT_GHOST | E.BIT_SKIP_TICK | E.BIT_MARK_FREE) == 0)
+			if (e._flags & (E.BIT_GHOST | E.BIT_SKIP_TICK | E.BIT_MARK_FREE | E.BIT_SKIP_UPDATE) == 0)
 				e.onTick(dt);
 		}
 	}
@@ -140,7 +140,7 @@ class MainLoop extends Entity implements IObserver
 		for (i in 0...k)
 		{
 			e = list[i];
-			if (e._flags & (E.BIT_GHOST | E.BIT_SKIP_DRAW | E.BIT_MARK_FREE) == 0)
+			if (e._flags & (E.BIT_GHOST | E.BIT_SKIP_DRAW | E.BIT_MARK_FREE | E.BIT_SKIP_UPDATE) == 0)
 				e.onDraw(alpha);
 		}
 	}
