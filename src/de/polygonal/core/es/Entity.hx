@@ -630,8 +630,16 @@ class Entity
 	{
 		var e = ES.lookupByName(name);
 		if (e == null) return;
-		var q = getMsgQue();
-		q.enqueue(this, e, msgType, 0);
+		getMsgQue().enqueue(this, e, msgType, 0);
+	}
+	
+	/**
+	 * Sends a message to the parent entity.
+	 */
+	public function msgToParent(msgType:Int)
+	{
+		var e = parent;
+		if (e != null) getMsgQue().enqueue(this, e, msgType, 0);
 	}
 	
 	/**
