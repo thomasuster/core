@@ -563,7 +563,8 @@ class Entity
 	
 	public function childExists(cl:Class<Dynamic> = null, name:String = null):Bool
 	{
-		return (cl != null ? childByType(cl) : childByName(name)) != null;
+		var child = (cl != null ? childByType(cl) : childByName(name));
+		return child != null && (child._flags & BIT_MARK_FREE == 0);
 	}
 	
 	public function siblingByType<T:Entity>(?cl:Class<T>, inheritance = false):T
