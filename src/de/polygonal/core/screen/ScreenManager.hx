@@ -50,7 +50,6 @@ private class ScreenPair
 	}
 }
 
-
 class ScreenManager extends Entity
 {
 	var _transitionEffectLookup:StringMap<ScreenTransitionEffect<Dynamic>>;
@@ -94,8 +93,6 @@ class ScreenManager extends Entity
 		{
 			var pair = _transitionQue.dequeue();
 			_transitionInProgress = true;
-			
-			var intermediate = !_transitionQue.isEmpty();
 			
 			var effect = lookupEffect(pair.a, pair.b);
 			childByType(ScreenTransition).run(effect, pair.a, pair.b);

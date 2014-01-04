@@ -16,7 +16,7 @@ class TestEntityIterator extends TestCase
 		EntitySystem.init();
 	}
 	
-	public function testDescendants()
+	function testDescendants()
 	{
 		var a = new Entity('a');
 		var b = new Entity('b');
@@ -40,7 +40,7 @@ class TestEntityIterator extends TestCase
 		assertEquals("bc", result.join(""));
 	}
 	
-	public function testAncestors()
+	function testAncestors()
 	{
 		var a = new Entity('a');
 		var b = new Entity('b');
@@ -64,7 +64,7 @@ class TestEntityIterator extends TestCase
 		assertEquals("ba", result.join(""));
 	}
 	
-	public function testSiblings()
+	function testSiblings()
 	{
 		var a = new Entity('a');
 		var b = new Entity('b');

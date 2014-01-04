@@ -239,10 +239,10 @@ class ScreenTransition extends Entity
 	function log(s:String, a:Screen, b:Screen)
 	{
 		var nameA = "none";
-		if (a != null) nameA = StringUtil.ellipsis('${a.name}[${a.zIndex}]', 20, 0);
+		if (a != null) nameA = StringUtil.ellipsis('${a.name}[${a.zIndex}]', 20, 0, true);
 		
 		var nameB = "none";
-		if (b != null) nameB = StringUtil.ellipsis('${b.name}[${b.zIndex}]', 20, 0);
+		if (b != null) nameB = StringUtil.ellipsis('${b.name}[${b.zIndex}]', 20, 0, true);
 		
 		L.d(Printf.format("%-12s %-30s => %-30s", [s, nameA, nameB]), "screen");
 	}

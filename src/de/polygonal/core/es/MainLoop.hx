@@ -82,8 +82,8 @@ class MainLoop extends Entity implements IObserver
 			//dispatch buffered messages
 			EntitySystem.dispatchMessages();
 			
-			//remove or free marked entities
-			commitBufferedChanges();
+			//free marked entities
+			freeEntities();
 		}
 		else
 		if (type == TimebaseEvent.RENDER)
@@ -103,7 +103,7 @@ class MainLoop extends Entity implements IObserver
 		}
 	}
 	
-	public function propagateTick(dt:Float)
+	function propagateTick(dt:Float)
 	{
 		var list = _scratchList;
 		var k = 0;
@@ -145,15 +145,13 @@ class MainLoop extends Entity implements IObserver
 		}
 	}
 	
-	function commitBufferedChanges()
+	function freeEntities()
 	{
 		#if verbose
-		var removeCount = 0;
 		var freeCount = 0;
 		#end
 
-		//remove or free marked entities; this is done in a separate step because iterating and modifiying
-		//a tree at the same time is complex and error-prone.
+		//free marked entities; this is done as a last step to prevent rebuilding the entities array
 		var e = child, p, next;
 		while (e != null)
 		{
@@ -179,8 +177,13 @@ class MainLoop extends Entity implements IObserver
 		}
 		
 		#if verbose
-		if (removeCount > 0) L.d('removed $removeCount entities', "es");
-		if (freeCount > 0) L.d('freed $freeCount entity subtrees', "es");
+		if (freeCount > 0)
+		{
+			if (freeCount == 1)
+				L.d('freed one subtree', "es");
+			else
+				L.d('freed $freeCount subtrees', "es");
+		}
 		#end
 	}
 }

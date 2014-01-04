@@ -41,7 +41,7 @@ import de.polygonal.core.es.EntitySystem in ES;
 @:access(de.polygonal.core.es.EntitySystem)
 class MsgQue
 {
-	static var MAX_SIZE = 1 << 15;
+	static var MAX_MESSAGES = 1 << 15;
 	
 	inline static var MSG_SIZE =
 	#if alchemy
@@ -71,7 +71,7 @@ class MsgQue
 	
 	public function new()
 	{
-		_capacity = MAX_SIZE * MSG_SIZE;
+		_capacity = MAX_MESSAGES * MSG_SIZE;
 		_que =
 		#if alchemy
 		//id.inner for sender: 4 bytes
@@ -115,7 +115,7 @@ class MsgQue
 		D.assert(sender != null);
 		D.assert(recipient != null);
 		D.assert(type >= 0 && type <= 0xffff);
-		D.assert(_size < MAX_SIZE, "message queue exhausted");
+		D.assert(_size < MAX_MESSAGES, "message queue exhausted");
 		
 		var i = (_front + (_size * MSG_SIZE)) % _capacity;
 		_size++;

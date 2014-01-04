@@ -192,7 +192,7 @@ class EntitySystem
 	{
 		D.assert(e.id != null);
 		
-		#if verbose
+		#if (verbose=="extra")
 		L.d('$e is gone', "es");
 		#end
 		
