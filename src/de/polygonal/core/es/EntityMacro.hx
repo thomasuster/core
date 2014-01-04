@@ -154,7 +154,8 @@ class EntityMacro
 				{
 					args: [{name: "name", type: TPath({name: "String", pack: [], params: []}), opt: false, value: {expr: EConst(CIdent("null")), pos: p}}],
 					ret: null,
-					expr: {expr: EBlock([assignType, {expr: ECall({expr: EConst(CIdent("super")), pos: p}, [{expr: EConst(CIdent("name")), pos: p}]), pos: p}]), pos: p}
+					expr: {expr: EBlock([assignType, {expr: ECall({expr: EConst(CIdent("super")), pos: p}, [{expr: EConst(CIdent("name")), pos: p}]), pos: p}]), pos: p},
+					params: []
 					
 				}),
 				pos: p
