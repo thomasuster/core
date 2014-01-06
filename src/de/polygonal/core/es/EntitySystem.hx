@@ -97,7 +97,7 @@ class EntitySystem
 		
 		//start from index=1 (reserved for null)
 		#if alchemy
-		_next = new de.polygonal.ds.mem.ShortMemory(1 + maxEntities);
+		_next = new de.polygonal.ds.mem.ShortMemory(1 + maxEntities, "es_freelist_shorts");
 		for (i in 1...maxEntities)
 			_next.set(i, i + 1);
 		_next.set(maxEntities, -1);
