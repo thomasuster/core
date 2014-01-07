@@ -176,6 +176,8 @@ class MsgQue
 	
 	public function dispatch()
 	{
+		if (_size == 0) return;
+		
 		var a = ES._freeList;
 		
 		var senderIndex:Int;
