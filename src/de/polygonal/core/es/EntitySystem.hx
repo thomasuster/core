@@ -38,6 +38,22 @@ import haxe.ds.Vector;
 
 typedef ES = EntitySystem;
 
+typedef EntitySystemConfig =
+{
+	/**
+	 * Maximum capacity of the message queue.
+	 * By default, a total of 32768 messages can be handled per game tick.
+	 * This requires 896 KiB of memory (576 KiB if alchemy is used).
+	 */
+	maxMessageCount:Int,
+	
+	/**
+	 * The total number of supported entities.
+	 * Default is 0x8000.
+	 */
+	maxEntityCount:Int
+}
+
 @:access(de.polygonal.core.es.Entity)
 @:access(de.polygonal.core.es.MsgQue)
 class EntitySystem
@@ -79,11 +95,15 @@ class EntitySystem
 	//entities can store optional (key, value) pairs
 	static var _properties = new IntMap<StringMap<Dynamic>>();
 	
-	public static function init(maxEntities = 0x8000)
+	public static function init(?config:EntitySystemConfig)
 	{
 		if (_freeList != null) return;
 		
-		D.assert(maxEntities <= MAX_SUPPORTED_ENTITIES);
+		if (config == null) config = {maxMessageCount: 0x8000, maxEntityCount: 0x8000};
+		
+		var maxEntities = config.maxMessageCount;
+		
+		D.assert(maxEntities > 0 && maxEntities <= MAX_SUPPORTED_ENTITIES);
 		
 		_freeList = new Vector<Entity>(1 + maxEntities); //index 0 is reserved for null
 		
@@ -110,7 +130,7 @@ class EntitySystem
 		
 		_free = 1;
 		
-		_msgQue = new MsgQue();
+		_msgQue = new MsgQue(config.maxMessageCount);
 		
 		_inheritanceLookup = new IntIntHashTable(1024);
 		
@@ -129,7 +149,7 @@ class EntitySystem
 			
 			bytesUsed += _freeList.length * 4;
 			
-			L.d('using ${bytesUsed >> 10} KiB for managing $maxEntities entities and buffering ${MsgQue.MAX_SIZE} messages.');
+			L.d('using ${bytesUsed >> 10} KiB for managing $maxEntities entities and ${config.maxMessageCount} messages.');
 		#end
 	}
 	
