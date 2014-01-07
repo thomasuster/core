@@ -204,7 +204,7 @@ class EntitySystem
 		var pos = i << 3;
 		
 		#if alchemy
-		for (i in 0...8) _topology.set(i, 0);
+		for (i in 0...8) _topology.set(pos + i, 0);
 		#else
 		for (i in 0...8) _topology[pos + i] = 0;
 		#end
