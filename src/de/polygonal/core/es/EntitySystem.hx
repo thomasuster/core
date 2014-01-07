@@ -95,7 +95,7 @@ class EntitySystem
 		
 		_entitiesByName = new StringMap<Entity>();
 		
-		//start from index=1 (reserved for null)
+		//first element is stored at index=1 (0 is reserved for NULL)
 		#if alchemy
 		_next = new de.polygonal.ds.mem.ShortMemory(1 + maxEntities, "es_freelist_shorts");
 		for (i in 1...maxEntities)
