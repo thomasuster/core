@@ -149,7 +149,7 @@ class EntitySystem
 			
 			bytesUsed += _freeList.length * 4;
 			
-			L.d('using ${bytesUsed >> 10} KiB for managing $maxEntities entities and ${config.maxMessageCount} messages.');
+			L.d('using ${bytesUsed >> 10} KiB for managing $maxEntities entities and ${config.maxMessageCount} messages.', "es");
 		#end
 	}
 	
