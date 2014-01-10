@@ -52,7 +52,7 @@ import de.polygonal.core.util.Assert;
  *         |tx  ty  1|
  * </pre>
  */
-class Mat32 implements de.polygonal.ds.Cloneable<Mat32>
+class Mat32
 {
 	/** Copies <i>source</i> into <i>target</i> and returns <i>target</i>. */
 	inline public static function copy(source:Mat32, target:Mat32):Mat32

@@ -30,7 +30,6 @@
 package de.polygonal.core.math;
 
 import de.polygonal.core.math.Vec2;
-import de.polygonal.ds.Cloneable;
 import de.polygonal.core.math.Mathematics;
 import de.polygonal.core.util.Assert;
 
@@ -42,7 +41,7 @@ import de.polygonal.core.util.Assert;
  * 
  * For positive angle, RV rotates the 2x1 vector V CCW about the origin
  */
-class Mat22 implements Cloneable<Mat22>
+class Mat22
 {
 	inline public static function concat(A:Mat22, B:Mat22, out:Mat22):Mat22
 	{
@@ -206,7 +205,6 @@ class Mat22 implements Cloneable<Mat22>
 			"[%-+10.4f %-+10.4f]", [m11, m21, m12, m22]);
 	}
 	
-	/** Creates and returns a copy of this object. */
 	public function clone():Mat22
 	{
 		var c = new Mat22();

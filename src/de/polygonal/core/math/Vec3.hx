@@ -29,14 +29,13 @@
  */
 package de.polygonal.core.math;
 
-import de.polygonal.ds.Cloneable;
 import de.polygonal.core.math.Mathematics;
 
 /**
  * <p>A 3D vector.</p>
  * <p>A geometric object that has both a magnitude (or length) and direction.</p>
  */
-class Vec3 implements Cloneable<Vec3>
+class Vec3
 {
 	/**
 	 * Creates a new <code>Vec3</code> object from the values of <code>src</code>.
