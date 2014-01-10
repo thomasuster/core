@@ -32,6 +32,7 @@ package de.polygonal.core.math;
 import de.polygonal.core.math.Vec2;
 import de.polygonal.ds.Cloneable;
 import de.polygonal.core.math.Mathematics;
+import de.polygonal.core.util.Assert;
 
 /**
  * |cos(O) -sin(O)| |1 0| |0 -1|
@@ -135,28 +136,37 @@ class Mat22 implements Cloneable<Mat22>
 	}
 	
 	/**
+	 * Inverts and returns this matrix.
+	 * @throws de.polygonal.core.util.AssertError singular matrix (debug only).
+	 */
+	public function inverse():Mat22
+	{
+		var det = m11 * m22 - m12 * m21;
+		D.assert(!M.cmpZero(det, M.ZERO_TOLERANCE), "singular matrix");
+		var invDet = 1 / det;
+		var t = m11;
+		m11 =  m22 * invDet;
+		m12 = -m12 * invDet;
+		m21 = -m21 * invDet;
+		m22 =  t * invDet;
+		return this;
+	}
+	
+	/**
 	 * Computes the matrix inverse and stores the result in <code>output</code>.<br/>
 	 * This matrix is left unchanged.
 	 * @return a reference to <code>output</code>.
+	 * @throws de.polygonal.core.util.AssertError singular matrix (debug only).
 	 */
 	public function inverseConst(output:Mat22):Mat22
 	{
 		var det = m11 * m22 - m12 * m21;
-		
-		if (M.fabs(det) > M.ZERO_TOLERANCE)
-		{
-			var invDet = 1 / det;
-			output.m11 =  m22 * invDet;
-			output.m12 = -m12 * invDet;
-			output.m21 = -m21 * invDet;
-			output.m22 =  m11 * invDet;
-		}
-		else
-		{
-			output.m11 = 0; output.m12 = 0;
-			output.m21 = 0; output.m22 = 0;
-		}
-
+		D.assert(!M.cmpZero(det, M.ZERO_TOLERANCE), "singular matrix");
+		var invDet = 1 / det;
+		output.m11 =  m22 * invDet;
+		output.m12 = -m12 * invDet;
+		output.m21 = -m21 * invDet;
+		output.m22 =  m11 * invDet;
 		return output;
 	}
 	
