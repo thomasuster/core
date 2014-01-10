@@ -110,8 +110,17 @@ class MainLoop extends Entity implements IObserver
 		var e = child;
 		while (e != null)
 		{
-			list[k++] = e;
-			e = e.preorder;
+			if (e._flags & E.BIT_SKIP_SUBTREE != 0)
+			{
+				e = e.nextSubtree();
+				if (e != null)
+					list[k++] = e;
+			}
+			else
+			{
+				list[k++] = e;
+				e = e.preorder;
+			}
 		}
 		
 		if (k > _maxSize) _maxSize = k;
@@ -131,8 +140,17 @@ class MainLoop extends Entity implements IObserver
 		var e = child;
 		while (e != null)
 		{
-			list[k++] = e;
-			e = e.preorder;
+			if (e._flags & E.BIT_SKIP_SUBTREE != 0)
+			{
+				e = e.nextSubtree();
+				if (e != null)
+					list[k++] = e;
+			}
+			else
+			{
+				list[k++] = e;
+				e = e.preorder;
+			}
 		}
 		
 		if (k > _maxSize) _maxSize = k;
