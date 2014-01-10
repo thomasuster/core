@@ -29,6 +29,9 @@
  */
 package de.polygonal.core.math;
 
+import de.polygonal.core.util.Assert;
+import de.polygonal.core.math.Mathematics;
+
 /**
  * <p>A 4x4 matrix.</p>
  * <p> Matrix operations are applied on the left. E.g. given a matrix M and vector V, matrix*vector is M*V, where V is treated as a column vector.</p>
@@ -761,6 +764,92 @@ class Mat44
 		t = m42; m42 = m24; m24 = t;
 		t = m43; m43 = m34; m34 = t;
 		return this;
+	}
+	
+	/**
+	 * Inverts and returns this matrix.
+	 * @throws de.polygonal.core.util.AssertError singular matrix (debug only).
+	 */
+	public function inverse():Mat44
+	{
+		var a0 = m11 * m22 - m12 * m21;
+		var a1 = m11 * m23 - m13 * m21;
+		var a2 = m11 * m24 - m14 * m21;
+		var a3 = m12 * m23 - m13 * m22;
+		var a4 = m12 * m24 - m14 * m22;
+		var a5 = m13 * m24 - m14 * m23;
+		var b0 = m31 * m42 - m32 * m41;
+		var b1 = m31 * m43 - m33 * m41;
+		var b2 = m31 * m44 - m34 * m41;
+		var b3 = m32 * m43 - m33 * m42;
+		var b4 = m32 * m44 - m34 * m42;
+		var b5 = m33 * m44 - m34 * m43;
+		var det = a0 * b5 - a1 * b4 + a2 * b3 + a3 * b2 - a4 * b1 + a5 * b0;
+		D.assert(!M.cmpZero(det, M.ZERO_TOLERANCE), "singular matrix");
+		var invDet = 1 / det;
+		var t11 = ( m22 * b5 - m23 * b4 + m24 * b3) * invDet;
+		var t21 = (-m21 * b5 + m23 * b2 - m24 * b1) * invDet;
+		var t31 = ( m21 * b4 - m22 * b2 + m24 * b0) * invDet;
+		var t41 = (-m21 * b3 + m22 * b1 - m23 * b0) * invDet;
+		var t12 = (-m12 * b5 + m13 * b4 - m14 * b3) * invDet;
+		var t22 = ( m11 * b5 - m13 * b2 + m14 * b1) * invDet;
+		var t32 = (-m11 * b4 + m12 * b2 - m14 * b0) * invDet;
+		var t42 = ( m11 * b3 - m12 * b1 + m13 * b0) * invDet;
+		var t13 = ( m42 * a5 - m43 * a4 + m44 * a3) * invDet;
+		var t23 = (-m41 * a5 + m43 * a2 - m44 * a1) * invDet;
+		var t33 = ( m41 * a4 - m42 * a2 + m44 * a0) * invDet;
+		var t43 = (-m41 * a3 + m42 * a1 - m43 * a0) * invDet;
+		var t14 = (-m32 * a5 + m33 * a4 - m34 * a3) * invDet;
+		var t24 = ( m31 * a5 - m33 * a2 + m34 * a1) * invDet;
+		var t34 = (-m31 * a4 + m32 * a2 - m34 * a0) * invDet;
+		var t44 = ( m31 * a3 - m32 * a1 + m33 * a0) * invDet;
+		m11 = t11; m12 = t12; m13 = t13; m14 = t14;
+		m21 = t21; m22 = t22; m23 = t23; m24 = t24;
+		m31 = t31; m32 = t32; m33 = t33; m34 = t34;
+		m41 = t41; m42 = t42; m43 = t43; m44 = t44;
+		return this;
+	}
+	
+	/**
+	 * Computes the matrix inverse and stores the result in <code>output</code>.<br/>
+	 * This matrix is left unchanged.
+	 * @return a reference to <code>output</code>.
+	 * @throws de.polygonal.core.util.AssertError singular matrix (debug only).
+	 */
+	public function inverseConst(output:Mat44):Mat44
+	{
+		var a0 = m11 * m22 - m12 * m21;
+		var a1 = m11 * m23 - m13 * m21;
+		var a2 = m11 * m24 - m14 * m21;
+		var a3 = m12 * m23 - m13 * m22;
+		var a4 = m12 * m24 - m14 * m22;
+		var a5 = m13 * m24 - m14 * m23;
+		var b0 = m31 * m42 - m32 * m41;
+		var b1 = m31 * m43 - m33 * m41;
+		var b2 = m31 * m44 - m34 * m41;
+		var b3 = m32 * m43 - m33 * m42;
+		var b4 = m32 * m44 - m34 * m42;
+		var b5 = m33 * m44 - m34 * m43;
+		var det = a0 * b5 - a1 * b4 + a2 * b3 + a3 * b2 - a4 * b1 + a5 * b0;
+		D.assert(!M.cmpZero(det, M.ZERO_TOLERANCE), "singular matrix");
+		var invDet = 1 / det;
+		output.m11 = ( m22 * b5 - m23 * b4 + m24 * b3) * invDet;
+		output.m21 = (-m21 * b5 + m23 * b2 - m24 * b1) * invDet;
+		output.m31 = ( m21 * b4 - m22 * b2 + m24 * b0) * invDet;
+		output.m41 = (-m21 * b3 + m22 * b1 - m23 * b0) * invDet;
+		output.m12 = (-m12 * b5 + m13 * b4 - m14 * b3) * invDet;
+		output.m22 = ( m11 * b5 - m13 * b2 + m14 * b1) * invDet;
+		output.m32 = (-m11 * b4 + m12 * b2 - m14 * b0) * invDet;
+		output.m42 = ( m11 * b3 - m12 * b1 + m13 * b0) * invDet;
+		output.m13 = ( m42 * a5 - m43 * a4 + m44 * a3) * invDet;
+		output.m23 = (-m41 * a5 + m43 * a2 - m44 * a1) * invDet;
+		output.m33 = ( m41 * a4 - m42 * a2 + m44 * a0) * invDet;
+		output.m43 = (-m41 * a3 + m42 * a1 - m43 * a0) * invDet;
+		output.m14 = (-m32 * a5 + m33 * a4 - m34 * a3) * invDet;
+		output.m24 = ( m31 * a5 - m33 * a2 + m34 * a1) * invDet;
+		output.m34 = (-m31 * a4 + m32 * a2 - m34 * a0) * invDet;
+		output.m44 = ( m31 * a3 - m32 * a1 + m33 * a0) * invDet;
+		return output;
 	}
 	
 	/** Creates and returns a copy of this object. */
