@@ -38,8 +38,6 @@ import de.polygonal.core.util.Assert;
  */
 class Mat33
 {
-	static var _sharedSineCosine:Vec2 = null;
-	
 	/**
 	 * @return <code>c</code> = <code>a</code>*<code>b</code>.
 	 */
@@ -74,21 +72,15 @@ class Mat33
 	public var m21:Float; public var m22:Float; public var m23:Float;
 	public var m31:Float; public var m32:Float; public var m33:Float;
 	
-	public var sineCosine:Vec2;
-	
 	public function new()
 	{
 		setIdentity();
-		if (_sharedSineCosine == null) _sharedSineCosine = new Vec2();
-		sineCosine = _sharedSineCosine;
 	}
 	
 	/** Returns the column at index <code>i</code> */
 	inline public function getCol(i:Int, output:Vec3):Vec3
 	{
-		#if debug
 		D.assert(i >= 0 && i < 3, "i >= 0 && i < 3");
-		#end
 		
 		switch (i)
 		{
@@ -106,8 +98,6 @@ class Mat33
 				output.x = m13;
 				output.y = m23;
 				output.z = m33;
-			
-			default:
 		}
 		
 		return output;
@@ -406,17 +396,6 @@ class Mat33
 		output.m32 = invDet * (m12 * m31 - m11 * m32);
 		output.m33 = invDet * (m11 * m22 - m12 * m21);
 		return output;
-	}
-	
-	/** Returns the max-column-sum matrix norm. */
-	inline public function norm():Float
-	{
-		var maxColSum = M.fabs(m11) + M.fabs(m21) + M.fabs(m31);
-		var colSum    = M.fabs(m12) + M.fabs(m22) + M.fabs(m32);
-		if (colSum > maxColSum) maxColSum = colSum;
-		colSum        = M.fabs(m13) + M.fabs(m23) + M.fabs(m33);
-		if (colSum > maxColSum) maxColSum = colSum;
-		return maxColSum;
 	}
 	
 	/** Divides all matrix elements by the scalar <code>x</code>. */

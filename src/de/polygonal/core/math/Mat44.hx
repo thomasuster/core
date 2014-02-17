@@ -208,14 +208,10 @@ class Mat44
 		return m34 = value;
 	}
 	
-	var _sineCosine:Vec2;
-	
 	/** Creates a 4x4 identity matrix. */
 	public function new()
 	{
 		setIdentity();
-		if (_sharedSineCosine == null) _sharedSineCosine = new Vec2();
-		_sineCosine = _sharedSineCosine;
 	}
 
 	/** Assigns the values of <code>other</code> to this. */
