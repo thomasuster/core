@@ -28,6 +28,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package de.polygonal.core.math.random;
+
 import haxe.ds.Vector;
 
 /**
@@ -232,7 +233,11 @@ class Mersenne extends RNG
 		y ^= y >>> kL;
 		#end
 		
+		#if cpp
+		return y < 0 ? (y + 4294967296.0) : y;
+		#else
 		return y >>> 0;
+		#end
 	}
 	
 	override public function randomFloat():Float 
