@@ -38,8 +38,6 @@ import de.polygonal.core.math.Mathematics;
  */
 class Mat44
 {
-	static var _sharedSineCosine:Vec2 = null;
-	
 	/**
 	 * @return <code>c</code> = <code>a</code>*<code>b</code>.
 	 */
@@ -269,9 +267,8 @@ class Mat44
 	 */
 	inline public function setRotateX(angle:Float):Mat44
 	{
-		TrigApprox.sinCos(angle);
-		var s = TrigApprox.sin;
-		var c = TrigApprox.cos;
+		var s = Math.sin(angle);
+		var c = Math.cos(angle);
 		m11 = 1; m12 = 0; m13 = 0; m14 = 0;
 		m21 = 0; m22 = c; m23 =-s; m24 = 0;
 		m31 = 0; m32 = s; m33 = c; m34 = 0;
@@ -285,9 +282,8 @@ class Mat44
 	 */
 	inline public function setRotateY(angle:Float):Mat44
 	{
-		TrigApprox.sinCos(angle);
-		var s = TrigApprox.sin;
-		var c = TrigApprox.cos;
+		var s = Math.sin(angle);
+		var c = Math.cos(angle);
 		m11 = c; m12 = 0; m13 = s; m14 = 0;
 		m21 = 0; m22 = 1; m23 = 0; m24 = 0;
 		m31 =-s; m32 = 0; m33 = c; m34 = 0;
@@ -301,9 +297,8 @@ class Mat44
 	 */
 	inline public function setRotateZ(angle:Float):Mat44
 	{
-		TrigApprox.sinCos(angle);
-		var s = TrigApprox.sin;
-		var c = TrigApprox.cos;
+		var s = Math.sin(angle);
+		var c = Math.cos(angle);
 		m11 = c; m12 =-s; m13 = 0; m14 = 0;
 		m21 = s; m22 = c; m23 = 0; m24 = 0;
 		m31 = 0; m32 = 0; m33 = 1; m34 = 0;
@@ -314,15 +309,13 @@ class Mat44
 	/** Sets the matrix to a rotation matrix by euler angles. */
 	public function setRotationEulerAngles(zAngle:Float, yAngle:Float, xAngle:Float)
 	{
-		TrigApprox.sinCos(xAngle);
-		var sx = TrigApprox.sin;
-		var cx = TrigApprox.cos;
-		TrigApprox.sinCos(yAngle);
-		var sy = TrigApprox.sin;
-		var cy = TrigApprox.cos;
-		TrigApprox.sinCos(zAngle);
-		var sz = TrigApprox.sin;
-		var cz = TrigApprox.cos;
+		var sx = Math.sin(xAngle);
+		var cx = Math.cos(xAngle);
+		var sy = Math.sin(yAngle);
+		var cy = Math.cos(yAngle);
+		var sz = Math.sin(zAngle);
+		var cz = Math.cos(zAngle);
+		
 		m11 = (cy * cz);
 		m12 =-(cy * sz);
 		m13 = sy;
@@ -396,9 +389,8 @@ class Mat44
 	/** Post-concatenate a x-axis rotation matrix, rotating by <code>angle</code> radians around x-axis. */
 	inline public function catRotateX(angle:Float):Mat44
 	{
-		TrigApprox.sinCos(angle);
-		var s = TrigApprox.sin;
-		var c = TrigApprox.cos;
+		var s = Math.sin(angle);
+		var c = Math.cos(angle);
 		var t = m21;
 		var u = m31;
 		m21 = c * t - s * u;
@@ -424,9 +416,8 @@ class Mat44
 	/** Pre-concatenate a x-axis rotation matrix, rotating by <code>angle</code> radians around x-axis. */
 	inline public function precatRotateX(angle:Float):Mat44
 	{
-		TrigApprox.sinCos(angle);
-		var s = TrigApprox.sin;
-		var c = TrigApprox.cos;
+		var s = Math.sin(angle);
+		var c = Math.cos(angle);
 		var t = m12, u = m13;
 		m12 = t * c + u * s;
 		m13 = t *-s + u * c;
@@ -446,9 +437,8 @@ class Mat44
 	/** Post-concatenate a y-axis rotation matrix, rotating by <code>angle</code> radians around y-axis. */
 	inline public function catRotateY(angle:Float):Mat44
 	{
-		TrigApprox.sinCos(angle);
-		var s = TrigApprox.sin;
-		var c = TrigApprox.cos;
+		var s = Math.sin(angle);
+		var c = Math.cos(angle);
 		var t = m11;
 		var u = m31;
 		m11 = c * t + s * u;
@@ -474,9 +464,8 @@ class Mat44
 	/** Pre-concatenate a y-axis rotation matrix, rotating by <code>angle</code> radians around y-axis. */
 	inline public function precatRotateY(angle:Float):Mat44
 	{
-		TrigApprox.sinCos(angle);
-		var s = TrigApprox.sin;
-		var c = TrigApprox.cos;
+		var s = Math.sin(angle);
+		var c = Math.cos(angle);
 		var t = m11;
 		var u = m13;
 		m11 = t * c + u *-s;
@@ -526,9 +515,8 @@ class Mat44
 		var t11 = m11; var t12 = m12; var t13 = m13; var t14 = m14;
 		var t21 = m21; var t22 = m22; var t23 = m23; var t24 = m24;
 		var t31 = m31; var t32 = m32; var t33 = m33; var t34 = m34;
-		TrigApprox.sinCos(angle);
-		var s = TrigApprox.sin;
-		var c = TrigApprox.cos;
+		var s = Math.sin(angle);
+		var c = Math.cos(angle);
 		m11 = t11 *   c + t12 * s;
 		m12 = t11 *  -s + t12 * c;
 		m14 = t11 * t14 + t12 * t24 + t13 * t34;
