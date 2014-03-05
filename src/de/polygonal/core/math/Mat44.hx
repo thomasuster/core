@@ -483,29 +483,39 @@ class Mat44
 		return this;
 	}
 	
-	/** Post-concatenate a z-axis rotation matrix, rotating by <code>angle</code> radians around z-axis. */
-	inline public function catRotateZ(angle:Float):Mat44
+	/**
+	 * R*M, where R is a rotation matrix around the z-axis.
+	 */
+	public function catRotateZ(angle:Float):Mat44
 	{
-		TrigApprox.sinCos(angle);
-		var s = TrigApprox.sin;
-		var c = TrigApprox.cos;
-		var t = m11;
-		var u = m21;
-		m11 = c * t - s * u;
-		m21 = s * t + c * u;
-		t = m12;
-		u = m22;
-		m12 = c * t - s * u;
-		m22 = s * t + c * u;
-		t = m13;
-		u = m32;
-		m13 = c * t - s * u;
-		m23 = s * t + c * u;
-		t = m14;
-		u = m24;
-		m14 = c * t - s * u + t;
-		m24 = s * t + c * u + u;
-		m34 = m34 + m34;
+		/*
+		|cosΦ -sinΦ 0 0| |m11 m12 m13 tx|
+		|sinΦ  cosΦ 0 0| |m21 m22 m23 ty|
+		|0        0 1 0| |m31 m32 m33 tz|
+		|0        0 0 1| |  0   0   0  1|
+		*/
+		var s = Math.sin(angle);
+		var c = Math.cos(angle);
+		
+		var u = m11;
+		var v = m21;
+		m11 = (c * u) - (s * v);
+		m21 = (s * u) + (c * v); 
+		
+		u = m12;
+		v = m22;
+		m12 = (c * u) - (s * v); 
+		m22 = (s * u) + (c * v); 
+		
+		u = m13;
+		v = m23;
+		m13 = (c * u) - (s * v); 
+		m23 = (s * u) + (c * v);
+		
+		u = m14;
+		v = m24;
+		m14 = (c * u) - (s * v);
+		m24 = (s * u) + (c * v);
 		return this;
 	}
 	
