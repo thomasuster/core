@@ -335,57 +335,6 @@ class Mat44
 		return this;
 	}
 	
-	/**
-	 * Defines a parallel projection, same as <i>glOrtho()</i>.<br/>
-	 * @see http://publib.boulder.ibm.com/infocenter/pseries/v5r3/index.jsp?topic=/com.ibm.aix.opengl/doc/openglrf/glOrtho.htm
-	 * @param l coordinates for the left clipping plane.
-	 * @param r coordinates for the right clipping plane.
-	 * @param b coordinates for the bottom clipping plane.
-	 * @param t coordinates for the top clipping plane.
-	 * @param n coordinates for the near clipping plane.
-	 * @param f coordinates for the far clipping plane.
-	 */
-	public function setOrtho(l:Float, r:Float, b:Float, t:Float, n:Float, f:Float):Mat44
-	{
-		var w = r - l;
-		var h = t - b;
-		var d = f - n;
-		m11 = 2 / w;		m12 = 0;			m13 = 0;			m14 = 0;
-		m21 = 0;			m22 = 2 / h;		m23 = 0;			m24 = 0;
-		m31 = 0;			m32 = 0;			m33 =-2 / d;		m34 = 0;
-		m41 =-(r + l) / w;	m42 =-(t + b) / h;	m43 =-(f + n) / d;	m44 = 1;
-		return this;
-	}
-	
-	/**
-	 * Defines a parallel projection.<br/>
-	 * Simplied version of <em>setOrtho6()</em> using 4 parameters instead of 6 for a symmetrical viewing volume.
-	 * @param width width of field of view
-	 * @param height height of field of view
-	 * @param near near clipping plane
-	 * @param far far clipping plane
-	 */
-	public function setOrthoSimple(width:Float, height:Float, near:Float, far:Float):Mat44
-	{
-		return setOrtho(0, width, 0, height, near, far);
-	}
-	
-	/**
-	 * Defines a perspective projection, same as <i>glFrustum()</i>.<br/>
-	 * @see http://publib.boulder.ibm.com/infocenter/pseries/v5r3/index.jsp?topic=/com.ibm.aix.opengl/doc/openglrf/glFrustum.htm
-	 */
-	public function setFrustum(l:Float, r:Float, b:Float, t:Float, n:Float, f:Float):Mat44
-	{
-		var w = r - l;
-		var h = t - b;
-		var d = f - n;
-		m11 = (2 * n) / w; m12 = 0;           m13 = (r + l) / w; m14 = 0;
-		m21 = 0;           m22 = (2 * n) / h; m23 = (t + b) / h; m24 = 0;
-		m31 = 0;           m32 = 0;           m33 =-(f + n) / d; m34 = -(2 * f * n) / d;
-		m41 = 0;           m42 = 0;           m43 =-1;           m44 = 0;
-		return this;
-	}
-	
 	/** Post-concatenate a x-axis rotation matrix, rotating by <code>angle</code> radians around x-axis. */
 	inline public function catRotateX(angle:Float):Mat44
 	{
@@ -626,57 +575,54 @@ class Mat44
 	}
 	
 	/**
-	 * Post-concatenates a scaling matrix and returns this matrix.
-	 * @param x x-axis scale (<em>m11</em>).
-	 * @param y y-axis scale (<em>m22</em>).
-	 * @param z z-axis scale (<em>m33</em>).
+	 * S*M, where S is a scaling matrix.
 	 */
-	inline public function catScale(x:Float, y:Float, z:Float):Mat44
+	public function catScale(x:Float, y:Float, z:Float)
 	{
-		//|x 0 0 0| |m11 m12 m13 tx|
-		//|0 y 0 0| |m21 m22 m23 ty|
-		//|0 0 z 0| |m31 m32 m33 tz|
-		//|0 0 0 1| |  0   0   0  1|
-		m11 *= x;
-		m21 *= x;
-		m31 *= x;
-		m41 *= x;
-		m12 *= y;
-		m22 *= y;
-		m32 *= y;
-		m42 *= y;
-		m13 *= z;
-		m23 *= z;
-		m33 *= z;
-		m43 *= z;
-		return this;
-	}
-	
-	/**
-	 * Pre-concatenates a scaling matrix and returns this matrix.
-	 * @param x x-axis scale (<em>m11</em>).
-	 * @param y y-axis scale (<em>m22</em>).
-	 * @param z z-axis scale (<em>m33</em>).
-	 */
-	inline public function precatScale(x:Float, y:Float, z:Float):Mat44
-	{
-		//|m11 m12 m13 tx| |x 0 0 0|
-		//|m21 m22 m23 ty| |0 y 0 0|
-		//|m31 m32 m33 tz| |0 0 z 0|
-		//|  0   0   0  1| |0 0 0 1|
+		/*
+		|x 0 0 0| |m11 m12 m13 tx|
+		|0 y 0 0| |m21 m22 m23 ty|
+		|0 0 z 0| |m31 m32 m33 tz|
+		|0 0 0 1| |  0   0   0  1|
+		*/
 		m11 *= x;
 		m12 *= x;
 		m13 *= x;
 		m14 *= x;
+		
 		m21 *= y;
 		m22 *= y;
 		m23 *= y;
 		m24 *= y;
+		
 		m31 *= z;
 		m32 *= z;
 		m33 *= z;
 		m34 *= z;
-		return this;
+	}
+	
+	/**
+	 * M*S, where S is a scaling matrix.
+	 */
+	public function precatScale(x:Float, y:Float, z:Float)
+	{
+		/*
+		|m11 m12 m13 tx| |x 0 0 0|
+		|m21 m22 m23 ty| |0 y 0 0|
+		|m31 m32 m33 tz| |0 0 z 0|
+		|  0   0   0  1| |0 0 0 1|
+		*/
+		m11 *= x;
+		m12 *= y;
+		m13 *= z;
+		
+		m21 *= x;
+		m22 *= y;
+		m23 *= z;
+		
+		m31 *= x;
+		m32 *= y;
+		m33 *= z;
 	}
 	
 	/**
