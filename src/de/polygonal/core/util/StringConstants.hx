@@ -21,12 +21,18 @@ package de.polygonal.core.util;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 
+/**
+ * Helper macro for defining string constants.
+ */
 class StringConstants
 {
-	macro public static function build(e:Expr):Array<Field>
+	macro public static function build(e:Expr, publicAccess:Bool = true):Array<Field>
 	{
 		var pos = Context.currentPos();
 		var fields = Context.getBuildFields();
+		
+		var access = [AStatic, AInline];
+		if (publicAccess) access.push(APublic);
 		
 		switch (e.expr)
 		{
@@ -39,7 +45,7 @@ class StringConstants
 							switch (c)
 							{
 								case CIdent(s):
-									fields.push({name: s, doc: null, meta: [], access: [AStatic, APublic, AInline], kind: FVar(TPath({pack: [], name: "String", params: [], sub: null}), {expr: EConst(CString(s)), pos: pos}), pos: pos});
+									fields.push({name: s, doc: null, meta: [], access: access, kind: FVar(TPath({pack: [], name: "String", params: [], sub: null}), {expr: EConst(CString(s)), pos: pos}), pos: pos});
 								default: Context.error("unsupported declaration", pos);
 							}
 						default: Context.error("unsupported declaration", pos);
@@ -48,14 +54,16 @@ class StringConstants
 			default: Context.error("unsupported declaration", pos);
 		}
 		
-		var arrExpr = [];
-		for (field in fields) arrExpr.push({expr: EConst(CString(field.name)), pos: pos});
-		
-		fields.push
-		({
-			name: "ALL", doc: null, meta: [], access: [APublic, AStatic], pos: pos,
-			kind: FVar(TPath({pack: [], name: "Array", params: [TPType(TPath({sub: null, name: "String", pack: [], params: []}))], sub: null}), {expr: EArrayDecl(arrExpr), pos: pos})
-		});
+		var a = [];
+		for (field in fields) a.push({expr: EConst(CString(field.name)), pos: pos});
+		var f =
+		{
+			args: [],
+			ret: TPath({name: "Array", pack: [], params: [TPType(TPath({name: "String", pack: [], params: [], sub: null}))], sub: null}),
+			expr: {expr: EReturn({expr: EArrayDecl(a), pos: pos}), pos: pos},
+			params: []
+		}
+		fields.push({name: "all", doc: null, meta: [], access: access, kind: FFun(f), pos: pos});
 		
 		return fields;
 	}
