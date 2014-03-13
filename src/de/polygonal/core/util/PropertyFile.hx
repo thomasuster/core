@@ -1,32 +1,21 @@
-/*
- *                            _/                                                    _/
- *       _/_/_/      _/_/    _/  _/    _/    _/_/_/    _/_/    _/_/_/      _/_/_/  _/
- *      _/    _/  _/    _/  _/  _/    _/  _/    _/  _/    _/  _/    _/  _/    _/  _/
- *     _/    _/  _/    _/  _/  _/    _/  _/    _/  _/    _/  _/    _/  _/    _/  _/
- *    _/_/_/      _/_/    _/    _/_/_/    _/_/_/    _/_/    _/    _/    _/_/_/  _/
- *   _/                            _/        _/
- *  _/                        _/_/      _/_/
- *
- * POLYGONAL - A HAXE LIBRARY FOR GAME DEVELOPERS
- * Copyright (c) 2009 Michael Baczynski, http://www.polygonal.de
- *
- * Permission is hereby granted, free of charge, to any person obtaining
- * a copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to
- * the following conditions:
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+/*.
+Copyright (c) 2012-2014 Michael Baczynski, http://www.polygonal.de
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+associated documentation files (the "Software"), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or
+substantial portions of the Software.
+ 
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT
+OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
 package de.polygonal.core.util;
 
 import haxe.ds.StringMap;
@@ -36,6 +25,10 @@ import haxe.macro.Context;
 import haxe.macro.Expr;
 #end
 
+/**
+ * Java property file format.
+ * @see http://en.wikipedia.org/wiki/Java_properties
+ */
 class PropertyFile
 {
 	#if macro
@@ -160,12 +153,48 @@ class PropertyFile
 		if (!useStaticFields) fields.push({name: "new", doc: null, meta: [], access: [APublic], kind: FFun({args: [], ret: null, expr: {expr: EBlock(assign), pos:pos}, params: []}), pos: pos});
 		return fields;
 	}
+	#else
+	public static function inject(str:String, obj:Dynamic)
+	{
+		var isInst = Type.getClass(obj) != null;
+		
+		var rtti = Reflect.field(isInst ? Type.getClass(obj) : obj, "__rtti");
+		if (rtti == null) throw "@:rtti metadata required";
+		
+		var xml = Xml.parse(rtti).firstElement();
+		
+		var pairs = parse(str);
+		for (key in pairs.keys())
+		{
+			//resolve type from rtti
+			var e = xml.elementsNamed(key).next();
+			var type = e.firstChild().get("path");
+			var param = null;
+			if (type == "Array") param = e.firstChild().firstChild().get("path");
+			
+			//convert string to real type
+			var value:Dynamic = pairs.get(key);
+			switch (type)
+			{
+				case "Int":   value = Std.parseInt(value);
+				case "Float": value = Std.parseFloat(value);
+				case "Bool":  value = value == "true";
+				case "Array": value = value.split(",");
+					switch (param)
+					{
+						case "Int":   for (i in 0...value.length) value[i] = Std.parseInt(value[i]);
+						case "Float": for (i in 0...value.length) value[i] = Std.parseFloat(value[i]);
+						case "Bool" : for (i in 0...value.length) value[i] = value[i] == "true";
+						case _:
+					}
+				case _:
+			}
+			
+			Reflect.setField(obj, key, value);
+		}
+	}
 	#end
 	
-	/**
-	 * Parses a .properties file according to this <a href="http://en.wikipedia.org/wiki/Java_properties">format</a>.
-	 * @return a hash with all key/value pairs defined in <code>str</code>.
-	 */
 	public static function parse(str:String):StringMap<String>
 	{
 		var pairs = new StringMap<String>();
@@ -176,7 +205,7 @@ class PropertyFile
 			{
 				if (pairs.exists(pair.key))
 				{
-					var msg = "found duplicate key: " + pair.key;
+					var msg = 'found duplicate key: ${pair.key}';
 					#if macro
 					var min = str.indexOf(pair.key, str.indexOf(pair.key) + 1);
 					var max = min + pair.key.length;
@@ -235,49 +264,6 @@ class PropertyFile
 		
 		return pairs;
 	}
-	
-	#if !macro
-	public static function ofFile(str:String, obj:Dynamic)
-	{
-		var isInst = Type.getClass(obj) != null;
-		
-		var rtti = Reflect.field(isInst ? Type.getClass(obj) : obj, "__rtti");
-		if (rtti == null)
-			throw "@:rtti metadata required";
-		
-		var xml = Xml.parse(rtti).firstElement();
-		
-		var pairs = parse(str);
-		for (key in pairs.keys())
-		{
-			//resolve type from rtti
-			var e = xml.elementsNamed(key).next();
-			var type = e.firstChild().get("path");
-			var param = null;
-			if (type == "Array") param = e.firstChild().firstChild().get("path");
-			
-			//convert string to real type
-			var value:Dynamic = pairs.get(key);
-			switch (type)
-			{
-				case "Int":   value = Std.parseInt(value);
-				case "Float": value = Std.parseFloat(value);
-				case "Bool":  value = value == "true";
-				case "Array": value = value.split(",");
-					switch (param)
-					{
-						case "Int":   for (i in 0...value.length) value[i] = Std.parseInt(value[i]);
-						case "Float": for (i in 0...value.length) value[i] = Std.parseFloat(value[i]);
-						case "Bool" : for (i in 0...value.length) value[i] = value[i] == "true";
-						case _:
-					}
-				case _:
-			}
-			
-			Reflect.setField(obj, key, value);
-		}
-	}
-	#end
 	
 	static function parseLine(str:String):{key:String, val:String}
 	{
