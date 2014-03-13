@@ -18,79 +18,57 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 */
 package de.polygonal.core.math;
 
-import de.polygonal.ds.mem.DoubleMemory;
+import haxe.ds.Vector;
 
 /**
- * <p>The arithmetic mean of a set of numbers.</p>
+ * The arithmetic mean of a set of numbers.
  */
 class Mean
 {
-	var _i:Int;
-	var _s:Int;
-	var _k:Int;
-	var _val:Float;
-	var _set:DoubleMemory;
-	var _invalidate:Bool;
+	var mNext:Int;
+	var mSize:Int;
+	var mCapacity:Int;
+	var mValue:Float;
+	var mSet:Vector<Float>;
+	var mChanged:Bool;
 	
-	/**
-	 * @param size the size of the number set.
-	 */
-	public function new(size:Int)
+	public function new(capacity:Int)
 	{
-		_set = new DoubleMemory(_s = size, "Mean._set");
-		_set.fill(0);
-		_val = 0;
+		mSet = new Vector<Float>(mCapacity = capacity);
+		for (i in 0...capacity) mSet[i] = 0;
+		reset();
 	}
 	
-	/**
-	 * Destroys this object by explicitly nullifying all references for GC'ing used resources.<br/>
-	 * <warn>Always call this method to prevent a memory leak.</warn>
-	 */
-	public function free()
+	inline public function reset()
 	{
-		_set.free();
-		_set = null;
+		mNext = 0;
+		mSize = 0;
+		mValue = 0;
+		mChanged = true;
 	}
 	
-	/**
-	 * Inserts <code>x</code> into the number set.
-	 */
-	inline public function add(x:Float)
+	inline public function add(value:Float)
 	{
-		_set.set(_i, x);
-		_i = (_i + 1) % _s;
-		_k = _k < _s ? _k + 1: _k;
-		_invalidate = true;
+		mSet.set(mNext, value);
+		mNext = (mNext + 1) % mCapacity;
+		mSize = mSize < mCapacity ? mSize + 1: mSize;
+		mChanged = true;
 	}
 	
-	/**
-	 * Computes the mean value.
-	 */
-	inline public function val():Float
+	inline public function get():Float
 	{
-		if (_invalidate)
+		if (mChanged) compute();
+		return mValue;
+	}
+	
+	function compute()
+	{
+		mChanged = false;
+		mValue = 0;
+		if (mSize > 0)
 		{
-			_invalidate = false;
-			_val = 0;
-			
-			if (_k > 0)
-			{
-				for (i in 0..._k) _val += _set.get(i);
-				_val /= _k;
-			}
+			for (i in 0...mSize) mValue += mSet.get(i);
+			mValue /= mSize;
 		}
-		
-		return _val;
-	}
-	
-	/**
-	 * Clears all values.
-	 */
-	inline public function clear()
-	{
-		_i = 0;
-		_k = 0;
-		_val = 0;
-		_invalidate = true;
 	}
 }
