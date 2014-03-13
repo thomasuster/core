@@ -299,7 +299,7 @@ class Tween implements IObservable implements IObserver implements TimelineListe
 		notify(TweenEvent.START, _min);
 	}
 	
-	function onProgress(alpha:Float) 
+	function onProgress(alpha:Float)
 	{
 		if (_id == -1) return;
 		_a = _b; _b = M.lerp(_min, _max, _ease.interpolate(alpha));
@@ -307,7 +307,7 @@ class Tween implements IObservable implements IObserver implements TimelineListe
 		notify(TweenEvent.ADVANCE, _b);
 	}
 	
-	function onEnd() 
+	function onEnd()
 	{
 		if (_id == -1) return;
 		_id = -1;
@@ -330,7 +330,7 @@ class Tween implements IObservable implements IObserver implements TimelineListe
 		if (_key == null) free();
 	}
 	
-	function onCancel() 
+	function onCancel()
 	{
 		if (_activeTweens != null) _activeTweens.remove(this);
 		notify(TweenEvent.FINISH, _b);

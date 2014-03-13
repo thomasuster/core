@@ -22,7 +22,7 @@ import de.polygonal.core.es.Entity;
 import de.polygonal.core.es.EntitySystem;
 import de.polygonal.core.screen.ScreenTransition;
 import de.polygonal.core.util.Assert;
-import de.polygonal.core.util.ClassUtil;
+import de.polygonal.core.util.ClassTools;
 import de.polygonal.ds.LinkedQueue;
 import de.polygonal.ds.LinkedStack;
 import haxe.ds.StringMap;

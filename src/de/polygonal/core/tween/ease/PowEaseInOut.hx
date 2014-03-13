@@ -43,7 +43,7 @@ class PowEaseInOut implements Interpolation<Float>
 	/**
 	 * @param t interpolation parameter in the interval <arg>&#091;0, 1&#093;</arg>.
 	 */
-	public function interpolate(t:Float):Float 
+	public function interpolate(t:Float):Float
 	{
 		if (t < .5)
 			return Math.pow(t * 2, degree) * .5;

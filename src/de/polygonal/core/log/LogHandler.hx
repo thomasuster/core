@@ -32,7 +32,7 @@ using de.polygonal.ds.Bits;
 /**
  * <p>A log handler receives log messages from a log and exports them to various output devices.</p>
  */
-@:build(de.polygonal.core.util.IntEnum.build(
+@:build(de.polygonal.core.util.IntConstants.build(
 [
 	DATE,
 	TIME,
@@ -43,7 +43,7 @@ using de.polygonal.ds.Bits;
 	CLASS_SHORT,
 	METHOD,
 	LINE
-], true))
+], true, true))
 class LogHandler implements IObserver
 {
 	inline public static var FORMAT_RAW         = 0;

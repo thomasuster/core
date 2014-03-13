@@ -1,4 +1,6 @@
-﻿class UnitTest extends haxe.unit.TestRunner
+﻿import haxe.unit.TestRunner;
+
+class UnitTest extends haxe.unit.TestRunner
 {
 	public static function main():Void
 	{
@@ -9,10 +11,7 @@
 	{
 		super();
 		
-		//add(new TestEntityIterator());
-		
-		add(new TestEntity());
-		
+		add(new TestMersenne());
 		run();
 	}
 }
