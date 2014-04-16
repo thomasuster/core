@@ -9,7 +9,7 @@ furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all copies or
 substantial portions of the Software.
- 
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
 NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
@@ -99,7 +99,7 @@ class Log
 	 * Returns the name(s) of the active log level(s).<br/>
 	 * Example:<br/><br/>
 	 * <pre class="prettyprint">
-	 * class Main 
+	 * class Main
 	 * {
 	 *     static function main() {
 	 *         var log = de.polygonal.core.log.Log.getLog("Foo");
@@ -144,7 +144,7 @@ class Log
 	 * Example:<br/><br/>
 	 * <pre class="prettyprint">
 	 * import de.polygonal.core.log.LogLevel;
-	 * class Main 
+	 * class Main
 	 * {
 	 *     static function main() {
 	 *         var log = de.polygonal.core.log.Log.getLog("Foo");

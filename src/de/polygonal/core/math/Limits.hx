@@ -9,7 +9,7 @@ furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all copies or
 substantial portions of the Software.
- 
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
 NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
@@ -59,7 +59,7 @@ class Limits
 	inline public static var INT32_MIN =
 	#if cpp
 	//warning: this decimal constant is unsigned only in ISO C90
-	-0x7fffffff;
+	-0x7FFFFFFF;
 	#else
 	0x80000000;
 	#end
@@ -67,12 +67,12 @@ class Limits
 	/**
 	 * Max value, signed integer.
 	 */
-	inline public static var INT32_MAX = 0x7fffffff;
+	inline public static var INT32_MAX = 0x7FFFFFFF;
 	
 	/**
 	 * Max value, unsigned integer.
 	 */
-	inline public static var UINT32_MAX = 0xffffffff;
+	inline public static var UINT32_MAX = 0xFFFFFFFF;
 	
 	/**
 	 * Number of bits using for representing integers.

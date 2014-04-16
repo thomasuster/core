@@ -9,7 +9,7 @@ furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all copies or
 substantial portions of the Software.
- 
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
 NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
@@ -20,7 +20,7 @@ package de.polygonal.core.es;
 
 import de.polygonal.core.es.Msg;
 import de.polygonal.core.util.Assert;
-import de.polygonal.core.util.ClassUtil;
+import de.polygonal.core.util.ClassTools;
 
 import de.polygonal.core.es.EntitySystem in ES;
 
@@ -52,8 +52,8 @@ class Entity
 		#end
 	}
 	
-	inline static function getMsgQue() return ES._msgQue;
-	inline static function getInheritanceLookup() return ES._inheritanceLookup;
+	inline static function getMsgQue() return ES.mMsgQue;
+	inline static function getInheritanceLookup() return ES.mInheritanceLookup;
 	
 	/**
 	 * A unique identifier for this entity.
@@ -61,7 +61,7 @@ class Entity
 	public var id(default, null):EntityId;
 	
 	/**
-	 * Every subclass of the Entity class is defined by a unique integer value.
+	 * Every subclass of the Entity class can be identified by a unique integer value.
 	 */
 	public var type(default, never):Int;
 	
@@ -70,13 +70,20 @@ class Entity
 	 */
 	public var preorder(default, null):Entity;
 	
-	@:noCompletion var _flags:Int;
-	@:noCompletion var _name:String;
+	@:noCompletion var mFlags:Int;
+	@:noCompletion var mName:String;
 	
-	public function new(name:String = null)
+	public function new(?name:String)
 	{
 		ES.register(this);
-		if (name != null) this.name = name;
+		
+		#if debug
+		if (name == null)
+			name = ClassTools.getUnqualifiedClassName(this);
+		#end
+		
+		if (name != null)
+			this.name = name;
 	}
 	
 	/**
@@ -85,13 +92,13 @@ class Entity
 	 */
 	public function free()
 	{
-		if (_flags & BIT_MARK_FREE > 0) return;
+		if (mFlags & BIT_MARK_FREE > 0) return;
 		
 		var e = this;
 		var k = size + 1;
 		while (k-- > 0)
 		{
-			e._flags |= BIT_MARK_FREE;
+			e.mFlags |= BIT_MARK_FREE;
 			e = e.preorder;
 		}
 	}
@@ -182,33 +189,33 @@ class Entity
 	public var tick(get_tick, set_tick):Bool;
 	@:noCompletion inline function get_tick():Bool
 	{
-		return _flags & BIT_SKIP_TICK == 0;
+		return mFlags & BIT_SKIP_TICK == 0;
 	}
 	@:noCompletion function set_tick(value:Bool):Bool
 	{
-		_flags = value ? (_flags & ~BIT_SKIP_TICK) : (_flags | BIT_SKIP_TICK);
+		mFlags = value ? (mFlags & ~BIT_SKIP_TICK) : (mFlags | BIT_SKIP_TICK);
 		return value;
 	}
 	
 	public var draw(get_draw, set_draw):Bool;
 	@:noCompletion inline function get_draw():Bool
 	{
-		return _flags & BIT_SKIP_DRAW == 0;
+		return mFlags & BIT_SKIP_DRAW == 0;
 	}
 	@:noCompletion function set_draw(value:Bool):Bool
 	{
-		_flags = value ? (_flags & ~BIT_SKIP_DRAW) : (_flags | BIT_SKIP_DRAW);
+		mFlags = value ? (mFlags & ~BIT_SKIP_DRAW) : (mFlags | BIT_SKIP_DRAW);
 		return value;
 	}
 	
 	public var skipUpdate(get_skipUpdate, set_skipUpdate):Bool;
 	@:noCompletion inline function get_skipUpdate():Bool
 	{
-		return _flags & BIT_SKIP_UPDATE > 0;
+		return mFlags & BIT_SKIP_UPDATE > 0;
 	}
 	@:noCompletion function set_skipUpdate(value:Bool):Bool
 	{
-		_flags = value ? (_flags | BIT_SKIP_UPDATE) : (_flags & ~BIT_SKIP_UPDATE);
+		mFlags = value ? (mFlags | BIT_SKIP_UPDATE) : (mFlags & ~BIT_SKIP_UPDATE);
 		return value;
 	}
 	
@@ -219,53 +226,53 @@ class Entity
 	public var name(get_name, set_name):String;
 	@:noCompletion inline function get_name():String
 	{
-		return _name;
+		return mName;
 	}
 	@:noCompletion function set_name(value:String):String
 	{
 		if (value == name) return value;
-		if (_flags & BIT_GLOBAL_NAME > 0)
+		if (mFlags & BIT_GLOBAL_NAME > 0)
 			ES.changeName(this, value);
-		_name = value;
+		mName = value;
 		return value;
 	}
 	
 	public function exposeName()
 	{
-		if (_flags & BIT_GLOBAL_NAME == 0)
+		if (mFlags & BIT_GLOBAL_NAME == 0)
 		{
-			_flags |= BIT_GLOBAL_NAME;
-			ES.changeName(this, _name);
+			mFlags |= BIT_GLOBAL_NAME;
+			ES.changeName(this, mName);
 		}
 	}
 	
 	public var ghost(get_ghost, set_ghost):Bool;
-	@:noCompletion inline function get_ghost():Bool return _flags & BIT_GHOST > 0;
+	@:noCompletion inline function get_ghost():Bool return mFlags & BIT_GHOST > 0;
 	@:noCompletion function set_ghost(value:Bool):Bool
 	{
-		_flags = value ? (_flags | BIT_GHOST) : (_flags & ~BIT_GHOST);
+		mFlags = value ? (mFlags | BIT_GHOST) : (mFlags & ~BIT_GHOST);
 		return value;
 	}
 	
 	public var skipSubtree(get_skipSubtree, set_skipSubtree):Bool;
 	@:noCompletion inline function get_skipSubtree():Bool
 	{
-		return _flags & BIT_SKIP_SUBTREE > 0;
+		return mFlags & BIT_SKIP_SUBTREE > 0;
 	}
 	@:noCompletion function set_skipSubtree(value:Bool):Bool
 	{
-		_flags = value ? (_flags | BIT_SKIP_SUBTREE) : (_flags & ~BIT_SKIP_SUBTREE);
+		mFlags = value ? (mFlags | BIT_SKIP_SUBTREE) : (mFlags & ~BIT_SKIP_SUBTREE);
 		return value;
 	}
 	
 	public var skipMessages(get_skipMessages, set_skipMessages):Bool;
 	@:noCompletion inline function get_skipMessages():Bool
 	{
-		return _flags & BIT_SKIP_MSG > 0;
+		return mFlags & BIT_SKIP_MSG > 0;
 	}
 	@:noCompletion function set_skipMessages(value:Bool):Bool
 	{
-		_flags = value ? (_flags | BIT_SKIP_MSG) : (_flags & ~BIT_SKIP_MSG);
+		mFlags = value ? (mFlags | BIT_SKIP_MSG) : (mFlags & ~BIT_SKIP_MSG);
 		return value;
 	}
 	
@@ -556,7 +563,7 @@ class Entity
 	public function childExists(cl:Class<Dynamic> = null, name:String = null):Bool
 	{
 		var child = (cl != null ? childByType(cl) : childByName(name));
-		return child != null && (child._flags & BIT_MARK_FREE == 0);
+		return child != null && (child.mFlags & BIT_MARK_FREE == 0);
 	}
 	
 	public function siblingByType<T:Entity>(?cl:Class<T>, inheritance = false):T
@@ -809,7 +816,7 @@ class Entity
 	 */
 	inline public function stop()
 	{
-		_flags |= BIT_STOP_PROPAGATION;
+		mFlags |= BIT_STOP_PROPAGATION;
 	}
 	
 	/**
@@ -823,9 +830,13 @@ class Entity
 	/**
 	 * Convenience method for casting this Entity to the type <code>cl</code>.
 	 */
-	inline public function as<T:Entity>(cl:Class<T>):T
+	inline public function as<T:Entity>(c:Class<T>):T
 	{
+		#if flash
+		return untyped __as__(this, c);
+		#else
 		return cast this;
+		#end
 	}
 	
 	/**
@@ -861,7 +872,7 @@ class Entity
 	
 	public function toString():String
 	{
-		if (name == null) name = '[${ClassUtil.getClassName(this)}]';
+		if (name == null) name = '[${ClassTools.getClassName(this)}]';
 		return '{ Entity $name }';
 	}
 	

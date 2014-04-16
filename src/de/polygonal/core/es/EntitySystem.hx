@@ -9,7 +9,7 @@ furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all copies or
 substantial portions of the Software.
- 
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
 NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
@@ -19,7 +19,7 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 package de.polygonal.core.es;
 
 import de.polygonal.core.util.Assert;
-import de.polygonal.core.util.ClassUtil;
+import de.polygonal.core.util.ClassTools;
 import de.polygonal.ds.IntIntHashTable;
 import haxe.ds.IntMap;
 import haxe.ds.StringMap;
@@ -50,43 +50,43 @@ class EntitySystem
 	inline public static var MAX_SUPPORTED_ENTITIES = 0xFFFE;
 	
 	//unique id, incremented every time an entity is registered
-	static var _nextInnerId = 0;
+	static var mNextInnerId = 0;
 	
 	//all existing entities
-	static var _freeList:Vector<Entity>;
+	static var mFreeList:Vector<Entity>;
 	
 	#if alchemy
-	static var _next:de.polygonal.ds.mem.ShortMemory;
+	static var mNext:de.polygonal.ds.mem.ShortMemory;
 	#else
-	static var _next:Vector<Int>;
+	static var mNext:Vector<Int>;
 	#end
 	
-	static var _free:Int;
+	static var mFree:Int;
 	
 	//indices [0,3]: parent, child, sibling, last child (indices into the free list)
 	//indices [4,6]: size (#descendants), tree depth, #children
 	//index 7 is reserved
 	#if alchemy
-	static var _topology:de.polygonal.ds.mem.ShortMemory;
+	static var mTopology:de.polygonal.ds.mem.ShortMemory;
 	#else
-	static var _topology:Vector<Int>; //TODO use 16 bits
+	static var mTopology:Vector<Int>; //TODO use 16 bits
 	#end
 	
 	//name => [entities by name]
-	static var _entitiesByName:StringMap<Entity> = null;
+	static var mEntitiesByName:StringMap<Entity> = null;
 	
 	//circular message buffer
-	static var _msgQue:MsgQue;
+	static var mMsgQue:MsgQue;
 	
 	//maps class x to all superclasses of x
-	static var _inheritanceLookup:IntIntHashTable;
+	static var mInheritanceLookup:IntIntHashTable;
 	
-	//entities can store optional (key, value) pairs
-	static var _properties = new IntMap<StringMap<Dynamic>>();
+	//entities can store optional <key, value> pairs
+	static var mProperties = new IntMap<StringMap<Dynamic>>();
 	
 	public static function init(?config:EntitySystemConfig)
 	{
-		if (_freeList != null) return;
+		if (mFreeList != null) return;
 		
 		if (config == null) config = {maxMessageCount: 0x8000, maxEntityCount: 0x8000};
 		
@@ -94,49 +94,49 @@ class EntitySystem
 		
 		D.assert(maxEntities > 0 && maxEntities <= MAX_SUPPORTED_ENTITIES);
 		
-		_freeList = new Vector<Entity>(1 + maxEntities); //index 0 is reserved for null
+		mFreeList = new Vector<Entity>(1 + maxEntities); //index 0 is reserved for null
 		
 		#if alchemy
-		_topology = new de.polygonal.ds.mem.ShortMemory((1 + maxEntities) << 3, "topology");
+		mTopology = new de.polygonal.ds.mem.ShortMemory((1 + maxEntities) << 3, "topology");
 		#else
-		_topology = new Vector<Int>((1 + maxEntities) << 3);
+		mTopology = new Vector<Int>((1 + maxEntities) << 3);
 		#end
 		
-		_entitiesByName = new StringMap<Entity>();
+		mEntitiesByName = new StringMap<Entity>();
 		
 		//first element is stored at index=1 (0 is reserved for NULL)
 		#if alchemy
-		_next = new de.polygonal.ds.mem.ShortMemory(1 + maxEntities, "es_freelist_shorts");
+		mNext = new de.polygonal.ds.mem.ShortMemory(1 + maxEntities, "es_freelist_shorts");
 		for (i in 1...maxEntities)
-			_next.set(i, i + 1);
-		_next.set(maxEntities, -1);
+			mNext.set(i, i + 1);
+		mNext.set(maxEntities, -1);
 		#else
-		_next = new Vector<Int>(1 + maxEntities);
+		mNext = new Vector<Int>(1 + maxEntities);
 		for (i in 1...maxEntities)
-			_next[i] = (i + 1);
-		_next[maxEntities] = -1;
+			mNext[i] = (i + 1);
+		mNext[maxEntities] = -1;
 		#end
 		
-		_free = 1;
+		mFree = 1;
 		
-		_msgQue = new MsgQue(config.maxMessageCount);
+		mMsgQue = new MsgQue(config.maxMessageCount);
 		
-		_inheritanceLookup = new IntIntHashTable(1024);
+		mInheritanceLookup = new IntIntHashTable(1024);
 		
 		#if verbose
 			//topology array
 			var bytesUsed = 0;
 			#if alchemy
-			bytesUsed += _topology.size * 2;
-			bytesUsed += _next.size * 2;
-			bytesUsed += _msgQue._que.size;
+			bytesUsed += mTopology.size * 2;
+			bytesUsed += mNext.size * 2;
+			bytesUsed += mMsgQue.mQue.size;
 			#else
-			bytesUsed += _topology.length * 4;
-			bytesUsed += _next.length * 4;
-			bytesUsed += _msgQue._que.length * 4;
+			bytesUsed += mTopology.length * 4;
+			bytesUsed += mNext.length * 4;
+			bytesUsed += mMsgQue.mQue.length * 4;
 			#end
 			
-			bytesUsed += _freeList.length * 4;
+			bytesUsed += mFreeList.length * 4;
 			
 			L.d('using ${bytesUsed >> 10} KiB for managing $maxEntities entities and ${config.maxMessageCount} messages.', "es");
 		#end
@@ -144,46 +144,46 @@ class EntitySystem
 	
 	public static function free()
 	{
-		_freeList = null;
+		mFreeList = null;
 		
 		#if alchemy
-		_topology.free();
-		_next.free();
+		mTopology.free();
+		mNext.free();
 		#end
 		
-		_topology = null;
-		_entitiesByName = null;
-		_next = null;
-		_nextInnerId = 0;
-		_inheritanceLookup.free();
-		_inheritanceLookup = null;
+		mTopology = null;
+		mEntitiesByName = null;
+		mNext = null;
+		mNextInnerId = 0;
+		mInheritanceLookup.free();
+		mInheritanceLookup = null;
 	}
 	
 	public static function register(e:Entity)
 	{
-		D.assert(_freeList != null, "call EntitySystem.init() first");
-		D.assert(e.id == null && e._flags == 0, "Entity has been registered");
+		D.assert(mFreeList != null, "call EntitySystem.init() first");
+		D.assert(e.id == null && e.mFlags == 0, "Entity has been registered");
 		
-		var i = _free;
+		var i = mFree;
 		
 		D.assert(i != -1);
 		
 		#if alchemy
-		_free = _next.get(i);
+		mFree = mNext.get(i);
 		#else
-		_free = _next[i];
+		mFree = mNext[i];
 		#end
 		
-		_freeList[i] = e;
+		mFreeList[i] = e;
 		
 		var id = new EntityId();
-		id.inner = _nextInnerId++;
+		id.inner = mNextInnerId++;
 		id.index = i;
 		e.id = id;
 		
 		if (e.name != null) registerName(e);
 		
-		var lut = _inheritanceLookup;
+		var lut = mInheritanceLookup;
 		if (!lut.hasKey(e.type))
 		{
 			var t = e.type;
@@ -191,7 +191,7 @@ class EntitySystem
 			var sc:Class<Entity> = Reflect.field(Type.getClass(e), "SUPER_CLASS");
 			while (sc != null)
 			{
-				_inheritanceLookup.set(t, Entity.getEntityType(sc));
+				mInheritanceLookup.set(t, Entity.getEntityType(sc));
 				sc = Reflect.field(sc, "SUPER_CLASS");
 			}
 		}
@@ -208,31 +208,31 @@ class EntitySystem
 		var i = e.id.index;
 		
 		//nullify for gc
-		_freeList[i] = null;
+		mFreeList[i] = null;
 		
 		var pos = i << 3;
 		
 		#if alchemy
-		for (i in 0...8) _topology.set(pos + i, 0);
+		for (i in 0...8) mTopology.set(pos + i, 0);
 		#else
-		for (i in 0...8) _topology[pos + i] = 0;
+		for (i in 0...8) mTopology[pos + i] = 0;
 		#end
 		
 		//mark as free
 		#if alchemy
-		_next.set(i, _free);
+		mNext.set(i, mFree);
 		#else
-		_next[i] = _free;
+		mNext[i] = mFree;
 		#end
-		_free = i;
+		mFree = i;
 		
 		//remove from name => entity mapping
-		if (e._flags & Entity.BIT_GLOBAL_NAME > 0)
-			_entitiesByName.remove(e.name);
+		if (e.mFlags & Entity.BIT_GLOBAL_NAME > 0)
+			mEntitiesByName.remove(e.name);
 		
 		//wipe all properties
-		if (e._flags & Entity.BIT_HAS_PROPERTIES > 0)
-			_properties.remove(e.id.inner);
+		if (e.mFlags & Entity.BIT_HAS_PROPERTIES > 0)
+			mProperties.remove(e.id.inner);
 		
 		//mark as removed by setting msb to one
 		e.id.inner |= 0x80000000;
@@ -254,19 +254,18 @@ class EntitySystem
 			freeIterative(e); //inverse levelorder traversal
 	}
 	
-	inline public static function dispatchMessages()
-		_msgQue.dispatch();
+	inline public static function dispatchMessages() mMsgQue.dispatch();
 	
-	inline public static function getParent(e:Entity):Entity return _freeList[get(pos(e, 0))];
+	inline public static function getParent(e:Entity):Entity return mFreeList[get(pos(e, 0))];
 	inline public static function setParent(e:Entity, parent:Entity) set(pos(e, 0), parent == null ? 0 : parent.id.index);
 	
-	inline public static function getChild(e:Entity):Entity return _freeList[get(pos(e, 1))];
+	inline public static function getChild(e:Entity):Entity return mFreeList[get(pos(e, 1))];
 	inline public static function setChild(e:Entity, child:Entity) set(pos(e, 1), child == null ? 0 : child.id.index);
 	
-	inline public static function getSibling(e:Entity):Entity return _freeList[get(pos(e, 2))];
+	inline public static function getSibling(e:Entity):Entity return mFreeList[get(pos(e, 2))];
 	inline public static function setSibling(e:Entity, sibling:Entity) set(pos(e, 2), sibling == null ? 0 : sibling.id.index);
 	
-	inline public static function getLastChild(e:Entity):Entity return _freeList[get(pos(e, 3))];
+	inline public static function getLastChild(e:Entity):Entity return mFreeList[get(pos(e, 3))];
 	inline public static function setLastChild(e:Entity, lastChild:Entity) set(pos(e, 3), lastChild == null ? 0 : lastChild.id.index);
 	
 	inline public static function getSize(e:Entity):Int return get(pos(e, 4));
@@ -280,34 +279,34 @@ class EntitySystem
 	
 	inline static function get(i:Int):Int
 	{
-		return 
+		return
 		#if alchemy
-		_topology.get(i);
+		mTopology.get(i);
 		#else
-		_topology[i];
+		mTopology[i];
 		#end
 	}
 	
 	inline static function set(i:Int, value:Int)
 	{
 		#if alchemy
-		_topology.set(i, value);
+		mTopology.set(i, value);
 		#else
-		_topology[i] = value;
+		mTopology[i] = value;
 		#end
 	}
 		
 	inline static function pos(e:Entity, shift:Int):Int return (e.id.index << 3) + shift;
 	
-	inline public static function existsByName(name:String):Bool return _entitiesByName.exists(name);
+	inline public static function existsByName(name:String):Bool return mEntitiesByName.exists(name);
 	
-	inline public static function lookupByName(name:String):Entity return cast _entitiesByName.get(name);
+	inline public static function lookupByName(name:String):Entity return cast mEntitiesByName.get(name);
 		
 	inline public static function lookup(id:EntityId):Entity
 	{
 		if (id.index > 0)
 		{
-			var e = _freeList[id.index];
+			var e = mFreeList[id.index];
 			if (e != null)
 				return (e.id.inner == id.inner) ? e : null;
 			else
@@ -320,8 +319,8 @@ class EntitySystem
 	public static function changeName(e:Entity, newName:String)
 	{
 		if (e.name != null)
-			_entitiesByName.remove(e.name);
-		e._name = newName;
+			mEntitiesByName.remove(e.name);
+		e.mName = newName;
 		registerName(e);
 	}
 	
@@ -338,7 +337,7 @@ class EntitySystem
 				else
 					s += "|   ";
 			}
-			s += '[${e.name},${ClassUtil.getClassName(e)}]\n';
+			s += '[${e.name},${ClassTools.getClassName(e)}]\n';
 			e = e.preorder;
 		}
 		return s;
@@ -347,39 +346,39 @@ class EntitySystem
 	public static function hasProperty(e:Entity, key:String):Bool
 	{
 		var i = e.id.inner;
-		if (_properties.exists(i))
-			return _properties.get(i).exists(key);
+		if (mProperties.exists(i))
+			return mProperties.get(i).exists(key);
 		return false;
 	}
 	
 	public static function getProperty(e:Entity, key:String):Dynamic
 	{
 		var i = e.id.inner;
-		if (_properties.exists(i))
-			return _properties.get(i).get(key);
+		if (mProperties.exists(i))
+			return mProperties.get(i).get(key);
 		return null;
 	}
 	
 	public static function setProperty(e:Entity, key:String, value:Dynamic)
 	{
-		e._flags |= Entity.BIT_HAS_PROPERTIES;
+		e.mFlags |= Entity.BIT_HAS_PROPERTIES;
 		
 		var i = e.id.inner;
-		if (_properties.exists(i))
-			_properties.get(i).set(key, value);
+		if (mProperties.exists(i))
+			mProperties.get(i).set(key, value);
 		else
 		{
 			var map = new StringMap<Dynamic>();
 			map.set(key, value);
-			_properties.set(i, map);
+			mProperties.set(i, map);
 		}
 	}
 	
 	public static function clrProperty(e:Entity, key:String)
 	{
 		var i = e.id.inner;
-		if (_properties.exists(i))
-			_properties.get(i).remove(key);
+		if (mProperties.exists(i))
+			mProperties.get(i).remove(key);
 	}
 	
 	static function freeRecursive(e:Entity)
@@ -429,10 +428,10 @@ class EntitySystem
 	{
 		D.assert(e.id != null, "Entity is not registered, call EntitySystem.register() before");
 		
-		if (_entitiesByName.exists(e.name))
-			throw '${e.name} already registered to ${_entitiesByName.get(e.name)}';
+		if (mEntitiesByName.exists(e.name))
+			throw '${e.name} already registered to ${mEntitiesByName.get(e.name)}';
 		
-		_entitiesByName.set(e.name, e);
+		mEntitiesByName.set(e.name, e);
 		
 		#if verbose
 		L.d('registered entity by name: $e', "es");

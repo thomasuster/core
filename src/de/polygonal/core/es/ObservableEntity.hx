@@ -9,7 +9,7 @@ furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all copies or
 substantial portions of the Software.
- 
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
 NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
@@ -47,7 +47,7 @@ class ObservableEntity extends Entity
 		_attachStatus = null;
 	}
 	
-	public function notify(type:Int)
+	public function notify(type:Int, ?data:Dynamic)
 	{
 		var sub = _observersByType.get(type);
 		var all = _observers;
@@ -65,7 +65,7 @@ class ObservableEntity extends Entity
 			if (id.inner < 0)
 			{
 				sub.pop();
-				_attachStatus.clr(id.inner & 0x7fffffff);
+				_attachStatus.clr(id.inner & 0x7FFFFFFF);
 			}
 		}
 		
@@ -77,9 +77,11 @@ class ObservableEntity extends Entity
 			if (id.inner < 0)
 			{
 				all.pop();
-				_attachStatus.clr(id.inner & 0x7fffffff);
+				_attachStatus.clr(id.inner & 0x7FFFFFFF);
 			}
 		}
+		
+		if (data != null) putMsgData(data);
 	}
 	
 	public function attach(e:Entity, type:Int = -1):Bool
@@ -109,6 +111,11 @@ class ObservableEntity extends Entity
 		//mark as attached
 		_attachStatus.set(id.inner, type);
 		return true;
+	}
+	
+	public function attachTypes(e:Entity, types:Array<Int>)
+	{
+		Lambda.iter(types, function(x) attach(e, x));
 	}
 	
 	public function detach(e:Entity, type:Int = -1):Bool

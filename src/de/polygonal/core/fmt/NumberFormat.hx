@@ -9,7 +9,7 @@ furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all copies or
 substantial portions of the Software.
- 
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
 NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
@@ -60,7 +60,7 @@ class NumberFormat
 		var a = _hexLUT;
 		while (x != 0)
 		{
-			s = a[x & 0xf] + s;
+			s = a[x & 0xF] + s;
 			x >>>= 4;
 		}
 		return s;
@@ -185,7 +185,7 @@ class NumberFormat
 	 * @param decimalSeparator a character to use as a decimal separator. The default value is ",".
 	 * @param thousandsSeparator a character to use as a thousands separator. The default value is ".".
 	 */
-	public static function centToEuro(x:Int, decimalSeparator = ",", thousandsSeparator = "."):String	
+	public static function centToEuro(x:Int, decimalSeparator = ",", thousandsSeparator = "."):String
 	{
 		var euro = Std.int(x / 100);
 		if (euro == 0)
@@ -195,10 +195,10 @@ class NumberFormat
 			else
 				return "0" + decimalSeparator + x;
 		}
-		else 
+		else
 		{
 			var str:String;
-			var cent = x - euro * 100;	
+			var cent = x - euro * 100;
 			if (cent < 10)
 				str = decimalSeparator + "0" + cent;
 			else
@@ -209,17 +209,17 @@ class NumberFormat
 				var add;
 				while ( num >= 1000)
 				{
-					num = Std.int(euro / 1000);	
-					add = euro - num * 1000; 
+					num = Std.int(euro / 1000);
+					add = euro - num * 1000;
 					if (add < 10)
 						str = thousandsSeparator + "00" + add + str;
 					else
 					if (add < 100)
-						str = thousandsSeparator + "0" + add + str; 
+						str = thousandsSeparator + "0" + add + str;
 					else
 						str = thousandsSeparator + add + str;
 					euro = num;
-				}		
+				}
 				return str = num + str;
 			}
 			else

@@ -9,7 +9,7 @@ furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all copies or
 substantial portions of the Software.
- 
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
 NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
@@ -39,7 +39,7 @@ class Mersenne extends RNG
 	inline static var kB         = 0x9D2C5680;
 	inline static var kC         = 0xEFC60000;
 	inline static var kLowerMask = ((0x00000001) << kR) - 1;
-	inline static var kUpperMask = 0xffffffff << kR;
+	inline static var kUpperMask = 0xFFFFFFFF << kR;
 	inline static var kTwistMask = 0x00000001;
 	
 	#if (flash10 && alchemy)
@@ -99,7 +99,7 @@ class Mersenne extends RNG
 		for (i in 1...kN)
 		{
 			_setState(i, add32(mul32(0x6C078965, ui32(_getState(i - 1) ^ (_getState(i - 1) >>> 30))), i));
-			_setState(i, ui32(_getState(i) & 0xffffffff));
+			_setState(i, ui32(_getState(i) & 0xFFFFFFFF));
 		}
 		#else
 		for (i in 1...kN) _setState(i, (0x6C078965 * (_getState(i - 1) ^ (_getState(i - 1) >>> 30)) + i));
@@ -125,7 +125,7 @@ class Mersenne extends RNG
 		{
 			#if js
 			_setState(i, add32(add32(ui32(_getState(i) ^ mul32(ui32(_getState(i-1) ^ (_getState(i - 1) >>> 30)), 1664525)), keys[j]), j));
-			_setState(i, ui32(_getState(i) & 0xffffffff));
+			_setState(i, ui32(_getState(i) & 0xFFFFFFFF));
 			#else
 			_setState(i, (_getState(i) ^ ((_getState(i - 1) ^ (_getState(i - 1) >>> 30)) * 1664525)) + keys[j] + j);
 			#end
@@ -148,7 +148,7 @@ class Mersenne extends RNG
 		{
 			#if js
 			_setState(i, sub32(ui32((_getState(i)) ^ mul32(ui32(_getState(i - 1) ^ (_getState(i - 1) >>> 30)), 1566083941)), i));
-			_setState(i, ui32(_getState(i) & 0xffffffff));
+			_setState(i, ui32(_getState(i) & 0xFFFFFFFF));
 			#else
 			_setState(i, (_getState(i) ^ ((_getState(i - 1) ^ (_getState(i - 1) >>> 30)) * 1566083941)) - i);
 			#end
@@ -167,7 +167,7 @@ class Mersenne extends RNG
 	}
 	
 	/**
-	 * Returns an integral number in the interval <arg>&#091;0, 0xffffffff&#093;</arg>.<br/>
+	 * Returns an integral number in the interval <arg>&#091;0, 0xFFFFFFFF&#093;</arg>.<br/>
 	 */
 	override public function random():Float
 	{
@@ -229,7 +229,7 @@ class Mersenne extends RNG
 		#end
 	}
 	
-	override public function randomFloat():Float 
+	override public function randomFloat():Float
 	{
 		return random() * (1. / 4294967296.);
 	}
@@ -256,11 +256,11 @@ class Mersenne extends RNG
 	}
 	inline function add32(a, b)
 	{
-		return ui32((a + b) & 0xffffffff);
+		return ui32((a + b) & 0xFFFFFFFF);
 	}
 	inline function sub32(a, b)
 	{
-		return a < b ? ui32((Std.int(4294967296) - (b - a)) & 0xffffffff) : a - b;
+		return a < b ? ui32((Std.int(4294967296) - (b - a)) & 0xFFFFFFFF) : a - b;
 	}
 	inline function mul32(a, b)
 	{

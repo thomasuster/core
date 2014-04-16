@@ -9,7 +9,7 @@ furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all copies or
 substantial portions of the Software.
- 
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
 NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
@@ -55,7 +55,7 @@ class LogHandler implements IObserver
 	
 	var _level:Int;
 	var _mask:Int;
-	var _bits:Int;
+	var mBits:Int;
 	var _message:LogMessage;
 	var _tagFormat:StringMap<Int>;
 	
@@ -63,7 +63,7 @@ class LogHandler implements IObserver
 	{
 		_level = 0;
 		_mask = 0;
-		_bits = 0;
+		mBits = 0;
 		_message = null;
 		_tagFormat = null;
 		
@@ -152,7 +152,7 @@ class LogHandler implements IObserver
 	 */
 	public function getFormat():Int
 	{
-		return _bits;
+		return mBits;
 	}
 	
 	/**
@@ -179,7 +179,7 @@ class LogHandler implements IObserver
 			_tagFormat.set(tag, flags);
 		}
 		else
-			_bits = flags;
+			mBits = flags;
 	}
 	
 	public function onUpdate(type:Int, source:IObservable, userData:Dynamic)
@@ -190,13 +190,13 @@ class LogHandler implements IObserver
 			
 			if (_mask.hasBits(_message.outputLevel))
 			{
-				var tmp = _bits;
+				var tmp = mBits;
 				if (_tagFormat != null && _tagFormat.exists(_message.tag))
-					_bits = _tagFormat.get(_message.tag);
+					mBits = _tagFormat.get(_message.tag);
 				
 				output(format());
 				
-				_bits = tmp;
+				mBits = tmp;
 			}
 		}
 	}
@@ -301,7 +301,7 @@ class LogHandler implements IObserver
 		args.push(fmt);
 		
 		//message
-		fmt = _bits == 0 ? "%s" : ": %s";
+		fmt = mBits == 0 ? "%s" : ": %s";
 		val = _message.msg;
 		var s = val;
 		if (Std.is(s, String) && s.indexOf("\n") != -1)
@@ -325,7 +325,7 @@ class LogHandler implements IObserver
 			for (i in s.split("\n"))
 				if (i != "") tmp.push(i);
 			
-			if (_bits != FORMAT_RAW)
+			if (mBits != FORMAT_RAW)
 				val = "\n" + pre + ": " + tmp.join("\n" + pre + ": ");
 		}
 		
@@ -339,6 +339,6 @@ class LogHandler implements IObserver
 	
 	function init()
 	{
-		_bits = DEFAULT_FORMAT;
+		mBits = DEFAULT_FORMAT;
 	}
 }

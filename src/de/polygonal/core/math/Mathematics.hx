@@ -9,7 +9,7 @@ furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all copies or
 substantial portions of the Software.
- 
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
 NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
@@ -469,7 +469,7 @@ class Mathematics
 		var xt = x;
 		var half = .5 * xt;
 		var i = floatToInt(xt);
-		i = 0x5f3759df - (i >> 1);
+		i = 0x5F3759DF - (i >> 1);
 		var xt = intToFloat(i);
 		return 1 / (xt * (1.5 - half * xt * xt));
 		#else
@@ -486,7 +486,7 @@ class Mathematics
 		var xt = x;
 		var half = .5 * xt;
 		var i = floatToInt(xt);
-		i = 0x5f3759df - (i >> 1);
+		i = 0x5F3759DF - (i >> 1);
 		var xt = intToFloat(i);
 		return xt * (1.5 - half * xt * xt);
 		#else

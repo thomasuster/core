@@ -9,7 +9,7 @@ furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all copies or
 substantial portions of the Software.
- 
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
 NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
@@ -36,7 +36,7 @@ class RootSolver
 	inline static var THREE_OVER_8   = .375;
 	inline static var THREE_OVER_256 = 0.01171875;
 	
-	inline static function cbrt(x:Float):Float 
+	inline static function cbrt(x:Float):Float
 	{
 		return (x < 0 ? -1. : 1.) * Math.pow(Math.abs(x), INV3);
 	}
@@ -70,7 +70,7 @@ class RootSolver
 	{
 		var p = c1 / (2 * c2);
 		var q = c0 / c2;
-		var d = p * p - q; 
+		var d = p * p - q;
 		
 		//normal form: x^2 + px + q = 0
 		if (isZero(d))
@@ -124,7 +124,7 @@ class RootSolver
 				var u = cbrt(-q);
 				roots[0] = 2 * u;
 				roots[1] =-u;
-				k = 2;		
+				k = 2;
 			}
 		}
 		else

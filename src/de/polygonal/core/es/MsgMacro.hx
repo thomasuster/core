@@ -9,7 +9,7 @@ furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all copies or
 substantial portions of the Software.
- 
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
 NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
@@ -26,8 +26,8 @@ import haxe.macro.Expr;
 class MsgMacro
 {
 	#if macro
-	static var nextId:Int = 0;
-	static var names:Array<String> = [];
+	static var mNextId:Int = 0;
+	static var mNames:Array<String> = [];
 	#end
 	
 	macro static function build(e:Expr):Array<Field>
@@ -46,17 +46,17 @@ class MsgMacro
 							switch (c)
 							{
 								case CIdent(d):
-									names.push(d);
+									mNames.push(d);
 									fields.push(
 									{
 										name: d,
 										doc: null,
 										meta: [],
 										access: [AStatic, APublic, AInline],
-										kind: FVar(TPath({pack: [], name: "Int", params: [], sub: null}), {expr: EConst(CInt(Std.string(nextId))), pos: pos}),
+										kind: FVar(TPath({pack: [], name: "Int", params: [], sub: null}), {expr: EConst(CInt(Std.string(mNextId))), pos: pos}),
 										pos: pos
 									});
-									nextId++;
+									mNextId++;
 								case _: Context.error("unsupported declaration", pos);
 							}
 						case _: Context.error("unsupported declaration", pos);
@@ -78,16 +78,16 @@ class MsgMacro
 			{
 				case TInst(t, params):
 					var a = [];
-					for (name in names)
+					for (name in mNames)
 						a.push({expr: EConst(CString(name)), pos: pos});
-					var ct = t.get();	
+					var ct = t.get();
 					if (ct.meta.has("names"))
 					{
 						ct.meta.remove("names");
 						ct.meta.remove("count");
 					}
 					ct.meta.add("names", [{expr: EArrayDecl(a), pos: pos}], pos);
-					ct.meta.add("count", [{expr: EConst(CString(Std.string(nextId))), pos: pos}], pos);
+					ct.meta.add("count", [{expr: EConst(CString(Std.string(mNextId))), pos: pos}], pos);
 				case _:
 			}
 		});

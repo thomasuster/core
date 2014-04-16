@@ -9,7 +9,7 @@ furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all copies or
 substantial portions of the Software.
- 
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
 NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
@@ -176,7 +176,7 @@ class Mat32
 	/**
 	 * v' = <i>v</i><i>R, R = 2x2 upper portion</i><br/>
 	 * Linearly transforms <i>v</i> (upper 2x2 portion only) and writes the result into <i>out</i> in vector form.<br/>
-	 * This rotates <i>v</i> if the 2x2 matrix is a rotation matrix. 
+	 * This rotates <i>v</i> if the 2x2 matrix is a rotation matrix.
 	 * The order of multiplications from left to right is the same as the order of transformations.
 	 * @return The transformed vector (<i>out</i>).
 	 */
@@ -255,7 +255,7 @@ class Mat32
 	
 	inline public function setScale(x:Float, y:Float)
 	{
-		m11 = x; m12 = 0;     
+		m11 = x; m12 = 0;
 		m21 = 0; m22 = y;
 	}
 	
@@ -323,7 +323,7 @@ class Mat32
 		tx = x; ty = y;
 	}
 	
-	/** 
+	/**
 	 * Setup the matrix to perform a parent->local transformation, given the position <i>x</i>,<i>y</i>
 	 * and orientation <i>orient</i> of the local reference frame within the parent reference frame.
 	 * A very common use of this will be to construct a world->object matrix.

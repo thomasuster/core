@@ -9,7 +9,7 @@ furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all copies or
 substantial portions of the Software.
- 
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
 NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
@@ -57,13 +57,13 @@ class ParkMiller31 extends RNG
 	}
 	
 	/**
-	 * Returns an integral number in the interval <arg>&#091;0, 0x7fffffff)</arg>.<br/>
+	 * Returns an integral number in the interval <arg>&#091;0, 0x7FFFFFFF)</arg>.<br/>
 	 */
 	override public function random():Float
 	{
-		var lo = 16807 * (_seed & 0xffff);
+		var lo = 16807 * (_seed & 0xFFFF);
 		var hi = 16807 * (_seed >>> 16);
-		lo += (hi & 0x7fff) << 16;
+		lo += (hi & 0x7FFF) << 16;
 		lo += hi >>> 15;
 		
 		// Check to see if the unsigned representation of lo is > MAX_VALUE

@@ -9,7 +9,7 @@ furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all copies or
 substantial portions of the Software.
- 
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
 NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
@@ -20,7 +20,7 @@ package de.polygonal.core.math;
 
 import de.polygonal.core.math.Mathematics;
 
-class Vec2Util 
+class Vec2Util
 {
 	/**
 	 * Computes the unit length vector <code>q</code> = (<code>b</code>-<code>a</code>)/||<code>b</code>-<code>a</code>||</code>.

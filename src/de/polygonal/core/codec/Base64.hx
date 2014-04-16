@@ -9,7 +9,7 @@ furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all copies or
 substantial portions of the Software.
- 
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
 NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
@@ -78,7 +78,7 @@ class Base64
 	inline public static function decodeString(source:String, breakLines = false):String
 	{
 		var bytes = decodeBytes(source, breakLines);
-		return bytes.readString(0, bytes.length);
+		return bytes.getString(0, bytes.length);
 	}
 	
 	inline private static function decodeBytes(source:String, breakLines = false)
@@ -118,7 +118,7 @@ class Base64
 	private static function encodeBytes(source:Bytes, breakLines = false, maxLineLength = 76):String
 	{
 		var bytes = coder.encodeBytes(source);
-		var result = pad(bytes.readString(0, bytes.length));
+		var result = pad(bytes.getString(0, bytes.length));
 		return breakLines ? split(result, maxLineLength) : result;
 	}
 }

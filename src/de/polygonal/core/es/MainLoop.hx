@@ -9,7 +9,7 @@ furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all copies or
 substantial portions of the Software.
- 
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
 NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
@@ -31,12 +31,16 @@ import de.polygonal.core.es.EntitySystem in ES;
 @:access(de.polygonal.core.es.EntitySystem)
 class MainLoop extends Entity implements IObserver
 {
+	public static var instance(get_instance, never):MainLoop;
+	static function get_instance():MainLoop return mInstance == null ? (mInstance = new MainLoop()) : mInstance;
+	static var mInstance:MainLoop = null;
+	
 	public var paused = false;
 	
-	var _stack:Array<E>;
-	var _top:Int;
-	var _scratchList:Vector<E>;
-	var _maxSize:Int;
+	var mStack:Array<E>;
+	var mTop:Int;
+	var mScratchList:Vector<E>;
+	var mMaxSize:Int;
 	
 	public function new()
 	{
@@ -46,8 +50,8 @@ class MainLoop extends Entity implements IObserver
 		Timebase.attach(this);
 		Timeline.init();
 		
-		_scratchList = new Vector<E>(ES.MAX_SUPPORTED_ENTITIES);
-		_maxSize = 0;
+		mScratchList = new Vector<E>(ES.MAX_SUPPORTED_ENTITIES);
+		mMaxSize = 0;
 	}
 	
 	override function onFree()
@@ -62,7 +66,7 @@ class MainLoop extends Entity implements IObserver
 		if (type == TimebaseEvent.TICK)
 		{
 			//process scheduled events
-			Timeline.advance();
+			Timeline.tick();
 			
 			//advance all entities
 			var dt:Float = userData;
@@ -84,9 +88,9 @@ class MainLoop extends Entity implements IObserver
 			//prune scratch list for gc at regular intervals
 			if (Timebase.processedFrames % 60 == 0)
 			{
-				var k = _maxSize;
-				_maxSize = 0;
-				var list = _scratchList;
+				var k = mMaxSize;
+				mMaxSize = 0;
+				var list = mScratchList;
 				for (i in 0...k) list[i] = null;
 			}
 		}
@@ -94,12 +98,12 @@ class MainLoop extends Entity implements IObserver
 	
 	function propagateTick(dt:Float)
 	{
-		var list = _scratchList;
+		var list = mScratchList;
 		var k = 0;
 		var e = child;
 		while (e != null)
 		{
-			if (e._flags & E.BIT_SKIP_SUBTREE != 0)
+			if (e.mFlags & E.BIT_SKIP_SUBTREE != 0)
 			{
 				e = e.nextSubtree();
 				if (e != null)
@@ -112,24 +116,24 @@ class MainLoop extends Entity implements IObserver
 			}
 		}
 		
-		if (k > _maxSize) _maxSize = k;
+		if (k > mMaxSize) mMaxSize = k;
 		
 		for (i in 0...k)
 		{
 			e = list[i];
-			if (e._flags & (E.BIT_GHOST | E.BIT_SKIP_TICK | E.BIT_MARK_FREE | E.BIT_SKIP_UPDATE) == 0)
+			if (e.mFlags & (E.BIT_GHOST | E.BIT_SKIP_TICK | E.BIT_MARK_FREE | E.BIT_SKIP_UPDATE) == 0)
 				e.onTick(dt);
 		}
 	}
 	
 	function propagateDraw(alpha:Float)
 	{
-		var list = _scratchList;
+		var list = mScratchList;
 		var k = 0;
 		var e = child;
 		while (e != null)
 		{
-			if (e._flags & E.BIT_SKIP_SUBTREE != 0)
+			if (e.mFlags & E.BIT_SKIP_SUBTREE != 0)
 			{
 				e = e.nextSubtree();
 				if (e != null)
@@ -142,12 +146,12 @@ class MainLoop extends Entity implements IObserver
 			}
 		}
 		
-		if (k > _maxSize) _maxSize = k;
+		if (k > mMaxSize) mMaxSize = k;
 		
 		for (i in 0...k)
 		{
 			e = list[i];
-			if (e._flags & (E.BIT_GHOST | E.BIT_SKIP_DRAW | E.BIT_MARK_FREE | E.BIT_SKIP_UPDATE) == 0)
+			if (e.mFlags & (E.BIT_GHOST | E.BIT_SKIP_DRAW | E.BIT_MARK_FREE | E.BIT_SKIP_UPDATE) == 0)
 				e.onDraw(alpha);
 		}
 	}
@@ -164,7 +168,7 @@ class MainLoop extends Entity implements IObserver
 		{
 			next = e.preorder;
 			
-			if (e._flags & E.BIT_MARK_FREE > 0)
+			if (e.mFlags & E.BIT_MARK_FREE > 0)
 			{
 				next = e.nextSubtree();
 				

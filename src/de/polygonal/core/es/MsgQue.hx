@@ -9,7 +9,7 @@ furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all copies or
 substantial portions of the Software.
- 
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
 NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
@@ -44,26 +44,26 @@ class MsgQue
 	7; //#32bit integers
 	#end
 	
-	var _que:
+	var mQue:
 	#if alchemy
 	de.polygonal.ds.mem.ByteMemory;
 	#else
 	Vector<Int>;
 	#end
 	
-	var _capacity:Int;
-	var _size:Int;
-	var _front:Int;
+	var mCapacity:Int;
+	var mSize:Int;
+	var mFront:Int;
 	
-	var _nextLocker:Int;
-	var _currLocker:Int;
-	var _locker:Array<Dynamic>;
+	var mNextLocker:Int;
+	var mCurrLocker:Int;
+	var mLocker:Array<Dynamic>;
 	
 	public function new(capacity:Int)
 	{
-		_capacity = capacity;
+		mCapacity = capacity;
 		
-		_que =
+		mQue =
 		#if alchemy
 		//id.inner for sender: 4 bytes
 		//id.inner for recipient: 4 bytes
@@ -72,17 +72,17 @@ class MsgQue
 		//type: 2 bytes
 		//remaining: 2 bytes
 		//locker index: 2 bytes
-		new de.polygonal.ds.mem.ByteMemory(_capacity * MSG_SIZE, 'entity_system_message_que');
+		new de.polygonal.ds.mem.ByteMemory(mCapacity * MSG_SIZE, 'entity_system_message_que');
 		#else
-		new Vector<Int>(_capacity * MSG_SIZE);
+		new Vector<Int>(mCapacity * MSG_SIZE);
 		#end
 		
-		_size = 0;
-		_front = 0;
+		mSize = 0;
+		mFront = 0;
 		
-		_nextLocker = 0;
-		_currLocker = -1;
-		_locker = new Array<Dynamic>();
+		mNextLocker = 0;
+		mCurrLocker = -1;
+		mLocker = new Array<Dynamic>();
 		
 		#if verbose
 		L.d('found ${Msg.totalMessages()} message types', "es");
@@ -91,54 +91,54 @@ class MsgQue
 	
 	public function putData(o:Dynamic)
 	{
-		D.assert(_currLocker != -1);
-		_locker[_currLocker] = o;
+		D.assert(mCurrLocker != -1);
+		mLocker[mCurrLocker] = o;
 	}
 	
 	public function getData():Dynamic
 	{
-		D.assert(_currLocker != -1);
-		return _locker[_currLocker];
+		D.assert(mCurrLocker != -1);
+		return mLocker[mCurrLocker];
 	}
 	
 	public function enqueue(sender:E, recipient:E, type:Int, remaining:Int)
 	{
 		D.assert(sender != null);
 		D.assert(recipient != null);
-		D.assert(type >= 0 && type <= 0xffff);
-		D.assert(_size < _capacity, "message queue exhausted");
+		D.assert(type >= 0 && type <= 0xFFFF);
+		D.assert(mSize < mCapacity, "message queue exhausted");
 		
-		var i = (_front + _size) % _capacity;
-		_size++;
+		var i = (mFront + mSize) % mCapacity;
+		mSize++;
 		
-		if (recipient._flags & (E.BIT_GHOST | E.BIT_SKIP_MSG | E.BIT_MARK_FREE) > 0)
+		if (recipient.mFlags & (E.BIT_GHOST | E.BIT_SKIP_MSG | E.BIT_MARK_FREE) > 0)
 		{
 			//enqueue message even if recipient doesn't want it;
 			//this is required for properly stopping a message propagation (when an entity calls stop())
 			#if alchemy
-			Mem.setI32(_que.offset + i * MSG_SIZE, -1);
+			Mem.setI32(mQue.offset + i * MSG_SIZE, -1);
 			#else
-			_que[i * MSG_SIZE] = -1;
+			mQue[i * MSG_SIZE] = -1;
 			#end
 			return;
 		}
 		
 		#if (verbose == "extra")
-		var senderId = sender.name == null ? Std.string(sender.id) : sender.name;
-		var recipientId = recipient.name == null ? Std.string(recipient.id) : recipient.name;
+		var senderName = sender.name == null ? "N/A" : sender.name;
+		var recipientName = recipient.name == null ? "N/A" : recipient.name;
 		
-		if (senderId.length > 30) senderId = StringUtil.ellipsis(senderId, 30, 1, true);
-		if (recipientId.length > 30) recipientId = StringUtil.ellipsis(recipientId, 30, 1, true);
+		if (senderName.length > 30) senderName = StringUtil.ellipsis(senderName, 30, 1, true);
+		if (recipientName.length > 30) recipientName = StringUtil.ellipsis(recipientName, 30, 1, true);
 		
 		var msgName = Msg.name(type);
 		if (msgName.length > 20) msgName = StringUtil.ellipsis(msgName, 20, 1, true);
 		
-		L.d(Printf.format('enqueue message %30s -> %-30s: %-20s (remaining: $remaining)', [senderId, recipientId, msgName]), "es");
+		L.d(Printf.format('enqueue message %30s -> %-30s: %-20s (remaining: $remaining)', [senderName, recipientName, msgName]), "es");
 		#end
 		
 		var senderId = sender.id;
 		var recipientId = recipient.id;
-		var q = _que;
+		var q = mQue;
 		
 		#if alchemy
 		var addr = q.getAddr(i * MSG_SIZE);
@@ -148,7 +148,7 @@ class MsgQue
 		Mem.setI16(addr + 10, recipientId.index);
 		Mem.setI16(addr + 12, type);
 		Mem.setI16(addr + 14, remaining);
-		Mem.setI16(addr + 16, _nextLocker);
+		Mem.setI16(addr + 16, mNextLocker);
 		#else
 		var addr = i * MSG_SIZE;
 		q[addr    ] = senderId.inner;
@@ -157,21 +157,21 @@ class MsgQue
 		q[addr + 3] = recipientId.index;
 		q[addr + 4] = type;
 		q[addr + 5] = remaining;
-		q[addr + 6] = _nextLocker;
+		q[addr + 6] = mNextLocker;
 		#end
 		
 		if (remaining == 0)
 		{
 			//use same locker for multiple recipients
-			_currLocker = _nextLocker++;
+			mCurrLocker = mNextLocker++;
 		}
 	}
 	
 	public function dispatch()
 	{
-		if (_size == 0) return;
+		if (mSize == 0) return;
 		
-		var a = ES._freeList;
+		var a = ES.mFreeList;
 		
 		var senderIndex:Int;
 		var senderInner:Int;
@@ -182,9 +182,9 @@ class MsgQue
 		var sender:Entity;
 		var recipient:Entity;
 		
-		var q = _que;
-		var c = _capacity;
-		var f = _front;
+		var q = mQue;
+		var c = mCapacity;
+		var f = mFront;
 		var k = 0;
 		var i = 0;
 		var iter = 0;
@@ -194,11 +194,11 @@ class MsgQue
 		var numDispatchedMessages = 0;
 		#end
 		
-		while (_size > 0)
+		while (mSize > 0)
 		{
 			//while there are buffered messages
 			//process k buffered messages
-			k = _size;
+			k = mSize;
 			i = k;
 			
 			#if (verbose == "extra")
@@ -216,7 +216,7 @@ class MsgQue
 				recipientIndex = Mem.getUI16(addr + 10);
 				type           = Mem.getUI16(addr + 12);
 				skipCount      = Mem.getUI16(addr + 14);
-				_currLocker    = Mem.getUI16(addr + 16);
+				mCurrLocker    = Mem.getUI16(addr + 16);
 				#else
 				var addr       = f * MSG_SIZE;
 				senderInner    = q[addr    ];
@@ -225,7 +225,7 @@ class MsgQue
 				recipientIndex = q[addr + 3];
 				type           = q[addr + 4];
 				skipCount      = q[addr + 5];
-				_currLocker    = q[addr + 6];
+				mCurrLocker    = q[addr + 6];
 				#end
 				
 				//ignore message?
@@ -258,7 +258,7 @@ class MsgQue
 				i--;
 				
 				#if (verbose == "extra")
-				var data = _locker[_currLocker] != null ? '${_locker[_currLocker]}' : "";
+				var data = mLocker[mCurrLocker] != null ? '${mLocker[mCurrLocker]}' : "";
 				var senderId = sender.name == null ? Std.string(sender.id) : sender.name;
 				var recipientId = recipient.name == null ? Std.string(recipient.id) : recipient.name;
 				
@@ -272,7 +272,7 @@ class MsgQue
 				#end
 				
 				//notify recipient
-				if (recipient._flags & (E.BIT_GHOST | E.BIT_SKIP_MSG | E.BIT_MARK_FREE) == 0)
+				if (recipient.mFlags & (E.BIT_GHOST | E.BIT_SKIP_MSG | E.BIT_MARK_FREE) == 0)
 				{
 					recipient.onMsg(type, sender);
 					
@@ -287,17 +287,17 @@ class MsgQue
 					#end
 				}
 				
-				if (recipient._flags & E.BIT_STOP_PROPAGATION > 0)
+				if (recipient.mFlags & E.BIT_STOP_PROPAGATION > 0)
 				{
 					//recipient stopped notification;
 					//reset flag and skip remaining messages in current batch
-					recipient._flags &= ~E.BIT_STOP_PROPAGATION;
+					recipient.mFlags &= ~E.BIT_STOP_PROPAGATION;
 					f = (f + skipCount) % c;
 					i -= skipCount;
 				}
 			}
-			_size -= k;
-			_front = f;
+			mSize -= k;
+			mFront = f;
 		}
 		
 		#if verbose
@@ -306,9 +306,9 @@ class MsgQue
 		#end
 		
 		//empty locker
-		for (i in 0..._nextLocker)
-			_locker[i] = null;
-		_nextLocker = 0;
-		_currLocker = -1;
+		for (i in 0...mNextLocker)
+			mLocker[i] = null;
+		mNextLocker = 0;
+		mCurrLocker = -1;
 	}
 }
