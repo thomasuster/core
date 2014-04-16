@@ -52,7 +52,7 @@ class EntityMacro
 		{
 			name: "ENTITY_TYPE",
 			doc: null,
-			meta: [],
+			meta: [{name: ":keep", pos: p}],
 			access: [APublic, AStatic, AInline],
 			kind: FVar(TPath({pack: [], name: "Int", params: [], sub: null}), {expr: EConst(CInt(Std.string(next))), pos: p}),
 			pos: p
@@ -67,7 +67,7 @@ class EntityMacro
 		{
 			name: "SUPER_CLASS",
 			doc: null,
-			meta: [],
+			meta: [{name: ":keep", pos: p}],
 			access: [APublic, AStatic],
 			kind: field(superClass),
 			pos: p
@@ -78,7 +78,7 @@ class EntityMacro
 		{
 			name: "ENTITY_NAME",
 			doc: null,
-			meta: [],
+			meta: [{name: ":keep", pos: p}],
 			access: [APublic, AStatic],
 			kind: FVar(TPath({pack: [], name: "String", params: [], sub: null}), {expr: EConst(CString('E$name')), pos: p}),
 			pos: p
