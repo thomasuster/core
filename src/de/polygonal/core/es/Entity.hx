@@ -27,19 +27,22 @@ import de.polygonal.core.es.EntitySystem in ES;
 @:access(de.polygonal.core.es.EntitySystem)
 @:autoBuild(de.polygonal.core.es.EntityMacro.build())
 @:build(de.polygonal.core.es.EntityMacro.build())
+
+@:build(de.polygonal.core.util.IntConstants.build(
+[
+	BIT_GHOST,
+	BIT_SKIP_SUBTREE,
+	BIT_SKIP_MSG,
+	BIT_SKIP_TICK,
+	BIT_SKIP_DRAW,
+	BIT_SKIP_UPDATE,
+	BIT_STOP_PROPAGATION,
+	BIT_MARK_FREE,
+	BIT_GLOBAL_NAME,
+	BIT_HAS_PROPERTIES
+], true, false))
 class Entity
 {
-	inline static var BIT_GHOST            = 0x1;
-	inline static var BIT_SKIP_SUBTREE     = 0x2;
-	inline static var BIT_SKIP_MSG         = 0x4;
-	inline static var BIT_SKIP_TICK        = 0x8;
-	inline static var BIT_SKIP_DRAW        = 0x10;
-	inline static var BIT_SKIP_UPDATE      = 0x20;
-	inline static var BIT_STOP_PROPAGATION = 0x40;
-	inline static var BIT_MARK_FREE        = 0x80;
-	inline static var BIT_GLOBAL_NAME      = 0x100;
-	inline static var BIT_HAS_PROPERTIES   = 0x200;
-	
 	inline static function getEntityType<T:Entity>(C:Class<T>):Int
 	{
 		#if flash
