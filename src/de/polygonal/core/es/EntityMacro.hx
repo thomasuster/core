@@ -47,7 +47,7 @@ class EntityMacro
 		var fields = Context.getBuildFields();
 		var p = Context.currentPos();
 		
-		//inline public static var ENTITY_TYPE:Int = x;
+		//add "inline public static var ENTITY_TYPE:Int = x"
 		fields.push(
 		{
 			name: "ENTITY_TYPE",
@@ -58,11 +58,10 @@ class EntityMacro
 			pos: p
 		});
 		
+		//add "public static var SUPER_CLASS = x"
 		var superClass:String = null;
 		if (c.superClass != null) superClass = c.superClass.t.get().module;
 		if (superClass == null) superClass = "null";
-		
-		//public static var SUPER_CLASS = x;
 		fields.push(
 		{
 			name: "SUPER_CLASS",
@@ -73,7 +72,7 @@ class EntityMacro
 			pos: p
 		});
 		
-		//public static var ENTITY_NAME:String = x;
+		//add "public static var ENTITY_NAME:String = x"
 		fields.push(
 		{
 			name: "ENTITY_NAME",
@@ -108,7 +107,7 @@ class EntityMacro
 				return false;
 			});
 			
-			return fields; //don't modifiy Entity constructor
+			return fields; //don't modify Entity constructor
 		}
 		
 		//add if (type == 0) type = x;
@@ -121,9 +120,31 @@ class EntityMacro
 			switch (constructorField.kind)
 			{
 				case FFun(f):
+					if (f.args.length == 0)
+						Context.fatalError('constructor of class $className is missing parameter: ?name:String', p);
+					
+					if (f.args.length == 1)
+						if (f.args[0].name != "name" || !f.args[0].opt)
+							Context.fatalError('constructor of class $className has no parameter named "?name:String"', p);
+							
+					if (f.args.length > 1)
+						Context.fatalError('constructor of class $className has additional parameters', p);
+						
 					switch (f.expr.expr)
 					{
 						case ExprDef.EBlock(a):
+							
+							for (i in a)
+							{
+								switch (i.expr)
+								{
+									case ECall(_, params):
+										if (params.length == 0)
+											Context.fatalError('constructor of class $className does not pass name argument to super class.', p);
+									case _:
+								}
+							}
+							
 							//assign type before calling super()
 							a.unshift(assignType);
 						case _:
