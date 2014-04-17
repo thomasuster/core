@@ -626,26 +626,28 @@ class Entity
 	/**
 	 * Sends a message to an entity called name.
 	 */
-	public function msgTo(name:String, msgType:Int)
+	public function msgTo(name:String, msgType:Int, instant = false)
 	{
 		var e = ES.lookupByName(name);
 		if (e == null) return;
 		getMsgQue().enqueue(this, e, msgType, 0);
+		if (instant) ES.dispatchMessages();
 	}
 	
 	/**
 	 * Sends a message to the parent entity.
 	 */
-	public function msgToParent(msgType:Int)
+	public function msgToParent(msgType:Int, instant = false)
 	{
 		var e = parent;
 		if (e != null) getMsgQue().enqueue(this, e, msgType, 0);
+		if (instant) ES.dispatchMessages();
 	}
 	
 	/**
 	 * Sends a message to all ancestors.
 	 */
-	public function msgToAncestors(msgType:Int)
+	public function msgToAncestors(msgType:Int, instant = false)
 	{
 		var q = getMsgQue();
 		var e = parent;
@@ -656,12 +658,13 @@ class Entity
 			q.enqueue(this, e, msgType, k);
 			e = e.parent;
 		}
+		if (instant) ES.dispatchMessages();
 	}
 	
 	/**
 	 * Sends a message to all descendants.
 	 */
-	public function msgToDescendants(msgType:Int)
+	public function msgToDescendants(msgType:Int, instant = false)
 	{
 		var q = getMsgQue();
 		var e = child;
@@ -672,12 +675,14 @@ class Entity
 			q.enqueue(this, e, msgType, k);
 			e = e.preorder;
 		}
+		
+		if (instant) ES.dispatchMessages();
 	}
 	
 	/**
 	 * Sends a message to all children.
 	 */
-	public function msgToChildren(msgType:Int)
+	public function msgToChildren(msgType:Int, instant = false)
 	{
 		var q = getMsgQue();
 		var e = child;
@@ -688,6 +693,8 @@ class Entity
 			q.enqueue(this, e, msgType, k);
 			e = e.sibling;
 		}
+		
+		if (instant) ES.dispatchMessages();
 	}
 	
 	/**
