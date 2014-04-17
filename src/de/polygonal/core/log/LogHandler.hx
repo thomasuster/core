@@ -36,6 +36,7 @@ using de.polygonal.ds.Bits;
 [
 	DATE,
 	TIME,
+	TICK,
 	LEVEL,
 	NAME,
 	TAG,
@@ -47,9 +48,9 @@ using de.polygonal.ds.Bits;
 class LogHandler implements IObserver
 {
 	inline public static var FORMAT_RAW         = 0;
-	inline public static var FORMAT_BRIEF       =               LEVEL | NAME | TAG;
-	inline public static var FORMAT_BRIEF_INFOS =               LEVEL | NAME | TAG | LINE | CLASS | CLASS_SHORT | METHOD;
-	inline public static var FORMAT_FULL        = DATE | TIME | LEVEL | NAME | TAG | LINE | CLASS | CLASS_SHORT | METHOD;
+	inline public static var FORMAT_BRIEF       =               TICK | LEVEL | NAME | TAG;
+	inline public static var FORMAT_BRIEF_INFOS =               TICK | LEVEL | NAME | TAG | LINE | CLASS | CLASS_SHORT | METHOD;
+	inline public static var FORMAT_FULL        = DATE | TIME | TICK | LEVEL | NAME | TAG | LINE | CLASS | CLASS_SHORT | METHOD;
 	
 	public static var DEFAULT_FORMAT = FORMAT_BRIEF_INFOS;
 	
@@ -225,13 +226,23 @@ class LogHandler implements IObserver
 		args.push(fmt);
 		vals.push(val);
 		
+		//tick
+		if (hasf(TICK))
+		{
+			fmt = "%03d";
+			val = "";
+			if (hasf(DATE | TIME)) fmt = " " + fmt;
+			args.push(fmt);
+			vals.push(de.polygonal.core.time.Timebase.processedTicks % 1000);
+		}
+		
 		//level
 		fmt = "%s";
 		val = "";
 		if (hasf(LEVEL))
 		{
 			val = LogLevel.getShortName(_message.outputLevel);
-			if (hasf(DATE | TIME)) fmt = " %s";
+			if (hasf(DATE | TIME | TICK)) fmt = " %s";
 		}
 		args.push(fmt);
 		vals.push(val);
