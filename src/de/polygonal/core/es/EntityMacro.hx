@@ -120,32 +120,66 @@ class EntityMacro
 			switch (constructorField.kind)
 			{
 				case FFun(f):
-					if (f.args.length == 0)
-						Context.fatalError('constructor of class $className is missing parameter: ?name:String', p);
+					if (f.args.length == 0) //add ?name:String to new()
+						f.args.unshift({name: "name", type: TPath({name:"String", pack:[], params:[]}), opt: true});
 					
-					if (f.args.length == 1)
-						if (f.args[0].name != "name" || !f.args[0].opt)
-							Context.fatalError('constructor of class $className has no parameter named "?name:String"', p);
-							
-					if (f.args.length > 1)
-						Context.fatalError('constructor of class $className has additional parameters', p);
+					function checkSuperArgs(i:ExprDef)
+					{
+						//make sure super() passes name argument to superclass
+						switch (i)
+						{
+							case ECall(a, params):
+								switch (a.expr)
+								{
+									case EConst(b):
+										switch (b)
+										{
+											case CIdent(c):
+												if (c == "super")
+												{
+													if (params.length == 0)
+														params.unshift({expr: EConst(CIdent("name")), pos: p});
+													else
+													{
+														var hasName = false;
+														for (i in 0...params.length)
+														{
+															switch (params[i].expr)
+															{
+																case EConst(d):
+																	switch (d)
+																	{
+																		case CIdent(e):
+																			if (e == "name")
+																			{
+																				hasName = true;
+																				if (i > 0) Context.fatalError("name arguments should be in front of additional arguments", p);
+																			}
+																		case _:
+																	}
+																case _:
+															}
+														}
+														
+														if (!hasName)
+															if (superClass != "de.polygonal.core.es.Entity")
+																params.unshift({expr: EConst(CIdent("name")), pos: p});
+													}
+												}
+											case _:
+										}
+									case _:
+								}
+							case _:
+						}
+					}
 						
 					switch (f.expr.expr)
 					{
 						case ExprDef.EBlock(a):
+							for (i in a) checkSuperArgs(i.expr);
 							
-							for (i in a)
-							{
-								switch (i.expr)
-								{
-									case ECall(_, params):
-										if (params.length == 0)
-											Context.fatalError('constructor of class $className does not pass name argument to super class.', p);
-									case _:
-								}
-							}
-							
-							//assign type before calling super()
+							//add "type=value" before calling super()
 							a.unshift(assignType);
 						case _:
 					}
