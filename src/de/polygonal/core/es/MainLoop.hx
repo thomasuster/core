@@ -32,7 +32,7 @@ import de.polygonal.core.es.EntitySystem in ES;
 class MainLoop extends Entity implements IObserver
 {
 	public static var instance(get_instance, never):MainLoop;
-	static function get_instance():MainLoop return mInstance == null ? (mInstance = new MainLoop()) : mInstance;
+	static function get_instance():MainLoop return mInstance == null ? (mInstance = new MainLoop("MainLoop")) : mInstance;
 	static var mInstance:MainLoop = null;
 	
 	public var paused = false;
@@ -44,7 +44,7 @@ class MainLoop extends Entity implements IObserver
 	
 	public function new()
 	{
-		super(MainLoop.ENTITY_NAME);
+		super();
 		
 		Timebase.init();
 		Timebase.attach(this);
@@ -65,17 +65,17 @@ class MainLoop extends Entity implements IObserver
 		
 		if (type == TimebaseEvent.TICK)
 		{
-			//process scheduled events
+			//1) process scheduled events
 			Timeline.tick();
 			
-			//advance all entities
+			//2) advance entities
 			var dt:Float = userData;
 			propagateTick(dt);
 			
-			//dispatch buffered messages
+			//3) dispatch buffered messages
 			EntitySystem.dispatchMessages();
 			
-			//free marked entities
+			//4) free marked entities
 			freeEntities();
 		}
 		else
@@ -117,11 +117,11 @@ class MainLoop extends Entity implements IObserver
 		}
 		
 		if (k > mMaxSize) mMaxSize = k;
-		
+
 		for (i in 0...k)
 		{
 			e = list[i];
-			if (e.mFlags & (E.BIT_GHOST | E.BIT_SKIP_TICK | E.BIT_MARK_FREE | E.BIT_SKIP_UPDATE) == 0)
+			if (e.parent != null && e.mFlags & (E.BIT_GHOST | E.BIT_SKIP_TICK | E.BIT_MARK_FREE | E.BIT_SKIP_UPDATE) == 0)
 				e.onTick(dt);
 		}
 	}
