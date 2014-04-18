@@ -59,6 +59,8 @@ class MsgQue
 	var mCurrLocker:Int;
 	var mLocker:Array<Dynamic>;
 	
+	var mIsDispatching:Bool;
+	
 	public function new(capacity:Int)
 	{
 		mCapacity = capacity;
@@ -169,7 +171,8 @@ class MsgQue
 	
 	public function dispatch()
 	{
-		if (mSize == 0) return;
+		if (mIsDispatching || mSize == 0) return;
+		mIsDispatching = true;
 		
 		var a = ES.mFreeList;
 		
@@ -310,5 +313,7 @@ class MsgQue
 			mLocker[i] = null;
 		mNextLocker = 0;
 		mCurrLocker = -1;
+		
+		mIsDispatching = false;
 	}
 }
