@@ -75,6 +75,7 @@ class Entity
 	
 	public function new(?name:String)
 	{
+		mFlags = 0;
 		ES.register(this);
 		
 		#if debug
