@@ -100,6 +100,7 @@ class EntitySystem
 		mTopology = new de.polygonal.ds.mem.ShortMemory((1 + maxEntities) << 3, "topology");
 		#else
 		mTopology = new Vector<Int>((1 + maxEntities) << 3);
+		for (i in 0...mTopology.length) mTopology[i] = 0;
 		#end
 		
 		mEntitiesByName = new StringMap<Entity>();
