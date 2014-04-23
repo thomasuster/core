@@ -83,8 +83,7 @@ class Entity
 			name = ClassTools.getUnqualifiedClassName(this);
 		#end
 		
-		if (name != null)
-			this.name = name;
+		if (name != null) mName = name;
 	}
 	
 	/**
