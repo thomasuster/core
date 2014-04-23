@@ -83,137 +83,37 @@ class EntityMacro
 			pos: p
 		});
 		
-		//assign type field in constructor
-		var constructorField:Field = null;
-		for (field in fields)
-		{
-			if (field.name == "new")
-			{
-				constructorField = field;
-				break;
-			}
-		}
-		
 		if (name == "Entity")
 		{
 			var fout = sys.io.File.write("./entity_macro.cache", false);
 			fout.writeString("" + Date.now());
 			fout.close();
-			
 			Context.registerModuleDependency(c.module, "./entity_macro.cache");
 			Context.onMacroContextReused(function()
 			{
 				next = -1;
 				return false;
 			});
-			
 			return fields; //don't modify Entity constructor
 		}
 		
-		var uninitializedType =
-		#if js
-		EConst(CIdent("null"));
-		#else
-		EConst(CInt("0"));
-		#end
-		
-		//add if (type == 0) type = x;
-		var e1 = {expr: EBinop(OpEq, {expr: EConst(CIdent("type")), pos: p}, {expr: uninitializedType, pos: p}), pos: p};
-		var e2 = {expr: EBinop(OpAssign, {expr: EConst(CIdent("type")), pos: p}, {expr: EConst(CInt(Std.string(next))), pos: p}), pos: p};
-		var assignType = {expr: EUntyped({expr: EBlock([{expr: EIf(e1, e2, null), pos: p}]), pos: p}), pos: p};
-		
-		if (constructorField != null)
+		//override _getType()
+		fields.push(
 		{
-			switch (constructorField.kind)
+			name: "_getType",
+			doc: null,
+			meta: [{name: ":noCompletion", pos: p}],
+			access: [APrivate, AOverride],
+			kind: FFun(
 			{
-				case FFun(f):
-					if (f.args.length == 0) //add ?name:String to new()
-						f.args.unshift({name: "name", type: TPath({name:"String", pack:[], params:[]}), opt: true});
-					
-					function checkSuperArgs(i:ExprDef)
-					{
-						//make sure super() passes name argument to superclass
-						switch (i)
-						{
-							case ECall(a, params):
-								switch (a.expr)
-								{
-									case EConst(b):
-										switch (b)
-										{
-											case CIdent(c):
-												if (c == "super")
-												{
-													if (params.length == 0)
-														params.unshift({expr: EConst(CIdent("name")), pos: p});
-													else
-													{
-														var hasName = false;
-														for (i in 0...params.length)
-														{
-															switch (params[i].expr)
-															{
-																case EConst(d):
-																	switch (d)
-																	{
-																		case CIdent(e):
-																			if (e == "name")
-																			{
-																				hasName = true;
-																				if (i > 0) Context.fatalError("name arguments should be in front of additional arguments", p);
-																			}
-																		case _:
-																	}
-																case _:
-															}
-														}
-														
-														if (!hasName)
-															if (superClass != "de.polygonal.core.es.Entity")
-																params.unshift({expr: EConst(CIdent("name")), pos: p});
-													}
-												}
-											case _:
-										}
-									case _:
-								}
-							case _:
-						}
-					}
-						
-					switch (f.expr.expr)
-					{
-						case ExprDef.EBlock(a):
-							for (i in a) checkSuperArgs(i.expr);
-							
-							//add "type=value" before calling super()
-							a.unshift(assignType);
-						case _:
-					}
-				case _:
-			}
-		}
-		else
-		{
-			constructorField =
-			{
-				name: "new",
-				doc: null,
-				meta: [],
-				access: [APublic],
-				kind: FFun(
-				{
-					args: [{name: "name", type: TPath({name: "String", pack: [], params: []}), opt: false, value: {expr: EConst(CIdent("null")), pos: p}}],
-					ret: null,
-					expr: {expr: EBlock([assignType, {expr: ECall({expr: EConst(CIdent("super")), pos: p}, [{expr: EConst(CIdent("name")), pos: p}]), pos: p}]), pos: p},
-					params: []
-					
-				}),
-				pos: p
-			}
-			
-			fields.push(constructorField);
-		}
+				args: [],
+				ret: null,
+				expr: {expr: EBlock([{expr: EReturn({expr: EConst(CInt(Std.string(next))), pos: p}), pos: p}]), pos: p},
+				params: []
+				
+			}),
+			pos: p
+		});
 		
 		return fields;
 	}

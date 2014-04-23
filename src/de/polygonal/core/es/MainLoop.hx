@@ -32,7 +32,7 @@ import de.polygonal.core.es.EntitySystem in ES;
 class MainLoop extends Entity implements IObserver
 {
 	public static var instance(get_instance, never):MainLoop;
-	static function get_instance():MainLoop return mInstance == null ? (mInstance = new MainLoop("MainLoop")) : mInstance;
+	static function get_instance():MainLoop return mInstance == null ? (mInstance = new MainLoop()) : mInstance;
 	static var mInstance:MainLoop = null;
 	
 	public var paused = false;
@@ -44,7 +44,7 @@ class MainLoop extends Entity implements IObserver
 	
 	public function new()
 	{
-		super();
+		super("MainLoop");
 		
 		Timebase.init();
 		Timebase.attach(this);

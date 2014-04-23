@@ -63,7 +63,7 @@ class Entity
 	/**
 	 * Every subclass of the Entity class can be identified by a unique integer value.
 	 */
-	public var type(default, never):Int;
+	public var type(default, null):Int;
 	
 	/**
 	 * A pointer to the next entity in a preorder sequence.
@@ -76,6 +76,8 @@ class Entity
 	public function new(?name:String)
 	{
 		mFlags = 0;
+		type = _getType();
+		
 		ES.register(this);
 		
 		#if debug
@@ -925,4 +927,6 @@ class Entity
 		else
 			findLastLeaf(this).preorder;
 	}
+	
+	@:noCompletion function _getType() return 0; //overriden by macro
 }
