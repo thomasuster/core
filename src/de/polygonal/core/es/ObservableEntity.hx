@@ -18,21 +18,36 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 */
 package de.polygonal.core.es;
 
+import de.polygonal.core.es.EntitySystem.ES;
+import de.polygonal.core.es.MsgQue.MsgBundle;
 import de.polygonal.ds.IntHashTable;
 import de.polygonal.ds.IntIntHashTable;
+import de.polygonal.core.util.Assert;
+import de.polygonal.ds.Vector;
+import haxe.ds.IntMap;
 
 @:access(de.polygonal.core.es.EntitySystem)
 class ObservableEntity extends Entity
 {
-	var _observers:Array<EntityId>;
-	var _observersByType:IntHashTable<Array<EntityId>>;
-	var _attachStatus:IntIntHashTable;
+	var mObservers:Array<EntityId>;
+	var mAttachStatus1:IntIntHashTable;
+	var mAttachStatus2:IntMap<Bool>;
+	
+	//var mObserversByType:Vector<Array<EntityId>>;
+	//var mObserversByType2:IntHashTable<EntityId>;
 	
 	public function new(name:String = null)
 	{
-		_observers = [];
-		_observersByType = new IntHashTable<Array<EntityId>>(256);
-		_attachStatus = new IntIntHashTable(256);
+		mObservers = [];
+		mAttachStatus1 = new IntIntHashTable(256);
+		mAttachStatus2 = new IntMap<Bool>();
+		
+		//mObserversByType = new Vector<Array<EntityId>>(Msg.totalMessages());
+		//for (i in 0...Msg.totalMessages()) mObserversByType[i] = [];
+		//mObserversByType2 = new IntHashTable<EntityId>(4096);
+		//type => id.1
+		//type => id.2
+		
 		super(name);
 	}
 	
@@ -40,118 +55,84 @@ class ObservableEntity extends Entity
 	{
 		super.free();
 		
-		_observers = [];
-		_observersByType.free();
-		_observersByType = null;
-		_attachStatus.free();
-		_attachStatus = null;
+		mObservers = [];
+		mAttachStatus1.free();
+		mAttachStatus1 = null;
+		mAttachStatus2 = null;
 	}
 	
-	public function notify(type:Int, ?data:Dynamic)
+	public function notify(type:Int)
 	{
-		var sub = _observersByType.get(type);
-		var all = _observers;
+		var all = mObservers;
 		
 		var q = Entity.getMsgQue();
-		var i = sub != null ? sub.length : 0;
-		var j = _observers.length;
-		var k = i + j;
+		var k = all.length;
+		var j = k;
 		
-		//process filtered list
-		while (i-- > 0)
-		{
-			var id = sub[i];
-			q.enqueue(this, EntitySystem.lookup(id), type, --k);
-			if (id.inner < 0)
-			{
-				sub.pop();
-				_attachStatus.clr(id.inner & 0x7FFFFFFF);
-			}
-		}
-		
-		//process unfiltered list
+		//remove invalid entities
 		while (j-- > 0)
 		{
-			var id = all[j];
-			q.enqueue(this, EntitySystem.lookup(id), type, --k);
-			if (id.inner < 0)
+			if (all[j].inner < 0)
 			{
+				markRemoved(all[j]);
 				all.pop();
-				_attachStatus.clr(id.inner & 0x7FFFFFFF);
+				k--;
 			}
 		}
 		
-		if (data != null) putMsgData(data);
+		//enqueue messages
+		j = k;
+		while (j-- > 0)
+			q.enqueue(this, ES.lookup(all[j]), type, --k);
 	}
 	
-	public function attach(e:Entity, type:Int = -1):Bool
+	public function attach(e:Entity):Bool
 	{
 		var id = e.id;
 		
-		//quit if entity is invalid
+		//is entity valid?
 		if (id == null || id.inner < 0) return false;
 		
-		//already attached?
-		if (_attachStatus.hasKey(id.inner))
-		{
-			var existingType = _attachStatus.get(id.inner);
-			
-			//quit if nothing changed
-			if (existingType == type) return false;
-			
-			//shift entity from filtered -> unfiltered list
-			if (existingType != -1 && type == -1)
-				removeFromList(_observersByType.get(existingType), id);
-		}
+		var exists1 = mAttachStatus1.hasKey(id.inner);
+		var exists2 = mAttachStatus2.exists(id.inner);
+		D.assert(exists1 == exists2);
 		
-		//add to observer list
-		var list = getList(type);
-		list.push(id);
+		if (exists1) return false;
 		
-		//mark as attached
-		_attachStatus.set(id.inner, type);
+		addToList(id);
+		markAdded(id);
+		
 		return true;
 	}
 	
-	public function attachTypes(e:Entity, types:Array<Int>)
-	{
-		Lambda.iter(types, function(x) attach(e, x));
-	}
-	
-	public function detach(e:Entity, type:Int = -1):Bool
+	public function detach(e:Entity):Bool
 	{
 		var id = e.id;
 		
-		//quit if entity is invalid
+		//is entity valid?
 		if (id == null || id.inner < 0) return false;
 		
-		//quit if entity is not attached
-		if (!_attachStatus.hasKey(id.inner))
-			return false;
+		//exists?
+		var exists1 = mAttachStatus1.hasKey(id.inner);
+		var exists2 = mAttachStatus2.exists(id.inner);
+		D.assert(exists1 == exists2);
 		
-		var list = getList(type);
-		removeFromList(list, id);
+		if (!exists1) return false;
+		
+		removeFromList(id);
+		markRemoved(id);
+		
 		return true;
 	}
 	
-	function getList(type:Int):Array<EntityId>
+	function addToList(id:EntityId)
 	{
-		if (type == -1)
-			return _observers;
-		else
-		{
-			var a = _observersByType.get(type);
-			if (a == null)
-			{
-				a = [];
-				_observersByType.set(type, a);
-			}
-			return a;
-		}
+		mObservers.push(id);
 	}
 	
-	function removeFromList(list:Array<EntityId>, id:EntityId)
+	function removeFromList(id:EntityId):Bool
 	{
+		var list = mObservers;
 		var k = list.length;
 		for (i in 0...k)
 		{
@@ -159,8 +140,35 @@ class ObservableEntity extends Entity
 			{
 				list[i] = list[k - 1];
 				list.pop();
-				break;
+				return true;
 			}
 		}
+		return false;
+	}
+	
+	inline function markAdded(id:EntityId)
+	{
+		#if debug
+		var success = mAttachStatus1.setIfAbsent(id.inner, 1);
+		D.assert(success);
+		D.assert(!mAttachStatus2.exists(id.inner));
+		mAttachStatus2.set(id.inner, true);
+		#else
+		mAttachStatus1.setIfAbsent(id.inner, 1);
+		mAttachStatus2.set(id.inner, true);
+		#end
+	}
+	
+	inline function markRemoved(id:EntityId)
+	{
+		#if debug
+		var success = mAttachStatus1.clr(id.inner & 0x7FFFFFFF);
+		D.assert(success);
+		var success = mAttachStatus2.remove(id.inner & 0x7FFFFFFF);
+		D.assert(success);
+		#else
+		mAttachStatus1.clr(id.inner & 0x7FFFFFFF);
+		mAttachStatus2.remove(id.inner & 0x7FFFFFFF);
+		#end
 	}
 }
