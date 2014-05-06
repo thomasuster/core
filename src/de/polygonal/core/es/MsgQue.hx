@@ -30,6 +30,107 @@ import de.polygonal.core.es.EntitySystem in ES;
 import flash.Memory in Mem;
 #end
 
+@:publicFields
+@:build(de.polygonal.core.util.IntConstants.build([I, F, B, S, O, USED], true, true))
+class MsgBundle
+{
+	@:noCompletion var mInt:Int;
+	@:noCompletion var mFloat:Float;
+	@:noCompletion var mBool:Bool;
+	@:noCompletion var mString:String;
+	@:noCompletion var mObject:Dynamic;
+	@:noCompletion var mFlags:Int;
+	
+	public var int(get_int, set_int):Int;
+	@:noCompletion inline function get_int():Int
+	{
+		D.assert(mFlags & I > 0, "no int stored");
+		return mInt;
+	}
+	@:noCompletion inline function set_int(value:Int):Int
+	{
+		D.assert(mFlags & USED == 0);
+		
+		mFlags |= I;
+		mInt = value;
+		return value;
+	}
+	
+	public var float(get_float, set_float):Float;
+	@:noCompletion inline function get_float():Float
+	{
+		D.assert(mFlags & F > 0, "no float stored");
+		return mFloat;
+	}
+	@:noCompletion inline function set_float(value:Float):Float
+	{
+		D.assert(mFlags & USED == 0);
+		
+		mFlags |= F;
+		mFloat = value;
+		return value;
+	}
+	
+	public var bool(get_bool, set_bool):Bool;
+	@:noCompletion inline function get_bool():Bool
+	{
+		D.assert(mFlags & B > 0, "no bool stored");
+		return mBool;
+	}
+	@:noCompletion inline function set_bool(value:Bool):Bool
+	{
+		D.assert(mFlags & USED == 0);
+		
+		mFlags |= B;
+		mBool = value;
+		return value;
+	}
+	
+	public var string(get_string, set_string):String;
+	@:noCompletion inline function get_string():String
+	{
+		D.assert(mFlags & S > 0, "no string stored");
+		return mString;
+	}
+	@:noCompletion inline function set_string(value:String):String
+	{
+		D.assert(mFlags & USED == 0);
+		
+		mFlags |= S;
+		mString = value;
+		return value;
+	}
+	
+	public var object(get_object, set_object):Dynamic;
+	@:noCompletion inline function get_object():Dynamic
+	{
+		D.assert(mFlags & O > 0, "no object stored");	
+		return mObject;
+	}
+	@:noCompletion inline function set_object(value:Dynamic):Dynamic
+	{
+		D.assert(mFlags & USED == 0);
+		
+		mFlags |= O;
+		mObject = value;
+		return value;
+	}
+	
+	function new() {}
+	
+	@:noCompletion function toString():String
+	{
+		var a = [];
+		if (mFlags & I > 0) a.push('int=$mInt');
+		if (mFlags & F > 0) a.push('float=$mFloat');
+		if (mFlags & B > 0) a.push('bool=$mBool');
+		if (mFlags & S > 0) a.push('string=$mString');
+		if (mFlags & O > 0) a.push('object=$mObject');
+		if (a.length > 0) return "{MsgBundle, " + a.join(", ") + "}";
+		return "{MsgBundle}";
+	}
+}
+
 @:access(de.polygonal.core.es.Entity)
 @:access(de.polygonal.core.es.EntitySystem)
 class MsgQue
@@ -38,7 +139,7 @@ class MsgQue
 	#if alchemy
 	//sender+recipient inner: 2*4 bytes
 	//sender+recipient index: 2*2 bytes
-	//type, skip count, locker index: 3*2 bytes
+	//type, skip count, bundle index: 3*2 bytes
 	18; //#bytes
 	#else
 	7; //#32bit integers
@@ -54,11 +155,10 @@ class MsgQue
 	var mCapacity:Int;
 	var mSize:Int;
 	var mFront:Int;
-	
-	var mNextLocker:Int;
-	var mCurrLocker:Int;
-	var mLocker:Array<Dynamic>;
-	
+	var mCurrBundleIn:Int;
+	var mCurrBundleOut:MsgBundle;
+	var mFreeBundle:Int;
+	var mBundles:Array<MsgBundle>;
 	var mIsDispatching:Bool;
 	
 	public function new(capacity:Int)
@@ -73,8 +173,8 @@ class MsgQue
 		//id.index for recipient: 2 bytes
 		//type: 2 bytes
 		//remaining: 2 bytes
-		//locker index: 2 bytes
-		new de.polygonal.ds.mem.ByteMemory(mCapacity * MSG_SIZE, 'entity_system_message_que');
+		//bundle index: 2 bytes
+		new de.polygonal.ds.mem.ByteMemory(mCapacity * MSG_SIZE, "entity_system_message_que");
 		#else
 		new Vector<Int>(mCapacity * MSG_SIZE);
 		#end
@@ -82,25 +182,35 @@ class MsgQue
 		mSize = 0;
 		mFront = 0;
 		
-		mNextLocker = 0;
-		mCurrLocker = -1;
-		mLocker = new Array<Dynamic>();
+		mFreeBundle = 0;
+		mBundles = new Array<MsgBundle>();
 		
 		#if verbose
 		L.d('found ${Msg.totalMessages()} message types', "es");
 		#end
 	}
 	
-	public function putData(o:Dynamic)
+	public function getMsgBundleIn():MsgBundle
 	{
-		D.assert(mCurrLocker != -1);
-		mLocker[mCurrLocker] = o;
+		if (mCurrBundleIn == -1) return null;
+		return mBundles[mCurrBundleIn];
 	}
 	
-	public function getData():Dynamic
+	public function getMsgBundleOut():MsgBundle
 	{
-		D.assert(mCurrLocker != -1);
-		return mLocker[mCurrLocker];
+		mCurrBundleOut = mBundles[mFreeBundle];
+		if (mCurrBundleOut == null) mCurrBundleOut = mBundles[mFreeBundle] = new MsgBundle();
+		return mCurrBundleOut;
+	}
+	
+	inline function clrBundle()
+	{
+		if (mCurrBundleOut != null)
+		{
+			mCurrBundleOut.mFlags = 0;
+			mCurrBundleOut.mObject = null;
+			mCurrBundleOut = null;
+		}
 	}
 	
 	public function enqueue(sender:E, recipient:E, type:Int, remaining:Int)
@@ -150,7 +260,7 @@ class MsgQue
 		Mem.setI16(addr + 10, recipientId.index);
 		Mem.setI16(addr + 12, type);
 		Mem.setI16(addr + 14, remaining);
-		Mem.setI16(addr + 16, mNextLocker);
+		Mem.setI16(addr + 16, mFreeBundle);
 		#else
 		var addr = i * MSG_SIZE;
 		q[addr    ] = senderId.inner;
@@ -159,13 +269,19 @@ class MsgQue
 		q[addr + 3] = recipientId.index;
 		q[addr + 4] = type;
 		q[addr + 5] = remaining;
-		q[addr + 6] = mNextLocker;
+		q[addr + 6] = mFreeBundle;
 		#end
 		
+		//use same locker for multiple recipients
+		//increment counter if batch is complete and data is set
 		if (remaining == 0)
 		{
-			//use same locker for multiple recipients
-			mCurrLocker = mNextLocker++;
+			if (mCurrBundleOut != null && mCurrBundleOut.mFlags > 0)
+			{
+				mCurrBundleOut.mFlags |= MsgBundle.USED;
+				mFreeBundle++; 
+				mCurrBundleOut = null;
+			}
 		}
 	}
 	
@@ -219,7 +335,7 @@ class MsgQue
 				recipientIndex = Mem.getUI16(addr + 10);
 				type           = Mem.getUI16(addr + 12);
 				skipCount      = Mem.getUI16(addr + 14);
-				mCurrLocker    = Mem.getUI16(addr + 16);
+				mCurrBundleIn  = Mem.getUI16(addr + 16);
 				#else
 				var addr       = f * MSG_SIZE;
 				senderInner    = q[addr    ];
@@ -228,7 +344,7 @@ class MsgQue
 				recipientIndex = q[addr + 3];
 				type           = q[addr + 4];
 				skipCount      = q[addr + 5];
-				mCurrLocker    = q[addr + 6];
+				mCurrBundleIn  = q[addr + 6];
 				#end
 				
 				//ignore message?
@@ -261,7 +377,7 @@ class MsgQue
 				i--;
 				
 				#if (verbose == "extra")
-				var data = mLocker[mCurrLocker] != null ? '${mLocker[mCurrLocker]}' : "";
+				var data = mBundles[mCurrBundleIn] != null ? mBundles[mCurrBundleIn] : "";
 				var senderId = sender.name == null ? Std.string(sender.id) : sender.name;
 				var recipientId = recipient.name == null ? Std.string(recipient.id) : recipient.name;
 				
@@ -308,11 +424,15 @@ class MsgQue
 			L.d('dispatched $numDispatchedMessages messages (skipped: $numSkippedMessages)', "es");
 		#end
 		
-		//empty locker
-		for (i in 0...mNextLocker)
-			mLocker[i] = null;
-		mNextLocker = 0;
-		mCurrLocker = -1;
+		//clear bundles
+		for (i in 0...mBundles.length)
+		{
+			D.assert(mBundles[i] != null);
+			mBundles[i].mFlags = 0;
+			mBundles[i].mObject = null;
+		}
+		mFreeBundle = 0;
+		mCurrBundleIn = -1;
 		
 		mIsDispatching = false;
 	}

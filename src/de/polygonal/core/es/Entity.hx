@@ -19,15 +19,16 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 package de.polygonal.core.es;
 
 import de.polygonal.core.es.Msg;
+import de.polygonal.core.es.MsgQue.MsgBundle;
 import de.polygonal.core.util.Assert;
 import de.polygonal.core.util.ClassTools;
 
 import de.polygonal.core.es.EntitySystem in ES;
 
 @:access(de.polygonal.core.es.EntitySystem)
+@:access(de.polygonal.core.es.MsgQue)
 @:autoBuild(de.polygonal.core.es.EntityMacro.build())
 @:build(de.polygonal.core.es.EntityMacro.build())
-
 @:build(de.polygonal.core.util.IntConstants.build(
 [
 	BIT_GHOST,
@@ -613,90 +614,103 @@ class Entity
 		
 		return e;
 	}
-
-	inline public function putMsgData(o:Dynamic):Entity
+	
+	public var incomingBundle(get_incomingBundle, never):MsgBundle;
+	@:noCompletion function get_incomingBundle():MsgBundle
 	{
-		getMsgQue().putData(o);
-		return this;
+		return getMsgQue().getMsgBundleIn();
 	}
 	
-	inline public function getMsgData():Dynamic
+	public var outgoingBundle(get_outgoingBundle, never):MsgBundle;
+	@:noCompletion function get_outgoingBundle():MsgBundle
 	{
-		return getMsgQue().getData();
+		return getMsgQue().getMsgBundleOut();
 	}
 	
 	/**
 	 * Sends a message to an entity called name.
 	 */
-	public function msgTo(name:String, msgType:Int, instant = false)
+	public function msgTo(name:String, msgType:Int)
 	{
 		var e = ES.lookupByName(name);
-		if (e == null) return;
-		getMsgQue().enqueue(this, e, msgType, 0);
-		if (instant) ES.dispatchMessages();
+		var q = getMsgQue();
+		if (e != null)
+			q.enqueue(this, e, msgType, 0);
+		else
+			q.clrBundle();
 	}
 	
 	/**
 	 * Sends a message to the parent entity.
 	 */
-	public function msgToParent(msgType:Int, instant = false)
+	public function msgToParent(msgType:Int)
 	{
 		var e = parent;
-		if (e != null) getMsgQue().enqueue(this, e, msgType, 0);
-		if (instant) ES.dispatchMessages();
+		var q = getMsgQue();
+		if (e != null)
+			q.enqueue(this, e, msgType, 0);
+		else
+			q.clrBundle();
 	}
 	
 	/**
 	 * Sends a message to all ancestors.
 	 */
-	public function msgToAncestors(msgType:Int, instant = false)
+	public function msgToAncestors(msgType:Int)
 	{
 		var q = getMsgQue();
 		var e = parent;
-		if (e == null) return;
+		if (e == null)
+		{
+			q.clrBundle();
+			return;
+		}
 		var k = depth;
 		while (k-- > 0)
 		{
 			q.enqueue(this, e, msgType, k);
 			e = e.parent;
 		}
-		if (instant) ES.dispatchMessages();
 	}
 	
 	/**
 	 * Sends a message to all descendants.
 	 */
-	public function msgToDescendants(msgType:Int, instant = false)
+	public function msgToDescendants(msgType:Int)
 	{
 		var q = getMsgQue();
 		var e = child;
-		if (e == null) return;
+		if (e == null)
+		{
+			q.clrBundle();
+			return;
+		}
 		var k = size;
 		while (k-- > 0)
 		{
 			q.enqueue(this, e, msgType, k);
 			e = e.preorder;
 		}
-		
-		if (instant) ES.dispatchMessages();
 	}
 	
 	/**
 	 * Sends a message to all children.
 	 */
-	public function msgToChildren(msgType:Int, instant = false)
+	public function msgToChildren(msgType:Int)
 	{
 		var q = getMsgQue();
 		var e = child;
-		if (e == null) return;
+		if (e == null)
+		{
+			q.clrBundle();
+			return;
+		}
 		var k = numChildren;
 		while (k-- > 0)
 		{
 			q.enqueue(this, e, msgType, k);
 			e = e.sibling;
 		}
-		
-		if (instant) ES.dispatchMessages();
 	}
 	
 	/**
