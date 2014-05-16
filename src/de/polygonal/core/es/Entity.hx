@@ -616,6 +616,11 @@ class Entity
 		return getMsgQue().getMsgBundleOut();
 	}
 	
+	inline public function dispatchMessages()
+	{
+		ES.dispatchMessages();
+	}
+	
 	/**
 	 * Sends a message to an entity called name.
 	 */
