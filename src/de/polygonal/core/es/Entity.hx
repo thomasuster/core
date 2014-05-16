@@ -422,9 +422,9 @@ class Entity
 		x.onRemove(this);
 	}
 	
-	public function removeByType<T:Entity>(cl:Class<T>, inheritance = false)
+	public function removeByType<T:Entity>(cl:Class<T>)
 	{
-		var child = childByType(cl, inheritance);
+		var child = childByType(cl);
 		if (child != null) remove(child);
 	}
 	
@@ -447,28 +447,26 @@ class Entity
 		lastChild = null;
 	}
 	
-	public function ancestorByType<T:Entity>(cl:Class<T>, inheritance = false):T
+	public function ancestorByType<T:Entity>(cl:Class<T>):T
 	{
 		var e = parent;
 		var t = getEntityType(cl);
-		if (inheritance)
+		
+		while (e != null)
 		{
-			var lut = getInheritanceLookup();
-			while (e != null)
-			{
-				if (lut.hasPair(e.type, t)) break;
-				e = e.parent;
-			}
+			if (e.type == t) return cast e;
+			e = e.parent;
 		}
-		else
+		
+		e = parent;
+		var lut = getInheritanceLookup();
+		while (e != null)
 		{
-			while (e != null)
-			{
-				if (e.type == t) break;
-				e = e.parent;
-			}
+			if (lut.hasPair(e.type, t)) return cast e;
+			e = e.parent;
 		}
-		return cast e;
+		
+		return null;
 	}
 	
 	public function ancestorByName(name:String):Entity
@@ -483,7 +481,7 @@ class Entity
 		return e;
 	}
 	
-	public function descendantByType<T:Entity>(cl:Class<T>, inheritance = false):T
+	public function descendantByType<T:Entity>(cl:Class<T>):T
 	{
 		var last =
 		if (sibling != null)
@@ -492,25 +490,22 @@ class Entity
 			findLastLeaf(this).preorder;
 		var e = child;
 		var t = getEntityType(cl);
-		if (inheritance)
+		
+		while (e != last)
 		{
-			var lut = getInheritanceLookup();
-			while (e != last)
-			{
-				if (lut.hasPair(e.type, t)) break;
-				e = e.preorder;
-			}
-		}
-		else
-		{
-			while (e != last)
-			{
-				if (t == e.type) break;
-				e = e.preorder;
-			}
+			if (t == e.type) return cast e;
+			e = e.preorder;
 		}
 		
-		return cast e;
+		e = child;
+		var lut = getInheritanceLookup();
+		while (e != last)
+		{
+			if (lut.hasPair(e.type, t)) return cast e;
+			e = e.preorder;
+		}
+		
+		return null;
 	}
 	
 	public function descendantByName(name:String):Entity
@@ -526,29 +521,27 @@ class Entity
 		return e;
 	}
 	
-	public function childByType<T:Entity>(cl:Class<T>, inheritance = false):T
+	public function childByType<T:Entity>(cl:Class<T>):T
 	{
 		var e = child;
 		var t = getEntityType(cl);
-		if (inheritance)
+		
+		while (e != null)
 		{
-			var lut = getInheritanceLookup();
-			while (e != null)
-			{
-				if (lut.hasPair(e.type, t)) break;
-				e = e.sibling;
-			}
-		}
-		else
-		{
-			while (e != null)
-			{
-				if (t == e.type) break;
-				e = e.sibling;
-			}
+			if (t == e.type) return cast e;
+			e = e.sibling;
 		}
 		
-		return cast e;
+		e = child;
+		
+		var lut = getInheritanceLookup();
+		while (e != null)
+		{
+			if (lut.hasPair(e.type, t)) return cast e;
+			e = e.sibling;
+		}
+		
+		return null;
 	}
 	
 	public function childByName(name:String):Entity
@@ -569,35 +562,31 @@ class Entity
 		return child != null && (child.mFlags & BIT_MARK_FREE == 0);
 	}
 	
-	public function siblingByType<T:Entity>(?cl:Class<T>, inheritance = false):T
+	public function siblingByType<T:Entity>(?cl:Class<T>):T
 	{
 		if (parent == null) return null;
 		
 		var e = parent.child;
 		var t = getEntityType(cl);
-		if (inheritance)
+		
+		while (e != null)
 		{
-			var lut = getInheritanceLookup();
-			while (e != null)
-			{
-				if (e != this)
-					if (lut.hasPair(e.type, t))
-						break;
-				e = e.sibling;
-			}
-		}
-		else
-		{
-			while (e != null)
-			{
-				if (e != this)
-					if (t == e.type)
-						break;
-				e = e.sibling;
-			}
+			if (e != this)
+				if (t == e.type)
+					return cast e;
+			e = e.sibling;
 		}
 		
-		return cast e;
+		e = parent.child;
+		var lut = getInheritanceLookup();
+		while (e != null)
+		{
+			if (e != this)
+				if (lut.hasPair(e.type, t)) return cast e;
+			e = e.sibling;
+		}
+		
+		return null;
 	}
 	
 	public function siblingByName(name:String):Entity
