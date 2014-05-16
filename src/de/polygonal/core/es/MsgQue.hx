@@ -165,7 +165,6 @@ class MsgQue
 	var mCurrBundleOut:MsgBundle;
 	var mFreeBundle:Int;
 	var mBundles:Array<MsgBundle>;
-	var mIsDispatching:Bool;
 	
 	public function new(capacity:Int)
 	{
@@ -293,8 +292,7 @@ class MsgQue
 	
 	public function dispatch()
 	{
-		if (mIsDispatching || mSize == 0) return;
-		mIsDispatching = true;
+		if (mSize == 0) return;
 		
 		var a = ES.mFreeList;
 		
@@ -309,120 +307,105 @@ class MsgQue
 		
 		var q = mQue;
 		var c = mCapacity;
-		var f = mFront;
-		var k = 0;
-		var i = 0;
-		var iter = 0;
 		
 		#if verbose
 		var numSkippedMessages = 0;
 		var numDispatchedMessages = 0;
 		#end
 		
-		while (mSize > 0)
+		#if (verbose == "extra")
+		L.d('dispatching $mSize messages ...', "es");
+		#end
+		
+		while (mSize > 0) //while there are buffered messages
 		{
-			//while there are buffered messages
-			//process k buffered messages
-			k = mSize;
-			i = k;
-			
-			#if (verbose == "extra")
-			L.d('iter $iter: dispatching $k messages ...', "es");
-			iter++;
+			#if alchemy
+			var addr       = q.getAddr(mFront * MSG_SIZE);
+			senderInner    = Mem.getI32(addr);
+			recipientInner = Mem.getI32(addr  +  4);
+			senderIndex    = Mem.getUI16(addr +  8);
+			recipientIndex = Mem.getUI16(addr + 10);
+			type           = Mem.getUI16(addr + 12);
+			skipCount      = Mem.getUI16(addr + 14);
+			mCurrBundleIn  = Mem.getUI16(addr + 16);
+			#else
+			var addr       = mFront * MSG_SIZE;
+			senderInner    = q[addr    ];
+			recipientInner = q[addr + 1];
+			senderIndex    = q[addr + 2];
+			recipientIndex = q[addr + 3];
+			type           = q[addr + 4];
+			skipCount      = q[addr + 5];
+			mCurrBundleIn  = q[addr + 6];
 			#end
 			
-			while (i > 0)
+			//ignore message?
+			if (senderInner == -1)
 			{
-				#if alchemy
-				var addr       = q.getAddr(f * MSG_SIZE);
-				senderInner    = Mem.getI32(addr);
-				recipientInner = Mem.getI32(addr  +  4);
-				senderIndex    = Mem.getUI16(addr +  8);
-				recipientIndex = Mem.getUI16(addr + 10);
-				type           = Mem.getUI16(addr + 12);
-				skipCount      = Mem.getUI16(addr + 14);
-				mCurrBundleIn  = Mem.getUI16(addr + 16);
-				#else
-				var addr       = f * MSG_SIZE;
-				senderInner    = q[addr    ];
-				recipientInner = q[addr + 1];
-				senderIndex    = q[addr + 2];
-				recipientIndex = q[addr + 3];
-				type           = q[addr + 4];
-				skipCount      = q[addr + 5];
-				mCurrBundleIn  = q[addr + 6];
+				#if verbose
+				numSkippedMessages++;
 				#end
-				
-				//ignore message?
-				if (senderInner == -1)
-				{
-					#if verbose
-					numSkippedMessages++;
-					#end
-					
-					//dequeue
-					f = (f + 1) % c;
-					i--;
-					continue;
-				}
-				
-				sender = a[senderIndex];
-				
-				D.assert(sender != null);
-				D.assert(sender.id != null);
-				D.assert(sender.id.inner == senderInner);
-				
-				recipient = a[recipientIndex];
-				
-				D.assert(recipient != null);
-				D.assert(recipient.id != null);
-				D.assert(recipient.id.inner == recipientInner);
 				
 				//dequeue
-				f = (f + 1) % c;
-				i--;
-				
-				#if (verbose == "extra")
-				var data = mBundles[mCurrBundleIn] != null ? mBundles[mCurrBundleIn] : null;
-				var senderId = sender.name == null ? Std.string(sender.id) : sender.name;
-				var recipientId = recipient.name == null ? Std.string(recipient.id) : recipient.name;
-				
-				if (senderId.length > 30) senderId = StringUtil.ellipsis(senderId, 30, 1, true);
-				if (recipientId.length > 30) recipientId = StringUtil.ellipsis(recipientId, 30, 1, true);
-				
-				var msgName = Msg.name(type);
-				if (msgName.length > 20) msgName = StringUtil.ellipsis(msgName, 20, 1, true);
-				
-				L.d(Printf.format('message %30s -> %-30s: %-20s $data', [senderId, recipientId, msgName]), "es");
-				#end
-				
-				//notify recipient
-				if (recipient.mFlags & (E.BIT_GHOST | E.BIT_SKIP_MSG | E.BIT_MARK_FREE) == 0)
-				{
-					recipient.onMsg(type, sender);
-					
-					#if verbose
-					numDispatchedMessages++;
-					#end
-				}
-				else
-				{
-					#if verbose
-					numSkippedMessages++;
-					#end
-				}
-				
-				if (recipient.mFlags & E.BIT_STOP_PROPAGATION > 0)
-				{
-					//recipient stopped notification;
-					//reset flag and skip remaining messages in current batch
-					recipient.mFlags &= ~E.BIT_STOP_PROPAGATION;
-					f = (f + skipCount) % c;
-					i -= skipCount;
-				}
+				mFront = (mFront + 1) % c;
+				mSize--;
+				continue;
 			}
-			mSize -= k;
-			mFront = f;
+			
+			sender = a[senderIndex];
+			
+			D.assert(sender != null);
+			D.assert(sender.id != null);
+			D.assert(sender.id.inner == senderInner);
+			
+			recipient = a[recipientIndex];
+			
+			D.assert(recipient != null);
+			D.assert(recipient.id != null);
+			D.assert(recipient.id.inner == recipientInner);
+			
+			//dequeue
+			mFront = (mFront + 1) % c;
+			mSize--;
+			
+			#if (verbose == "extra")
+			var data = mBundles[mCurrBundleIn] != null ? mBundles[mCurrBundleIn] : null;
+			var senderId = sender.name == null ? Std.string(sender.id) : sender.name;
+			var recipientId = recipient.name == null ? Std.string(recipient.id) : recipient.name;
+			
+			if (senderId.length > 30) senderId = StringUtil.ellipsis(senderId, 30, 1, true);
+			if (recipientId.length > 30) recipientId = StringUtil.ellipsis(recipientId, 30, 1, true);
+			
+			var msgName = Msg.name(type);
+			if (msgName.length > 20) msgName = StringUtil.ellipsis(msgName, 20, 1, true);
+			
+			L.d(Printf.format('message %30s -> %-30s: %-20s $data', [senderId, recipientId, msgName]), "es");
+			#end
+			
+			//notify recipient
+			if (recipient.mFlags & (E.BIT_GHOST | E.BIT_SKIP_MSG | E.BIT_MARK_FREE) == 0)
+			{
+				recipient.onMsg(type, sender);
+				
+				#if verbose
+				numDispatchedMessages++;
+				#end
+			}
+			#if verbose
+			else
+				numSkippedMessages++;
+			#end
+			
+			if (recipient.mFlags & E.BIT_STOP_PROPAGATION > 0)
+			{
+				throw 'stop';
+				
+				//recipient stopped notification;
+				//reset flag and skip remaining messages in current batch
+				recipient.mFlags &= ~E.BIT_STOP_PROPAGATION;
+				mFront = (mFront + skipCount) % c;
+				mSize -= skipCount;
+			}
 		}
 		
 		#if verbose
@@ -439,7 +422,5 @@ class MsgQue
 		}
 		mFreeBundle = 0;
 		mCurrBundleIn = -1;
-		
-		mIsDispatching = false;
 	}
 }
