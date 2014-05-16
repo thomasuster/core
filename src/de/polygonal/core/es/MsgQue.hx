@@ -116,6 +116,12 @@ class MsgBundle
 		return value;
 	}
 	
+	inline public function hasInt() return mFlags & I > 0;
+	inline public function hasFloat() return mFlags & F > 0;
+	inline public function hasBool() return mFlags & B > 0;
+	inline public function hasString() return mFlags & S > 0;
+	inline public function hasObject() return mFlags & O > 0;
+	
 	function new() {}
 	
 	@:noCompletion function toString():String
