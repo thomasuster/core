@@ -624,7 +624,7 @@ class Entity
 	/**
 	 * Sends a message to an entity called name.
 	 */
-	public function msgTo(name:String, msgType:Int)
+	public function msgTo(name:String, msgType:Int):Entity
 	{
 		var e = ES.lookupByName(name);
 		var q = getMsgQue();
@@ -632,12 +632,13 @@ class Entity
 			q.enqueue(this, e, msgType, 0);
 		else
 			q.clrBundle();
+		return this;
 	}
 	
 	/**
 	 * Sends a message to the parent entity.
 	 */
-	public function msgToParent(msgType:Int)
+	public function msgToParent(msgType:Int):Entity
 	{
 		var e = parent;
 		var q = getMsgQue();
@@ -645,19 +646,20 @@ class Entity
 			q.enqueue(this, e, msgType, 0);
 		else
 			q.clrBundle();
+		return this;
 	}
 	
 	/**
 	 * Sends a message to all ancestors.
 	 */
-	public function msgToAncestors(msgType:Int)
+	public function msgToAncestors(msgType:Int):Entity
 	{
 		var q = getMsgQue();
 		var e = parent;
 		if (e == null)
 		{
 			q.clrBundle();
-			return;
+			return this;
 		}
 		var k = depth;
 		while (k-- > 0)
@@ -665,19 +667,20 @@ class Entity
 			q.enqueue(this, e, msgType, k);
 			e = e.parent;
 		}
+		return this;
 	}
 	
 	/**
 	 * Sends a message to all descendants.
 	 */
-	public function msgToDescendants(msgType:Int)
+	public function msgToDescendants(msgType:Int):Entity
 	{
 		var q = getMsgQue();
 		var e = child;
 		if (e == null)
 		{
 			q.clrBundle();
-			return;
+			return this;
 		}
 		var k = size;
 		while (k-- > 0)
@@ -685,19 +688,20 @@ class Entity
 			q.enqueue(this, e, msgType, k);
 			e = e.preorder;
 		}
+		return this;
 	}
 	
 	/**
 	 * Sends a message to all children.
 	 */
-	public function msgToChildren(msgType:Int)
+	public function msgToChildren(msgType:Int):Entity
 	{
 		var q = getMsgQue();
 		var e = child;
 		if (e == null)
 		{
 			q.clrBundle();
-			return;
+			return this;
 		}
 		var k = numChildren;
 		while (k-- > 0)
@@ -705,6 +709,7 @@ class Entity
 			q.enqueue(this, e, msgType, k);
 			e = e.sibling;
 		}
+		return this;
 	}
 	
 	/**
