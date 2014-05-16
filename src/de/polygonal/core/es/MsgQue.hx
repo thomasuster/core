@@ -377,7 +377,7 @@ class MsgQue
 				i--;
 				
 				#if (verbose == "extra")
-				var data = mBundles[mCurrBundleIn] != null ? mBundles[mCurrBundleIn] : "";
+				var data = mBundles[mCurrBundleIn] != null ? mBundles[mCurrBundleIn] : null;
 				var senderId = sender.name == null ? Std.string(sender.id) : sender.name;
 				var recipientId = recipient.name == null ? Std.string(recipient.id) : recipient.name;
 				
