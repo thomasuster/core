@@ -622,37 +622,48 @@ class Entity
 	}
 	
 	/**
-	 * Sends a message to an entity called name.
-	 */
-	public function msgTo(name:String, msgType:Int):Entity
+		Sends a message of type `msgType` to `entity`.
+	**/
+	public function msgTo(entity:Entity, msgType:Int, dispatch = false):Entity
 	{
-		var e = ES.lookupByName(name);
 		var q = getMsgQue();
-		if (e != null)
-			q.enqueue(this, e, msgType, 0);
+		if (entity != null)
+			q.enqueue(this, entity, msgType, 0);
 		else
+		{
 			q.clrBundle();
+			dispatch = false;
+		}
+			
+		if (dispatch) q.dispatch();
+			
 		return this;
 	}
 	
 	/**
 	 * Sends a message to the parent entity.
 	 */
-	public function msgToParent(msgType:Int):Entity
+	public function msgToParent(msgType:Int, dispatch = false):Entity
 	{
 		var e = parent;
 		var q = getMsgQue();
 		if (e != null)
 			q.enqueue(this, e, msgType, 0);
 		else
+		{
 			q.clrBundle();
+			dispatch = false;
+		}
+		
+		if (dispatch) q.dispatch();
+		
 		return this;
 	}
 	
 	/**
 	 * Sends a message to all ancestors.
 	 */
-	public function msgToAncestors(msgType:Int):Entity
+	public function msgToAncestors(msgType:Int, dispatch = false):Entity
 	{
 		var q = getMsgQue();
 		var e = parent;
@@ -661,19 +672,23 @@ class Entity
 			q.clrBundle();
 			return this;
 		}
+		
 		var k = depth;
+		if (k == 0) dispatch = false;
 		while (k-- > 0)
 		{
 			q.enqueue(this, e, msgType, k);
 			e = e.parent;
 		}
+		
+		if (dispatch) q.dispatch();
 		return this;
 	}
 	
 	/**
 	 * Sends a message to all descendants.
 	 */
-	public function msgToDescendants(msgType:Int):Entity
+	public function msgToDescendants(msgType:Int, dispatch = false):Entity
 	{
 		var q = getMsgQue();
 		var e = child;
@@ -683,18 +698,21 @@ class Entity
 			return this;
 		}
 		var k = size;
+		if (k == 0) dispatch = false;
 		while (k-- > 0)
 		{
 			q.enqueue(this, e, msgType, k);
 			e = e.preorder;
 		}
+		
+		if (dispatch) q.dispatch();
 		return this;
 	}
 	
 	/**
 	 * Sends a message to all children.
 	 */
-	public function msgToChildren(msgType:Int):Entity
+	public function msgToChildren(msgType:Int, dispatch = false):Entity
 	{
 		var q = getMsgQue();
 		var e = child;
@@ -704,11 +722,14 @@ class Entity
 			return this;
 		}
 		var k = numChildren;
+		if (k == 0) dispatch = false;
 		while (k-- > 0)
 		{
 			q.enqueue(this, e, msgType, k);
 			e = e.sibling;
 		}
+		
+		if (dispatch) q.dispatch();
 		return this;
 	}
 	
@@ -888,7 +909,7 @@ class Entity
 	
 	inline public function getProperty(key:String):Dynamic return ES.getProperty(this, key);
 	
-	inline public function setProperty(key:String, value:Dynamic) ES.setProperty(this, key, value);
+	inline public function setProperty(key:String, ?value:Dynamic) ES.setProperty(this, key, value);
 	
 	inline public function clrProperty(key:String) ES.clrProperty(this, key);
 	
