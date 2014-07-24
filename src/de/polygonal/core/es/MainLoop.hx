@@ -107,7 +107,10 @@ class MainLoop extends Entity implements IObserver
 			{
 				e = e.nextSubtree();
 				if (e != null)
+				{
 					list[k++] = e;
+					e = e.preorder;
+				}
 			}
 			else
 			{
