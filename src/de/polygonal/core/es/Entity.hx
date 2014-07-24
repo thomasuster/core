@@ -555,7 +555,7 @@ class Entity
 		return e;
 	}
 	
-	public function childExists(cl:Class<Dynamic> = null, name:String = null):Bool
+	public function childExists(?cl:Class<Dynamic>, ?name:String):Bool
 	{
 		var child = (cl != null ? childByType(cl) : childByName(name));
 		return child != null && (child.mFlags & BIT_MARK_FREE == 0);
