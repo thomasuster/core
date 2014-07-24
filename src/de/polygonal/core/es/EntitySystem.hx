@@ -231,9 +231,6 @@ class EntitySystem
 		if (e.mFlags & Entity.BIT_GLOBAL_NAME > 0)
 			mEntitiesByName.remove(e.name);
 		
-		//wipe all properties
-		if (e.mFlags & Entity.BIT_HAS_PROPERTIES > 0)
-			mProperties.remove(e.id.inner);
 		
 		//mark as removed by setting msb to one
 		e.id.inner |= 0x80000000;
@@ -342,44 +339,6 @@ class EntitySystem
 			e = e.preorder;
 		}
 		return s;
-	}
-	
-	public static function hasProperty(e:Entity, key:String):Bool
-	{
-		var i = e.id.inner;
-		if (mProperties.exists(i))
-			return mProperties.get(i).exists(key);
-		return false;
-	}
-	
-	public static function getProperty(e:Entity, key:String):Dynamic
-	{
-		var i = e.id.inner;
-		if (mProperties.exists(i))
-			return mProperties.get(i).get(key);
-		return null;
-	}
-	
-	public static function setProperty(e:Entity, key:String, value:Dynamic)
-	{
-		e.mFlags |= Entity.BIT_HAS_PROPERTIES;
-		
-		var i = e.id.inner;
-		if (mProperties.exists(i))
-			mProperties.get(i).set(key, value);
-		else
-		{
-			var map = new StringMap<Dynamic>();
-			map.set(key, value);
-			mProperties.set(i, map);
-		}
-	}
-	
-	public static function clrProperty(e:Entity, key:String)
-	{
-		var i = e.id.inner;
-		if (mProperties.exists(i))
-			mProperties.get(i).remove(key);
 	}
 	
 	static function freeRecursive(e:Entity)

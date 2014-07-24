@@ -39,8 +39,7 @@ import de.polygonal.core.es.EntitySystem in ES;
 	BIT_SKIP_UPDATE,
 	BIT_STOP_PROPAGATION,
 	BIT_MARK_FREE,
-	BIT_GLOBAL_NAME,
-	BIT_HAS_PROPERTIES
+	BIT_GLOBAL_NAME
 ], true, false))
 class Entity
 {
@@ -904,14 +903,6 @@ class Entity
 				return true;
 		return false;
 	}
-	
-	inline public function hasProperty(key:String) return ES.hasProperty(this, key);
-	
-	inline public function getProperty(key:String):Dynamic return ES.getProperty(this, key);
-	
-	inline public function setProperty(key:String, ?value:Dynamic) ES.setProperty(this, key, value);
-	
-	inline public function clrProperty(key:String) ES.clrProperty(this, key);
 	
 	public function toString():String
 	{
