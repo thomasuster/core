@@ -218,7 +218,7 @@ class MsgQue
 		}
 	}
 	
-	public function enqueue(sender:E, recipient:E, type:Int, remaining:Int)
+	public function enqueue(sender:E, recipient:E, type:Int, remaining:Int, dir:Int)
 	{
 		D.assert(sender != null);
 		D.assert(recipient != null);
@@ -252,6 +252,10 @@ class MsgQue
 		
 		L.d(Printf.format('enqueue message %30s -> %-30s: %-20s (remaining: $remaining)', [senderName, recipientName, msgName]), "es");
 		#end
+		
+		//dir > 0 = dispatch to descendants
+		//dir < 0 = dispatch to ancestors
+		if (dir > 0) type |= 0x8000;
 		
 		var senderId = sender.id;
 		var recipientId = recipient.id;
@@ -304,6 +308,7 @@ class MsgQue
 		var skipCount:Int;
 		var sender:Entity;
 		var recipient:Entity;
+		var dir:Int;
 		
 		var q = mQue;
 		var c = mCapacity;
@@ -338,6 +343,9 @@ class MsgQue
 			skipCount      = q[addr + 5];
 			mCurrBundleIn  = q[addr + 6];
 			#end
+			
+			dir = type & 0x8000 != 0 ? 1 : -1;
+			type &= ~0x8000;
 			
 			//ignore message?
 			if (senderInner == -1)
@@ -398,7 +406,21 @@ class MsgQue
 			
 			if (recipient.mFlags & E.BIT_STOP_PROPAGATION > 0)
 			{
-				throw 'stop';
+				if (dir > 0)
+				{
+					skipCount = recipient.size;
+					
+					#if (verbose == "extra")
+					trace('stop message propagation to descendants at ${recipient.name} (skipping $skipCount messages)');
+					#end
+				}
+				else
+				if (dir < 0)
+				{
+					#if (verbose == "extra")
+					trace('stop message propagation to ancestors at ${recipient.name} (skipping $skipCount messages)');
+					#end
+				}
 				
 				//recipient stopped notification;
 				//reset flag and skip remaining messages in current batch

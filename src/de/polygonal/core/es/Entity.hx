@@ -627,7 +627,7 @@ class Entity
 	{
 		var q = getMsgQue();
 		if (entity != null)
-			q.enqueue(this, entity, msgType, 0);
+			q.enqueue(this, entity, msgType, 0, 0);
 		else
 		{
 			q.clrBundle();
@@ -647,7 +647,7 @@ class Entity
 		var e = parent;
 		var q = getMsgQue();
 		if (e != null)
-			q.enqueue(this, e, msgType, 0);
+			q.enqueue(this, e, msgType, 0, -1);
 		else
 		{
 			q.clrBundle();
@@ -676,7 +676,7 @@ class Entity
 		if (k == 0) dispatch = false;
 		while (k-- > 0)
 		{
-			q.enqueue(this, e, msgType, k);
+			q.enqueue(this, e, msgType, k, -1);
 			e = e.parent;
 		}
 		
@@ -700,7 +700,7 @@ class Entity
 		if (k == 0) dispatch = false;
 		while (k-- > 0)
 		{
-			q.enqueue(this, e, msgType, k);
+			q.enqueue(this, e, msgType, k, 1);
 			e = e.preorder;
 		}
 		
@@ -724,7 +724,7 @@ class Entity
 		if (k == 0) dispatch = false;
 		while (k-- > 0)
 		{
-			q.enqueue(this, e, msgType, k);
+			q.enqueue(this, e, msgType, k, 1);
 			e = e.sibling;
 		}
 		

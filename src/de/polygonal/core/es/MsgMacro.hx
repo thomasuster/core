@@ -57,6 +57,9 @@ class MsgMacro
 										pos: pos
 									});
 									mNextId++;
+									
+									if (mNextId > 0x7FFF) Context.error("message type out of range [0, 0x7FFF]", pos);
+									
 								case _: Context.error("unsupported declaration", pos);
 							}
 						case _: Context.error("unsupported declaration", pos);
