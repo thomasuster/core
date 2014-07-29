@@ -20,40 +20,40 @@ package de.polygonal.core.es;
 
 import de.polygonal.core.util.Assert;
 import de.polygonal.core.util.ClassTools;
+import de.polygonal.ds.IntHashTable;
 import de.polygonal.ds.IntIntHashTable;
 import haxe.ds.IntMap;
 import haxe.ds.StringMap;
 import haxe.ds.Vector;
 
-typedef ES = EntitySystem;
+import de.polygonal.core.es.Entity in E;
 
-typedef EntitySystemConfig =
-{
-	/**
-	 * Maximum capacity of the message queue.
-	 * By default, a total of 32768 messages can be handled per game tick.
-	 * This requires 896 KiB of memory (576 KiB if alchemy is used).
-	 */
-	maxMessageCount:Int,
-	
-	/**
-	 * The total number of supported entities.
-	 * Default is 0x8000.
-	 */
-	maxEntityCount:Int
-}
+typedef ES = EntitySystem;
 
 @:access(de.polygonal.core.es.Entity)
 @:access(de.polygonal.core.es.MsgQue)
 class EntitySystem
 {
+	/**
+		Maximum capacity of the message queue.
+		By default, a total of 32768 messages can be handled per game tick.
+		This requires 896 KiB of memory (576 KiB if alchemy is used).
+	**/
+	public static var maxMessageCount = 0x8000;
+	
+	/**
+		The total number of supported entities.
+		Default is 0x8000.
+	**/
+	public static var maxEntityCount = 0x8000;
+	
 	inline public static var MAX_SUPPORTED_ENTITIES = 0xFFFE;
 	
 	//unique id, incremented every time an entity is registered
 	static var mNextInnerId = 0;
 	
 	//all existing entities
-	static var mFreeList:Vector<Entity>;
+	static var mFreeList:Vector<E>;
 	
 	#if alchemy
 	static var mNext:de.polygonal.ds.mem.ShortMemory;
@@ -73,7 +73,7 @@ class EntitySystem
 	#end
 	
 	//name => [entities by name]
-	static var mEntitiesByName:StringMap<Entity> = null;
+	static var mEntitiesByName:StringMap<E> = null;
 	
 	//circular message buffer
 	static var mMsgQue:MsgQue;
@@ -81,46 +81,39 @@ class EntitySystem
 	//maps class x to all superclasses of x
 	static var mInheritanceLookup:IntIntHashTable;
 	
-	//entities can store optional <key, value> pairs
-	static var mProperties = new IntMap<StringMap<Dynamic>>();
-	
-	public static function init(?config:EntitySystemConfig)
+	public static function init()
 	{
 		if (mFreeList != null) return;
 		
-		if (config == null) config = {maxMessageCount: 0x8000, maxEntityCount: 0x8000};
+		D.assert(maxEntityCount > 0 && maxEntityCount <= MAX_SUPPORTED_ENTITIES);
 		
-		var maxEntities = config.maxMessageCount;
-		
-		D.assert(maxEntities > 0 && maxEntities <= MAX_SUPPORTED_ENTITIES);
-		
-		mFreeList = new Vector<Entity>(1 + maxEntities); //index 0 is reserved for null
+		mFreeList = new Vector<E>(1 + maxEntityCount); //index 0 is reserved for null
 		
 		#if alchemy
-		mTopology = new de.polygonal.ds.mem.ShortMemory((1 + maxEntities) << 3, "topology");
+		mTopology = new de.polygonal.ds.mem.ShortMemory((1 + maxEntityCount) << 3, "topology");
 		#else
-		mTopology = new Vector<Int>((1 + maxEntities) << 3);
+		mTopology = new Vector<Int>((1 + maxEntityCount) << 3);
 		for (i in 0...mTopology.length) mTopology[i] = 0;
 		#end
 		
-		mEntitiesByName = new StringMap<Entity>();
+		mEntitiesByName = new StringMap<E>();
 		
 		//first element is stored at index=1 (0 is reserved for NULL)
 		#if alchemy
-		mNext = new de.polygonal.ds.mem.ShortMemory(1 + maxEntities, "es_freelist_shorts");
-		for (i in 1...maxEntities)
+		mNext = new de.polygonal.ds.mem.ShortMemory(1 + maxEntityCount, "es_freelist_shorts");
+		for (i in 1...maxEntityCount)
 			mNext.set(i, i + 1);
-		mNext.set(maxEntities, -1);
+		mNext.set(maxEntityCount, -1);
 		#else
-		mNext = new Vector<Int>(1 + maxEntities);
-		for (i in 1...maxEntities)
+		mNext = new Vector<Int>(1 + maxEntityCount);
+		for (i in 1...maxEntityCount)
 			mNext[i] = (i + 1);
-		mNext[maxEntities] = -1;
+		mNext[maxEntityCount] = -1;
 		#end
 		
 		mFree = 1;
 		
-		mMsgQue = new MsgQue(config.maxMessageCount);
+		mMsgQue = new MsgQue(maxMessageCount);
 		
 		mInheritanceLookup = new IntIntHashTable(1024);
 		
@@ -139,7 +132,7 @@ class EntitySystem
 			
 			bytesUsed += mFreeList.length * 4;
 			
-			L.d('using ${bytesUsed >> 10} KiB for managing $maxEntities entities and ${config.maxMessageCount} messages.', "es");
+			L.d('using ${bytesUsed >> 10} KiB for managing $maxEntityCount entities and ${maxMessageCount} messages.', "es");
 		#end
 	}
 	
@@ -160,7 +153,7 @@ class EntitySystem
 		mInheritanceLookup = null;
 	}
 	
-	public static function register(e:Entity)
+	public static function register(e:E)
 	{
 		D.assert(mFreeList != null, "call EntitySystem.init() first");
 		D.assert(e.id == null && e.mFlags == 0, "Entity has been registered");
@@ -189,16 +182,16 @@ class EntitySystem
 		{
 			var t = e.type;
 			lut.set(t, t);
-			var sc:Class<Entity> = Reflect.field(Type.getClass(e), "SUPER_CLASS");
+			var sc:Class<E> = Reflect.field(Type.getClass(e), "SUPER_CLASS");
 			while (sc != null)
 			{
-				mInheritanceLookup.set(t, Entity.getEntityType(sc));
+				mInheritanceLookup.set(t, E.getEntityType(sc));
 				sc = Reflect.field(sc, "SUPER_CLASS");
 			}
 		}
 	}
 	
-	public static function unregister(e:Entity)
+	public static function unregister(e:E)
 	{
 		D.assert(e.id != null);
 		
@@ -228,7 +221,7 @@ class EntitySystem
 		mFree = i;
 		
 		//remove from name => entity mapping
-		if (e.mFlags & Entity.BIT_GLOBAL_NAME > 0)
+		if (e.mFlags & E.BIT_GLOBAL_NAME > 0)
 			mEntitiesByName.remove(e.name);
 		
 		
@@ -254,26 +247,26 @@ class EntitySystem
 	
 	inline public static function dispatchMessages() mMsgQue.dispatch();
 	
-	inline public static function getParent(e:Entity):Entity return mFreeList[get(pos(e, 0))];
-	inline public static function setParent(e:Entity, parent:Entity) set(pos(e, 0), parent == null ? 0 : parent.id.index);
+	inline public static function getParent(e:E):E return mFreeList[get(pos(e, 0))];
+	inline public static function setParent(e:E, parent:E) set(pos(e, 0), parent == null ? 0 : parent.id.index);
 	
-	inline public static function getChild(e:Entity):Entity return mFreeList[get(pos(e, 1))];
-	inline public static function setChild(e:Entity, child:Entity) set(pos(e, 1), child == null ? 0 : child.id.index);
+	inline public static function getChild(e:E):E return mFreeList[get(pos(e, 1))];
+	inline public static function setChild(e:E, child:E) set(pos(e, 1), child == null ? 0 : child.id.index);
 	
-	inline public static function getSibling(e:Entity):Entity return mFreeList[get(pos(e, 2))];
-	inline public static function setSibling(e:Entity, sibling:Entity) set(pos(e, 2), sibling == null ? 0 : sibling.id.index);
+	inline public static function getSibling(e:E):E return mFreeList[get(pos(e, 2))];
+	inline public static function setSibling(e:E, sibling:E) set(pos(e, 2), sibling == null ? 0 : sibling.id.index);
 	
-	inline public static function getLastChild(e:Entity):Entity return mFreeList[get(pos(e, 3))];
-	inline public static function setLastChild(e:Entity, lastChild:Entity) set(pos(e, 3), lastChild == null ? 0 : lastChild.id.index);
+	inline public static function getLastChild(e:E):E return mFreeList[get(pos(e, 3))];
+	inline public static function setLastChild(e:E, lastChild:E) set(pos(e, 3), lastChild == null ? 0 : lastChild.id.index);
 	
-	inline public static function getSize(e:Entity):Int return get(pos(e, 4));
-	inline public static function setSize(e:Entity, value:Int) set(pos(e, 4), value);
+	inline public static function getSize(e:E):Int return get(pos(e, 4));
+	inline public static function setSize(e:E, value:Int) set(pos(e, 4), value);
 		
-	inline public static function getDepth(e:Entity):Int return get(pos(e, 5));
-	inline public static function setDepth(e:Entity, value:Int) set(pos(e, 5), value);
+	inline public static function getDepth(e:E):Int return get(pos(e, 5));
+	inline public static function setDepth(e:E, value:Int) set(pos(e, 5), value);
 		
-	inline public static function getNumChildren(e:Entity):Int return get(pos(e, 6));
-	inline public static function setNumChildren(e:Entity, value:Int) set(pos(e, 6), value);
+	inline public static function getNumChildren(e:E):Int return get(pos(e, 6));
+	inline public static function setNumChildren(e:E, value:Int) set(pos(e, 6), value);
 	
 	inline static function get(i:Int):Int
 	{
@@ -294,13 +287,13 @@ class EntitySystem
 		#end
 	}
 		
-	inline static function pos(e:Entity, shift:Int):Int return (e.id.index << 3) + shift;
+	inline static function pos(e:E, shift:Int):Int return (e.id.index << 3) + shift;
 	
 	inline public static function existsByName(name:String):Bool return mEntitiesByName.exists(name);
 	
-	inline public static function lookupByName(name:String):Entity return cast mEntitiesByName.get(name);
+	inline public static function lookupByName(name:String):E return cast mEntitiesByName.get(name);
 		
-	inline public static function lookup(id:EntityId):Entity
+	inline public static function lookup(id:EntityId):E
 	{
 		if (id.index > 0)
 		{
@@ -314,7 +307,7 @@ class EntitySystem
 			return null;
 	}
 	
-	public static function changeName(e:Entity, newName:String)
+	public static function changeName(e:E, newName:String)
 	{
 		if (e.name != null)
 			mEntitiesByName.remove(e.name);
@@ -322,7 +315,7 @@ class EntitySystem
 		registerName(e);
 	}
 	
-	public static function prettyPrint(e:Entity):String
+	public static function prettyPrint(e:E):String
 	{
 		var s = "\n";
 		for (i in 0...e.size + 1)
@@ -341,7 +334,7 @@ class EntitySystem
 		return s;
 	}
 	
-	static function freeRecursive(e:Entity)
+	static function freeRecursive(e:E)
 	{
 		var n = e.child;
 		while (n != null)
@@ -355,10 +348,10 @@ class EntitySystem
 		unregister(e);
 	}
 	
-	static function freeIterative(e:Entity)
+	static function freeIterative(e:E)
 	{
 		var k = e.size + 1;
-		var a = new Vector<Entity>(k);
+		var a = new Vector<E>(k);
 		for (i in 0...k) a[i] = null;
 		
 		var q = [e];
@@ -384,7 +377,7 @@ class EntitySystem
 		}
 	}
 	
-	static function registerName(e:Entity)
+	static function registerName(e:E)
 	{
 		D.assert(e.id != null, "Entity is not registered, call EntitySystem.register() before");
 		
