@@ -362,19 +362,23 @@ class MsgQue
 			
 			sender = a[senderIndex];
 			
-			D.assert(sender != null);
-			D.assert(sender.id != null);
-			D.assert(sender.id.inner == senderInner);
-			
 			recipient = a[recipientIndex];
-			
-			D.assert(recipient != null);
-			D.assert(recipient.id != null);
-			D.assert(recipient.id.inner == recipientInner);
 			
 			//dequeue
 			mFront = (mFront + 1) % c;
 			mSize--;
+			
+			if (sender == null || recipient == null || (sender.mFlags | recipient.mFlags) & E.BIT_MARK_FREE > 0)
+			{
+				#if verbose
+				numSkippedMessages++;
+				#end
+				
+				#if (verbose == "extra")
+				L.d('sender or recipient gone, skipping message.');
+				#end
+				continue;
+			}
 			
 			#if (verbose == "extra")
 			var data = mBundles[mCurrBundleIn] != null ? mBundles[mCurrBundleIn] : null;

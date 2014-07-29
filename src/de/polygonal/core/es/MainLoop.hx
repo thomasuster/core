@@ -39,8 +39,8 @@ class MainLoop extends Entity implements IObserver
 	
 	var mStack:Array<E>;
 	var mTop:Int;
-	var mScratchList:Vector<E>;
-	var mMaxSize:Int;
+	var mBufferedEntities:Vector<E>;
+	var mMaxBufferSize:Int;
 	
 	public function new()
 	{
@@ -50,8 +50,8 @@ class MainLoop extends Entity implements IObserver
 		Timebase.attach(this);
 		Timeline.init();
 		
-		mScratchList = new Vector<E>(ES.MAX_SUPPORTED_ENTITIES);
-		mMaxSize = 0;
+		mBufferedEntities = new Vector<E>(ES.MAX_SUPPORTED_ENTITIES);
+		mMaxBufferSize = 0;
 	}
 	
 	override function onFree()
@@ -65,18 +65,15 @@ class MainLoop extends Entity implements IObserver
 		
 		if (type == TimebaseEvent.TICK)
 		{
-			//1) process scheduled events
+			//process scheduled events
 			Timeline.tick();
 			
-			//2) advance entities
+			//advance entities
 			var dt:Float = userData;
 			propagateTick(dt);
 			
-			//3) dispatch buffered messages
+			//dispatch buffered messages
 			EntitySystem.dispatchMessages();
-			
-			//4) free marked entities
-			freeEntities();
 		}
 		else
 		if (type == TimebaseEvent.RENDER)
@@ -88,17 +85,16 @@ class MainLoop extends Entity implements IObserver
 			//prune scratch list for gc at regular intervals
 			if (Timebase.processedFrames % 60 == 0)
 			{
-				var k = mMaxSize;
-				mMaxSize = 0;
-				var list = mScratchList;
-				for (i in 0...k) list[i] = null;
+				var list = mBufferedEntities;
+				for (i in 0...mMaxBufferSize) list[i] = null;
+				mMaxBufferSize = 0;
 			}
 		}
 	}
 	
 	function propagateTick(dt:Float)
 	{
-		var list = mScratchList;
+		var list = mBufferedEntities;
 		var k = 0;
 		var e = child;
 		while (e != null)
@@ -119,19 +115,19 @@ class MainLoop extends Entity implements IObserver
 			}
 		}
 		
-		if (k > mMaxSize) mMaxSize = k;
+		if (k > mMaxBufferSize) mMaxBufferSize = k;
 
 		for (i in 0...k)
 		{
 			e = list[i];
-			if (e.parent != null && e.mFlags & (E.BIT_GHOST | E.BIT_SKIP_TICK | E.BIT_MARK_FREE | E.BIT_SKIP_UPDATE) == 0)
+			if (e.mFlags & (E.BIT_GHOST | E.BIT_SKIP_TICK | E.BIT_MARK_FREE | E.BIT_SKIP_UPDATE) == 0)
 				e.onTick(dt);
 		}
 	}
 	
 	function propagateDraw(alpha:Float)
 	{
-		var list = mScratchList;
+		var list = mBufferedEntities;
 		var k = 0;
 		var e = child;
 		while (e != null)
@@ -149,7 +145,7 @@ class MainLoop extends Entity implements IObserver
 			}
 		}
 		
-		if (k > mMaxSize) mMaxSize = k;
+		if (k > mMaxBufferSize) mMaxBufferSize = k;
 		
 		for (i in 0...k)
 		{
@@ -157,47 +153,5 @@ class MainLoop extends Entity implements IObserver
 			if (e.mFlags & (E.BIT_GHOST | E.BIT_SKIP_DRAW | E.BIT_MARK_FREE | E.BIT_SKIP_UPDATE) == 0)
 				e.onDraw(alpha);
 		}
-	}
-	
-	function freeEntities()
-	{
-		#if verbose
-		var freeCount = 0;
-		#end
-
-		//free marked entities; this is done as a last step to prevent rebuilding the entities array
-		var e = child, p, next;
-		while (e != null)
-		{
-			next = e.preorder;
-			
-			if (e.mFlags & E.BIT_MARK_FREE > 0)
-			{
-				next = e.nextSubtree();
-				
-				//disconnect subtree rooted at this entity
-				//force removal by setting commit flag
-				if (e.parent != null) e.parent.remove(e);
-				
-				//bottom-up deconstruction (calls onFree() on all descendants)
-				EntitySystem.freeEntity(e);
-				
-				#if verbose
-				freeCount++;
-				#end
-			}
-			
-			e = next;
-		}
-		
-		#if verbose
-		if (freeCount > 0)
-		{
-			if (freeCount == 1)
-				L.d('freed one subtree', "es");
-			else
-				L.d('freed $freeCount subtrees', "es");
-		}
-		#end
 	}
 }

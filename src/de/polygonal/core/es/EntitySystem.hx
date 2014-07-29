@@ -233,7 +233,7 @@ class EntitySystem
 		e.preorder = null;
 	}
 	
-	public static function freeEntity(e:Entity)
+	public static function freeEntityTree(e:E)
 	{
 		#if verbose
 		L.d('freeing up ${e.size + 1} entities ...', "es");
@@ -344,6 +344,7 @@ class EntitySystem
 			n = sibling;
 		}
 		
+		e.mFlags |= E.BIT_MARK_FREE;
 		e.onFree();
 		unregister(e);
 	}
@@ -372,6 +373,7 @@ class EntitySystem
 		
 		for (e in a)
 		{
+			e.mFlags |= E.BIT_MARK_FREE;
 			e.onFree();
 			unregister(e);
 		}

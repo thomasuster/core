@@ -96,13 +96,8 @@ class Entity
 	{
 		if (mFlags & BIT_MARK_FREE > 0) return;
 		
-		var e = this;
-		var k = size + 1;
-		while (k-- > 0)
-		{
-			e.mFlags |= BIT_MARK_FREE;
-			e = e.preorder;
-		}
+		if (parent != null) parent.remove(this);
+		ES.freeEntityTree(this);
 	}
 	
 	public var parent(get_parent, set_parent):Entity;
