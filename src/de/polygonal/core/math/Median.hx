@@ -40,6 +40,13 @@ class Median
 		reset();
 	}
 	
+	public var value(get_value, never):Float;
+	inline function get_value():Float
+	{
+		if (mChanged) compute();
+		return mValue;
+	}
+	
 	inline public function reset()
 	{
 		mNext = 0;
@@ -54,12 +61,6 @@ class Median
 		mNext = (mNext + 1) % mCapacity;
 		mSize = mSize < mCapacity ? mSize + 1: mSize;
 		mChanged = true;
-	}
-	
-	inline public function get():Float
-	{
-		if (mChanged) compute();
-		return mValue;
 	}
 	
 	function compute()
