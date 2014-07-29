@@ -281,7 +281,7 @@ class MsgQue
 		q[addr + 6] = mFreeBundle;
 		#end
 		
-		//use same locker for multiple recipients
+		//use same bundle for multiple recipients
 		//increment counter if batch is complete and data is set
 		if (remaining == 0)
 		{
