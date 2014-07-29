@@ -133,7 +133,7 @@ class ClassTools
 	/**
 	 * Creates an instance of a class given by passing the fully qualified <code>name</code>.
 	 */
-	public static function createObject<T>(name:String, ?args:Array<Dynamic>):T
+	public static function createInstanceOfClassName<T>(name:String, ?args:Array<Dynamic>):T
 	{
 		if (args == null) args = [];
 		return Type.createInstance(Type.resolveClass(name), args);
