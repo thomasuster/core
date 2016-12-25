@@ -6,6 +6,7 @@
 	"tags": ["cross", "utility"],
 	"contributors" : ["mbaczynski"],
 	"version": "1.0.4",
+	"classPath": "src",
 	"releasenote": "See README",
 	"dependencies":
 	{
